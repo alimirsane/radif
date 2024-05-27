@@ -123,7 +123,7 @@ class UserBusinessSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'first_name', 'last_name', 'email', 'company_national_id',
+        fields = ('username', 'password', 'first_name', 'last_name', 'email', 'company_national_id', 'company_name',
                   'postal_code', 'company_telephone', 'address')
         extra_kwargs = {
             'password': {'write_only': True},  # Ensure password is write only

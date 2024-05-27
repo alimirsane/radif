@@ -29,7 +29,7 @@ class UserAdmin(UAdmin):
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
         (_("All fields"), {"fields": ("account_type", "national_id", "role", "access_level",
                                       "educational_field", "educational_level", "student_id", "address", "postal_code",
-                                      "company_national_id", "company_telephone", "linked_users", "balance",
+                                      "company_national_id", "company_telephone", "company_name", "linked_users", "balance",
                                       "research_grant", "labsnet_grant")})
     )
     add_fieldsets = (

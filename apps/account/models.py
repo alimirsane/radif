@@ -64,6 +64,7 @@ class User(AbstractUser):
 
     postal_code = models.CharField(_("postal code"), max_length=20, blank=True, null=True, help_text=_("Enter your postal code."))
     company_national_id = models.CharField(_("company national ID"), max_length=11, unique=True, null=True, blank=True, help_text=_("Enter your company national ID."))
+    company_name = models.CharField(_("company name"), max_length=150, null=True, blank=True, help_text=_("Enter your company name."))
 
     research_grant = models.BigIntegerField(default=0, verbose_name="گرنت پژوهشی")
     labsnet_grant = models.BigIntegerField(default=0, verbose_name="گرنت لبزنت")
