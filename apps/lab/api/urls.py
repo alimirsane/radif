@@ -1,0 +1,47 @@
+from django.urls import path
+
+from apps.lab.api.views import *
+# from apps.lab.api.views import LaboratoryListAPIView, LaboratoryDetailAPIView, \
+#     ExperimentListAPIView, ExperimentDetailAPIView, DeviceListAPIView, DeviceDetailAPIView, ParameterListAPIView, \
+#     ParameterDetailAPIView, RequestDetailAPIView, RequestListAPIView, DepartmentListAPIView, DepartmentDetailAPIView, \
+#     FormResponseListAPIView, FormResponseDetailAPIView, OwnedRequestListAPIView, OwnedRequestDetailAPIView, \
+#     LabTypeListAPIView, LabTypeDetailAPIView, RequestChangeStatusAPIView, WorkflowDetailAPIView
+
+urlpatterns = [
+
+    path('laboratories/', LaboratoryListAPIView.as_view(), name='laboratories-list'),
+    path('laboratories/<int:pk>/', LaboratoryDetailAPIView.as_view(), name='laboratory-detail'),
+
+    path('experiments/', ExperimentListAPIView.as_view(), name='experiments-list'),
+    path('experiments/<int:pk>/', ExperimentDetailAPIView.as_view(), name='experiment-detail'),
+
+    path('form-responses/', FormResponseListAPIView.as_view(), name='form-responses-list'),
+    path('form-responses/<int:pk>/', FormResponseDetailAPIView.as_view(), name='form-response-detail'),
+
+    path('devices/', DeviceListAPIView.as_view(), name='devices-list'),
+    path('devices/<int:pk>/', DeviceDetailAPIView.as_view(), name='device-detail'),
+
+    path('parameters/', ParameterListAPIView.as_view(), name='parameters-list'),
+    path('parameters/<int:pk>/', ParameterDetailAPIView.as_view(), name='parameter-detail'),
+
+    path('requests/owned/', OwnedRequestListAPIView.as_view(), name='owned-requests-list'),
+    path('requests/owned/<int:pk>/', OwnedRequestDetailAPIView.as_view(), name='owned-request-detail'),
+
+    path('requests/<int:pk>/status/', RequestChangeStatusAPIView.as_view(), name='request-change-status'),
+    path('requests/<int:pk>/result/', RequestResultAPIView.as_view(), name='request-result'),
+
+    path('requests/', RequestListAPIView.as_view(), name='requests-list'),
+    path('requests/<int:pk>/', RequestDetailAPIView.as_view(), name='request-detail'),
+
+    path('department/', DepartmentListAPIView.as_view(), name='department-list'),
+    path('department/<int:pk>/', DepartmentDetailAPIView.as_view(), name='department-detail'),
+
+    path('lab-type/', LabTypeListAPIView.as_view(), name='lab-type-list'),
+    path('lab-type/<int:pk>/', LabTypeDetailAPIView.as_view(), name='lab-type-detail'),
+
+    path('workflow/', WorkflowListAPIView.as_view(), name='workflow-list'),
+    path('workflow/<int:pk>/', WorkflowDetailAPIView.as_view(), name='workflow-detail'),
+
+    path('results/', RequestResultAPIView.as_view(), name='results-list'),
+    path('results/<int:pk>/', RequestResultDetailAPIView.as_view(), name='results-detail'),
+]

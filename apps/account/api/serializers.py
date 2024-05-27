@@ -1,0 +1,305 @@
+import datetime
+from django.contrib.auth import authenticate
+from django.utils.translation import gettext_lazy as _
+
+from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+
+from apps.account.models import User, EducationalLevel, EducationalField, Role, AccessLevel, GrantRequest, \
+    GrantTransaction, Notification, GrantRecord
+
+
+class AccessLevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccessLevel
+        exclude = []
+
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        exclude = []
+
+
+class UserFullSerializer(serializers.ModelSerializer):
+
+    access_level_obj = AccessLevelSerializer(source='access_level', read_only=True)
+    role_obj = RoleSerializer(source='role', read_only=True)
+
+    class Meta:
+        model = User
+        exclude = []
+
+
+class UserSummerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'username']
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    access_level_obj = AccessLevelSerializer(source='access_level', read_only=True, many=True)
+    access_levels_dict = serializers.SerializerMethodField(read_only=True)
+    role_obj = RoleSerializer(source='role', read_only=True, many=True)
+
+    class Meta:
+        model = User
+        exclude = ['password', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'user_permissions', 'groups']
+
+    def get_access_levels_dict(self, obj):
+        access_levels_dict = obj.get_dict_access_level()
+        return access_levels_dict
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'first_name', 'last_name', 'account_type')
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+
+
+class UserPersonalSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'first_name', 'last_name', 'national_id', 'email', 'student_id',
+                  'educational_level', 'educational_field', 'postal_code')
+        extra_kwargs = {
+            'password': {'write_only': True},  # Ensure password is write only
+        }
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data.get('password'))
+        return super().create(validated_data)
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False, style={'input_type': 'password'})
+
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'first_name', 'last_name', 'national_id', 'email', 'student_id',
+                  'educational_level', 'educational_field', 'postal_code', 'address')
+        extra_kwargs = {
+            'password': {'write_only': True},  # Ensure password is write only
+            'national_id': {'read_only': True},
+            'username': {'read_only': True},
+        }
+
+    def update(self, instance, validated_data):
+        if validated_data.get('password'):
+            validated_data['password'] = make_password(validated_data.get('password'))
+        return super().update(instance, validated_data)
+
+
+
+class UserBusinessSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        # Extracting data for personal account
+        personal_data = validated_data.copy()
+        personal_data['account_type'] = 'personal'
+
+        # Creating personal account
+        personal_serializer = UserPersonalSerializer(data=personal_data)
+        personal_serializer.is_valid(raise_exception=True)
+        personal_account = personal_serializer.save()
+
+        # Creating business account
+        validated_data['account_type'] = 'business'
+        validated_data['username'] = validated_data['company_national_id']  # Add personal account to linked_users
+        validated_data['password'] = make_password(validated_data.get('password'))
+        business_serializer = self.Meta.model.objects.create(**validated_data)
+        business_serializer.linked_users.set([personal_account])
+
+        return business_serializer
+
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'first_name', 'last_name', 'email', 'company_national_id',
+                  'postal_code', 'company_telephone', 'address')
+        extra_kwargs = {
+            'password': {'write_only': True},  # Ensure password is write only
+        }
+
+# UserRegistrationSerializer
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        account_type = validated_data.pop('account_type', 'personal')
+        if account_type == 'personal':
+            serializer_class = UserPersonalSerializer
+        else:
+            serializer_class = UserBusinessSerializer
+
+        serializer = serializer_class(data=validated_data)
+        serializer.is_valid(raise_exception=True)
+        return serializer.save()
+
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'user_type', 'account_type', 'first_name', 'last_name', 'national_id',
+                  'email', 'company_national_id', 'postal_code', 'address', 'company_telephone',
+                  )
+        extra_kwargs = {
+            'password': {'write_only': True},  # Ensure password is write only
+        }
+
+
+class EducationalFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EducationalField
+        exclude = []
+
+
+class EducationalLevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EducationalLevel
+        exclude = []
+
+
+class GrantTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GrantTransaction
+        exclude = []
+
+
+class GrantRecordSerializer(serializers.ModelSerializer):
+    receiver_obj = UserSummerySerializer(source='receiver', read_only=True)
+
+    class Meta:
+        model = GrantRecord
+        exclude = []
+
+
+class GrantRequestSerializer(serializers.ModelSerializer):
+    transaction_obj = GrantTransactionSerializer(source='transaction', read_only=True)
+    sender_obj = UserSummerySerializer(source='sender', read_only=True)
+    receiver_obj = UserSummerySerializer(source='receiver', read_only=True)
+
+    class Meta:
+        model = GrantRequest
+        exclude = ['transaction']
+
+    def create(self, validated_data):
+        validated_data['sender'] = self.context['request'].user
+        return super().create(validated_data)
+
+
+class GrantRequestApprovedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GrantRequest
+        fields = ('approved_amount', 'expiration_date')
+
+    def validate(self, attrs):
+        if attrs.get('approved_amount') < 50000:
+            raise serializers.ValidationError("The approved amount must be greater than 50,000 rials.")
+        if self.instance.receiver.research_grant < attrs.get('approved_amount'):
+            raise serializers.ValidationError("You don't have enough research grant.")
+        if datetime.date.today() > attrs.get('expiration_date'):
+            raise serializers.ValidationError("The request expired date is invalid")
+        return attrs
+
+    def update(self, instance, validated_data):
+        approved_amount = validated_data.get('approved_amount', None)
+        expiration_date = validated_data.get('expiration_date', None)
+        instance.approve(approved_amount, expiration_date)
+        return instance
+
+
+class OTPRequestSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=15)
+
+    def validate(self, attrs):
+        if User.objects.filter(username=attrs.get('phone_number')).exists():
+            return attrs
+        else:
+            raise serializers.ValidationError("Invalid phone number.")
+
+
+class OTPVerificationSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=15)
+    otp_code = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(max_length=64)
+
+    def validate(self, attrs):
+        if User.objects.filter(username=attrs.get('phone_number')).exists():
+            return attrs
+        else:
+            raise serializers.ValidationError("Invalid phone number.")
+
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'
+
+
+class NotificationReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['is_read', 'read_at']
+
+
+class UPOAuthTokenSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        label=_("Username"),
+        write_only=True
+    )
+    password = serializers.CharField(
+        label=_("Password"),
+        style={'input_type': 'password'},
+        trim_whitespace=False,
+        write_only=True,
+        required=False
+    )
+    token = serializers.CharField(
+        label=_("Token"),
+        read_only=True
+    )
+    otp = serializers.CharField(
+        label=_("OTP"),
+        style={'input_type': 'password'},
+        trim_whitespace=False,
+        write_only=True,
+        required=False
+    )
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+        otp = attrs.get('otp')
+
+        if username and password:
+            user = authenticate(request=self.context.get('request'),
+                                username=username, password=password)
+
+            # The authenticate call simply returns None for is_active=False
+            # users. (Assuming the default ModelBackend authentication
+            # backend.)
+            if not user:
+                msg = _('Unable to log in with provided credentials.')
+                raise serializers.ValidationError(msg, code='authorization')
+        elif username and otp:
+            otp_user = User.objects.filter(username=username)
+            if otp_user.exists():
+                if otp_user.first().OTP == otp:
+                    user = otp_user.first()
+                else:
+                    raise serializers.ValidationError("Invalid OTP code.")
+            else:
+                msg = _('Unable to log in with provided credentials.')
+                raise serializers.ValidationError(msg, code='authorization')
+        else:
+            msg = _('Must include "username" and "password" or "username" and "otp".')
+            raise serializers.ValidationError(msg, code='authorization')
+
+        attrs['user'] = user
+        return attrs
