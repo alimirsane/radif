@@ -100,7 +100,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-
 class UserBusinessSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Extracting data for personal account

@@ -159,7 +159,7 @@ class Order(models.Model):
         self.save()
 
         if self.order_status == 'completed':
-            self.set_ticket()
+            self.request.change_status('next', 'Successfully paid', self.request.owner)
         else:
             payment_record = self.get_payment_records()
             if not payment_record.exists():
@@ -170,7 +170,6 @@ class Order(models.Model):
                 else:
                     return response
 
-
     def set_ticket(self):
         if not Ticket.objects.filter(profile_id=self.buyer.id, order=self).exists():
             Ticket.objects.create(profile_id=self.buyer.id, order=self)
@@ -180,6 +179,7 @@ class Order(models.Model):
             self.paid += payment_record.amount
             self.order_status = 'completed'
             self.save()
+            self.request.change_status('next', 'Successfully paid', self.request.owner)
 
     def cancel(self):
         if self.order_status == 'pending':
@@ -301,6 +301,7 @@ class PaymentRecord(models.Model):
                 self.order.set_completed(self)
                 self.charged = True
                 profile = self.order.buyer
+
             else:
                 profile = self.payer
                 if profile:
