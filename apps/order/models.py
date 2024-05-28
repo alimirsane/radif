@@ -18,7 +18,7 @@ from apps.order.sharifpayment import SharifPayment
 ORDER_KEY_LENGTH = 12
 SLUG_CHARACTERS = string.digits + string.ascii_letters + string.ascii_lowercase
 
-from apps.account.models import User
+from apps.account.models import User, Notification
 from apps.lab.models import Request
 
 
@@ -309,20 +309,20 @@ class PaymentRecord(models.Model):
                     self.charged = True
         #
         #     send_sms_to_user(profile.user.username, 'پرداخت شما با موفقیت انجام شد')
-        #     notification = Notification.objects.create(
-        #         profile=profile,
-        #         type='success',
-        #         title='پرداخت موفق',
-        #         content='پرداخت شما با موفقیت انجام شد.',
-        #     )
+            notification = Notification.objects.create(
+                user=profile,
+                type='success',
+                title='پرداخت موفق',
+                content='پرداخت شما با موفقیت انجام شد.',
+            )
         except:
-            pass  # todo handle exception
-        #     notification = Notification.objects.create(
-        #         profile=self.payer,
-        #         type='danger',
-        #         title='پرداخت ناموفق',
-        #         content='پرداخت شما ناموفق بود.',
-        #     )
+            # pass  # todo handle exception
+            notification = Notification.objects.create(
+                user=self.payer,
+                type='danger',
+                title='پرداخت ناموفق',
+                content='پرداخت شما ناموفق بود.',
+            )
 
         self.save()
 
