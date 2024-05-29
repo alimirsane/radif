@@ -43,7 +43,7 @@ class ParameterSerializer(serializers.ModelSerializer):
 
 
 class ExperimentSerializer(serializers.ModelSerializer):
-    device = DeviceSerializer(read_only=True)
+    device_obj = DeviceSerializer(read_only=True, source='device')
     lab_name = serializers.SerializerMethodField(read_only=True)
 
     def get_lab_name(self, obj):
@@ -56,8 +56,8 @@ class ExperimentSerializer(serializers.ModelSerializer):
 
 
 class ExperimentDetailSerializer(serializers.ModelSerializer):
-    device = DeviceSerializer(read_only=True)
-    form = FormSerializer(read_only=True)
+    device_obj = DeviceSerializer(read_only=True, source='device')
+    form_obj = FormSerializer(read_only=True, source='form')
 
     class Meta:
         model = Experiment
@@ -201,7 +201,14 @@ class RequestChangeStatusSerializer(serializers.ModelSerializer):
         return RequestDetailSerializer(instance)
 
 
+class RequestDetailResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RequestResult
+        exclude = []
+
+
 class RequestListSerializer(serializers.ModelSerializer):
+    result_objs = RequestDetailResultSerializer(read_only=True, source='request_results', many=True)
     owner_obj = UserSerializer(read_only=True, source='owner')
     experiment_obj = RequestExperimentSerializer(read_only=True, source='experiment')
     parameter_obj = ParameterSerializer(many=True, read_only=True, source='parameter')
@@ -224,12 +231,6 @@ class RequestListSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user
         return super().create(validated_data)
-
-
-class RequestDetailResultSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RequestResult
-        exclude = []
 
 
 class RequestDetailSerializer(serializers.ModelSerializer):
