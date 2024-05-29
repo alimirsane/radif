@@ -292,11 +292,12 @@ class UPOAuthTokenSerializer(serializers.Serializer):
             user = authenticate(request=self.context.get('request'),
                                 username=username, password=password)
 
-            # The authenticate call simply returns None for is_active=False
-            # users. (Assuming the default ModelBackend authentication
-            # backend.)
             if not user:
-                msg = _('Unable to log in with provided credentials.')
+                temp_user = User.objects.filter(username=username)
+                if temp_user.exists():
+                    msg = {'پسورد': 'پسورد اشتباه است.'}
+                    raise serializers.ValidationError(msg, code='authorization')
+                msg = {'نام کاربری': 'کاربر با این شماره وجود ندارد.'}
                 raise serializers.ValidationError(msg, code='authorization')
         elif username and otp:
             otp_user = User.objects.filter(username=username)
@@ -304,12 +305,13 @@ class UPOAuthTokenSerializer(serializers.Serializer):
                 if otp_user.first().OTP == otp:
                     user = otp_user.first()
                 else:
-                    raise serializers.ValidationError("Invalid OTP code.")
+                    msg = {'کد': 'کد اشتباه است.'}
+                    raise serializers.ValidationError(msg, code='authorization')
             else:
-                msg = _('Unable to log in with provided credentials.')
+                msg = {'نام کاربری': 'کاربر با این شماره وجود ندارد.'}
                 raise serializers.ValidationError(msg, code='authorization')
         else:
-            msg = _('Must include "username" and "password" or "username" and "otp".')
+            msg = 'باید شامل نام کاربری و پسورد یا نام کاربری و کد باشد.'
             raise serializers.ValidationError(msg, code='authorization')
 
         attrs['user'] = user

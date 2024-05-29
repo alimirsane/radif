@@ -397,9 +397,9 @@ class OTPRequestView(APIView):
             result = otp_server.send_quick_message([phone_number], message)
 
             if 0 <= result['statusCode'] <= 4:
-                return Response({"detail": f"OTP sent successfully.", "message": result['message']}, status=status.HTTP_200_OK)
+                return Response({"detail": f"کد ارسال شد.", "message": result['message']}, status=status.HTTP_200_OK)
             else:
-                return Response({"detail": "Failed to send OTP.", "message": result['message']}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({"detail": "خطا در ارسال کد یکبارمصرف.", "message": result['message']}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -420,12 +420,12 @@ class OTPVerificationView(APIView):
                 if user.OTP == otp_code:
                     user.set_password(new_password)
                     user.save()
-                    return Response({"detail": "OTP verified successfully. Password Changed."}, status=status.HTTP_200_OK)
+                    return Response({"detail": "اعتبارسنجی با موفقیت انجام شد. پسورد تغییر کرد."}, status=status.HTTP_200_OK)
                 else:
-                    return Response({"detail": "Invalid OTP code."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"detail": "کد اشتباه بود."}, status=status.HTTP_400_BAD_REQUEST)
 
             except User.DoesNotExist:
-                return Response({"detail": "Invalid phone number."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": "تلفن همراه در سامانه وجود ندارد."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 #
