@@ -477,9 +477,9 @@ class NotificationList(ListAPIView):
         filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
         queryset = []
         if filter_key == 'all':
-            queryset = Notification.objects.all()
+            queryset = Notification.objects.all().order_by('-created_at')
         elif filter_key == 'owner':
-            queryset = Notification.objects.filter(user=self.request.user)
+            queryset = Notification.objects.filter(user=self.request.user).order_by('-created_at')
         return queryset
 
 
