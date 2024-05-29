@@ -62,15 +62,15 @@ def payment_record_row_list(payment_record):
     return [
         payment_record.payer.get_full_name(),
         # payment_record.order,
-        payment_record.payment_type,
+        # payment_record.payment_type,
         payment_record.amount,
         payment_record.successful,
         payment_record.charged,
         payment_record.transaction_code,
-        payment_record.tref,
-        payment_record.payment_order_guid,
+        # payment_record.tref,
+        # payment_record.payment_order_guid,
         payment_record.payment_order_id,
-        payment_record.payment_link,
+        # payment_record.payment_link,
         payment_record.called_back,
         payment_record.log_text,
         payment_record.created_at.strftime(datetime_format) if payment_record.created_at else None,
@@ -81,21 +81,21 @@ def payment_record_row_list(payment_record):
 
 def payment_record():
     return payment_record_row_list, [
-            'payer',
+            'پرداخت کننده',
             # 'order',
-            'payment_type',
-            'amount',
-            'successful',
-            'charged',
-            'transaction_code',
-            'tref',
-            'payment_order_guid',
-            'payment_order_id',
-            'payment_link',
-            'called_back',
-            'log_text',
-            'created_at',
-            'updated_at'
+            # 'payment_type',
+            'مقدار',
+            'موفق',
+            'شارژ',
+            'کد تراکنش',
+            # 'tref',
+            # 'payment_order_guid',
+            'شماره درخواست درگاه',
+            # 'payment_link',
+            'برگشت',
+            'لاگ',
+            'ساخته شده در',
+            'ویرایش شده در'
         ], 'Payment'
 
 
@@ -116,68 +116,76 @@ def grant_request_row_list(grant_request):
 
 def grant_request():
     return grant_request_row_list, [
-            'sender',
-            'receiver',
-            'requested_amount',
-            'approved_amount',
-            'approved_datetime',
-            'datetime',
-            'expiration_date',
+            'فرستنده',
+            'گیرنده',
+            'مبلغ درخواست',
+            'مبلغ تایید شده',
+            'تاریخ تایید',
+            'تاریخ ثبت درخواست',
+            'تاریخ انقضا',
             # 'transaction',
-            'status',
+            'وضعیت',
         ], 'GrantRequest'
 
 
 def request():
     return request_row_list, [
-            'owner',
-            'experiment',
-            'parameter',
-            'price',
-            'is_urgent',
-            'delivery_date',
-            'description',
-            'subject',
-            'request_number',
-            'is_completed',
-            'created_at',
-            'updated_at',
+            'شماره درخواست',
+            'کاربر',
+            'آزمایش',
+            'پارامتر ها',
+            'قیمت',
+            'فوری',
+            'تاریخ نتیجه',
+            'توضیحات',
+            # 'subject',
+            'تکمیل شده',
+            'ساخته شده در',
+            # 'updated_at',
         ], 'Request'
 
 def request_row_list(request):
     datetime_format = '%Y/%m/%d-%H:%M:%S'
     return [
+        request.request_number if request.request_number else None,
         request.owner.get_full_name(),
         request.experiment.name,
-        request.parameter.name if request.parameter else None,
+        str([parameter.name for parameter in request.parameter.all()]) if request.parameter else None,
         request.price if request.price else None,
         request.is_urgent,
         request.delivery_date.strftime(datetime_format) if request.delivery_date else None,
         request.description if request.description else None,
-        request.subject if request.subject else None,
-        request.request_number if request.request_number else None,
+        # request.subject if request.subject else None,
         request.is_completed,
         request.created_at.strftime(datetime_format) if request.created_at else None,
-        request.updated_at.strftime(datetime_format) if request.updated_at else None,
+        # request.updated_at.strftime(datetime_format) if request.updated_at else None,
     ]
 
 def user():
     return user_row_list, [
-            'user_type',
-            'account_type',
-            'national_id',
-            'role',
-            'access_level',
-            'balance',
+            'نام کاربری',
+            'ایمیل',
+            'کدملی',
+            'نام',
+            'نام خانوادگی',
+            'نوع',
+            'اکانت',
+            'سمت',
+            # 'دسترسی',
+            'اعتبار',
         ], 'User'
 
 def user_row_list(user):
     datetime_format = '%Y/%m/%d-%H:%M:%S'
     return [
+        user.username.replace('+98','0'),
+        user.email,
+        user.national_id,
+        user.first_name,
+        user.last_name,
         user.user_type,
         user.account_type,
-        user.national_id,
-        user.role,
-        user.access_level,
+        str([role.name for role in user.role.all()]),
+        # str([access_level.name for access_level in user.get_access_levels()]),
         user.balance,
     ]
