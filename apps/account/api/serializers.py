@@ -46,11 +46,23 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        exclude = ['password', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'user_permissions', 'groups']
+        exclude = ['is_superuser', 'is_staff', 'is_active', 'date_joined', 'user_permissions', 'groups']
+
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False},  # Ensure password is write only
+        }
 
     def get_access_levels_dict(self, obj):
         access_levels_dict = obj.get_dict_access_level()
         return access_levels_dict
+
+    def create(self, validated_data):
+        if validated_data.get('password'):
+            validated_data['password'] = make_password(validated_data.get('password'))
+        else:
+            validated_data['password'] = make_password(validated_data.get('national_id'))
+        return super().create(validated_data)
+
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -144,7 +156,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'password', 'user_type', 'account_type', 'first_name', 'last_name', 'national_id',
-                  'email', 'company_national_id', 'postal_code', 'address', 'company_telephone',
+                  'email', 'company_national_id', 'postal_code', 'address', 'company_name', 'company_telephone',
                   )
         extra_kwargs = {
             'password': {'write_only': True},  # Ensure password is write only
