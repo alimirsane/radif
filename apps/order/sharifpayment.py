@@ -53,6 +53,7 @@ class SharifPayment():
             r = json.loads(response.text)
             if r['Result'] == 0:
                 payment_record.called_back = True
+                payment_record.tref = r['ReferenceID']
                 payment_record.set_payed()
                 payment_record.save()
                 return True
