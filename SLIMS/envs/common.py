@@ -45,6 +45,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 CSRF_TRUSTED_ORIGINS = [
     "https://slims.2tica.ir",
     "http://slims.2tica.ir",
+    "http://172.26.137.161",
 ]
 
 
@@ -113,6 +114,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / '../db.sqlite3',
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': BASE_DIR / '../db.sqlite3',
+    # }
 }
 
 # Password validation
