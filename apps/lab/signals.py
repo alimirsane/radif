@@ -24,9 +24,9 @@ def create_form_number(sender, instance, created, **kwargs):
         object_id = str(instance.id)
         instance.request_number = f'{date_code}-{object_id}'
         instance.save()
-    if created:
-        Notification.objects.create(user=instance.request.owner, type='info', title='تغییر وضعیت درخواست',
-                                    content=f'وضعیت درخواست شماره {instance.step.name} به {instance.request.request_number} تغییر کرد')
+    # if created:
+    #     Notification.objects.create(user=instance.owner, type='info', title='تغییر وضعیت درخواست',
+    #                                 content=f'وضعیت درخواست شماره {instance.step.name} به {instance.request.request_number} تغییر کرد')
 #
 #
 # @receiver(post_save, sender=FormResponse)
