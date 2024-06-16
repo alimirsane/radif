@@ -12,8 +12,6 @@ def query_set_filter_key(view_key, user_access_levels, required_access_levels, r
         return 'all'
     user_access_levels = user_access_levels.values_list('access_key', flat=True)
     methods = {"GET": "view", "POST": "create", "PUT": "update", "PATCH": "update", "DELETE": "delete"}
-    # user_access_levels_filter = filter(lambda x: x.endswith(view_key) and x.startswith(methods[requrest_method]), user_access_levels)
-    # required_access_levels_filter = filter(lambda x: x.startswith(methods[requrest_method]), required_access_levels)
 
     required_access_levels_filter = [access_level for access_level in required_access_levels if
                                    access_level.startswith(methods[requrest_method])]
@@ -46,22 +44,17 @@ class AccessLevelPermission(BasePermission):
     """
 
     def has_permission(self, request, view):
-        # Get the required access levels for the view
         required_access_levels = getattr(view, 'required_access_levels', None)
         view_key = getattr(view, 'view_key', None)
 
         if required_access_levels is None:
-            # If required access levels are not defined for the view, allow access
             return True
         if not request.user.is_authenticated:
             return False
-        # Check if the user has at least one of the required access levels
         user_access_levels = request.user.get_access_levels().values_list('access_key', flat=True)
-        # user_access_levels_filter = filter(lambda x:x.endswith(view_key), user_access_levels)
 
         if request.method in ['GET']:
             required_view_access_levels = [access_level for access_level in required_access_levels if access_level.startswith('view')]
-            # user_access_levels_filter = [user_access_level for user_access_level in user_access_levels if user_access_level.endswith(view_key)]
             user_access_levels_filter = [user_access_level for user_access_level in user_access_levels if user_access_level.split('_')[2] == view_key]
             return any(level in user_access_levels_filter for level in required_view_access_levels)
 
@@ -80,35 +73,19 @@ class AccessLevelPermission(BasePermission):
             user_access_levels_filter = [user_access_level for user_access_level in user_access_levels if user_access_level.split('_')[2] == view_key]
             return any(level in user_access_levels_filter for level in required_delete_access_levels)
 
-
-        # if request.method in SAFE_METHODS:
-        #     required_read_access_levels = [access_level for access_level in required_access_levels if
-        #                                    access_level.startswith('read')]
-        #     return any(level in user_access_levels for level in required_read_access_levels)
-        # else:
-        #     required_write_access_levels = [access_level for access_level in required_access_levels if
-        #                                     access_level.startswith('write')]
-        #     return any(level in user_access_levels for level in required_write_access_levels)
-        # return any(level in user_access_levels for level in required_access_levels)
-
     def has_object_permission(self, request, view, obj):
-        # Get the required access levels for the view
         required_access_levels = getattr(view, 'required_access_levels', None)
         view_key = getattr(view, 'view_key', None)
 
         if required_access_levels is None:
-            # If required access levels are not defined for the view, allow access
             return True
         if not request.user.is_authenticated:
             return False
-        # Check if the user has at least one of the required access levels
         user_access_levels = request.user.get_access_levels().values_list('access_key', flat=True)
-        # user_access_levels_filter = filter(lambda x:x.endswith(view_key), user_access_levels)
         filter_key = query_set_filter_key(view.view_key, view.request.user.get_access_levels(), view.required_access_levels, view.request.method)
 
         if request.method in ['GET']:
             required_view_access_levels = [access_level for access_level in required_access_levels if access_level.startswith('view')]
-            # user_access_levels_filter = [user_access_level for user_access_level in user_access_levels if user_access_level.endswith(view_key)]
             user_access_levels_filter = [user_access_level for user_access_level in user_access_levels if user_access_level.split('_')[2] == view_key]
 
             if filter_key == 'all' or filter_key == 'receptor':
@@ -125,8 +102,6 @@ class AccessLevelPermission(BasePermission):
             elif filter_key == 'owner' or filter_key == 'operator':
                 return request.user in obj.owners() and any(level in user_access_levels_filter for level in required_create_access_levels)
 
-            # return request.user in obj.owners() or any(level in user_access_levels_filter for level in required_create_access_levels)
-
         if request.method in ['PUT', 'PATCH']:
             required_update_access_levels = [access_level for access_level in required_access_levels if access_level.startswith('update')]
             user_access_levels_filter = [user_access_level for user_access_level in user_access_levels if user_access_level.split('_')[2] == view_key]
@@ -137,8 +112,6 @@ class AccessLevelPermission(BasePermission):
                 return request.user in obj.owners() and any(
                     level in user_access_levels_filter for level in required_update_access_levels)
 
-            # return request.user in obj.owners() or any(level in user_access_levels_filter for level in required_update_access_levels)
-
         if request.method in ['DELETE']:
             required_delete_access_levels = [access_level for access_level in required_access_levels if access_level.startswith('delete')]
             user_access_levels_filter = [user_access_level for user_access_level in user_access_levels if user_access_level.split('_')[2] == view_key]
@@ -148,25 +121,6 @@ class AccessLevelPermission(BasePermission):
             elif filter_key == 'owner' or filter_key == 'operator':
                 return request.user in obj.owners() and any(
                     level in user_access_levels_filter for level in required_delete_access_levels)
-
-            # return request.user in obj.owners() or any(level in user_access_levels_filter for level in required_delete_access_levels)
-
-
-
-
-        # # Check if the user has at least one of the required access levels for the object
-        # user_access_levels = request.user.get_access_levels().values_list('name', flat=True)
-        #
-        # if request.method in SAFE_METHODS:
-        #     required_read_access_levels = [access_level for access_level in required_access_levels if
-        #                                    access_level.startswith('read')]
-        #     return any(level in user_access_levels for level in required_read_access_levels)
-        # else:
-        #     required_write_access_levels = [access_level for access_level in required_access_levels if
-        #                                     access_level.startswith('write')]
-        #     return any(level in user_access_levels for level in required_write_access_levels)
-        # # Check if the user is in the list of owners of the object
-        # return request.user in obj.owners() or any(level in user_access_levels for level in required_access_levels)
 
 
 class Authenticated(BasePermission):
