@@ -1,7 +1,7 @@
 import django_filters
 from django.db.models import Q
 
-from apps.lab.models import Parameter, FormResponse, Laboratory
+from apps.lab.models import Parameter, FormResponse, Laboratory, Request
 
 
 class ParameterFilter(django_filters.FilterSet):
@@ -36,4 +36,34 @@ class LaboratoryFilter(django_filters.FilterSet):
         fields = ['department', 'search_department', 'search']
 
     def lab_search(self, queryset, name, value):
-        return queryset.filter(Q(name__icontains=value) | Q(description__icontains=value))
+        return queryset.filter(Q(name__icontains=value) | Q(name_en__icontains=value) | Q(description__icontains=value) )
+
+
+class RequestFilter(django_filters.FilterSet):
+    experiment_name = django_filters.CharFilter(field_name='experiment__name', lookup_expr='icontains', label='filter by experiment name')  # lookup_expr='icontains',
+    experiment_name_en = django_filters.CharFilter(field_name='experiment__name_en', lookup_expr='icontains', label='filter by experiment name en')  # lookup_expr='icontains',
+    request_number = django_filters.CharFilter(field_name='request_number', lookup_expr='exact', label='filter by request number')  # lookup_expr='icontains',
+
+    owner_first_name = django_filters.CharFilter(field_name='owner__first_name', lookup_expr='icontains', label='filter by owner first name')  # lookup_expr='icontains',
+    owner_last_name = django_filters.CharFilter(field_name='owner__last_name', lookup_expr='icontains', label='filter by owner last name')  # lookup_expr='icontains',
+
+    owner_fullname = django_filters.CharFilter(method='owner_fullname_search')
+    search = django_filters.CharFilter(method='request_search')
+
+    class Meta:
+        model = Request
+        fields = ['experiment', 'search']
+
+    def owner_fullname_search(self, queryset, name, value):
+        qs = None
+        for val in value.split(' '):
+            qs_filter = queryset
+            if qs is None:
+                qs = qs_filter.filter(Q(owner__first_name__icontains=val) | Q(owner__last_name__icontains=val))
+            else:
+                qs = qs | qs_filter.filter(Q(owner__first_name__icontains=val) | Q(owner__last_name__icontains=val))
+        return qs.distinct()
+        # return queryset.filter(Q(owner__first_name__icontains=value) | Q(owner__last_name__icontains=value))
+
+    def request_search(self, queryset, name, value):
+        return queryset.filter(Q(experiment__name__icontains=value) | Q(request_number__exact=value))

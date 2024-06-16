@@ -18,7 +18,8 @@ class SharifPayment():
         data = self.init_data
         data.update({"FN": "Request",
                  "Amount": int(payment_record.amount),
-                 "CallbackURL": "http:\/\/172.26.137.161/dashboard/customer/payment/confirm?",
+                 # "CallbackURL": "http:\/\/172.26.137.161/dashboard/customer/payment/confirm?",
+                 "CallbackURL": "https:\/\/lims.radif.app/dashboard/customer/payment/confirm?",
                  "ID2": str(payment_record.transaction_code),
                  "IsForeigner": 0,
                  "NC": user.national_id,

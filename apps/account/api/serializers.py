@@ -64,17 +64,17 @@ class UserSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-
-class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
-
-    class Meta:
-        model = User
-        fields = ('username', 'password', 'first_name', 'last_name', 'account_type')
-
-    def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        return user
+#
+# class UserRegistrationSerializer(serializers.ModelSerializer):
+#     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+#
+#     class Meta:
+#         model = User
+#         fields = ('username', 'password', 'first_name', 'last_name', 'account_type')
+#
+#     def create(self, validated_data):
+#         user = User.objects.create_user(**validated_data)
+#         return user
 
 
 class UserPersonalSerializer(serializers.ModelSerializer):
@@ -90,7 +90,9 @@ class UserPersonalSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data.get('password'))
-        return super().create(validated_data)
+        obj = super().create(validated_data)
+        obj.set_customer_role()
+        return obj
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -157,6 +159,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'password', 'user_type', 'account_type', 'first_name', 'last_name', 'national_id',
                   'email', 'company_national_id', 'postal_code', 'address', 'company_name', 'company_telephone',
+                  'student_id', 'educational_level', 'educational_field'
                   )
         extra_kwargs = {
             'password': {'write_only': True},  # Ensure password is write only
