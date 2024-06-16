@@ -141,7 +141,7 @@ class Device(models.Model):
 class Parameter(models.Model):
     UNIT_TYPES = (
         ('sample', 'نمونه'),
-        ('time', 'زمان')
+        ('time', 'زمان (دقیقه)')
     )
     experiment = models.ForeignKey('Experiment', on_delete=models.CASCADE, related_name='parameters', verbose_name='آزمایش')
     name = models.CharField(max_length=255, verbose_name='نام')
