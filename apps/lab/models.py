@@ -79,6 +79,7 @@ class Experiment(models.Model):
     # sample = models.ForeignKey('Sample', on_delete=models.CASCADE)
     # result = models.CharField(max_length=255, verbose_name='نتیجه')
     estimated_result_time = models.IntegerField(blank=True, null=True, verbose_name='زمان حدودی اعلام نتیجه (روز)')
+    estimated_urgent_result_time = models.IntegerField(blank=True, null=True, verbose_name='زمان حدودی اعلام نتیجه فوری (روز)')
 
 
 
