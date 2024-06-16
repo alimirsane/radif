@@ -231,7 +231,8 @@ class OTPRequestSerializer(serializers.Serializer):
         if User.objects.filter(username=attrs.get('phone_number')).exists():
             return attrs
         else:
-            raise serializers.ValidationError("Invalid phone number.")
+            msg = {'تلفن همراه': 'کاربر با این شماره وجود ندارد.'}
+            raise serializers.ValidationError(msg, code='authorization')
 
 
 class OTPVerificationSerializer(serializers.Serializer):
@@ -243,8 +244,8 @@ class OTPVerificationSerializer(serializers.Serializer):
         if User.objects.filter(username=attrs.get('phone_number')).exists():
             return attrs
         else:
-            raise serializers.ValidationError("Invalid phone number.")
-
+            msg = {'تلفن همراه': 'کاربر با این شماره وجود ندارد.'}
+            raise serializers.ValidationError(msg, code='authorization')
 
 
 class NotificationSerializer(serializers.ModelSerializer):
