@@ -41,8 +41,8 @@ class UserAdmin(UAdmin):
             },
         ),
     )
-    list_display = ("username", "national_id", "email", "first_name", "last_name", "is_staff")
-    list_filter = ("is_staff", "is_superuser", "is_active", "groups")
+    list_display = ("username", "national_id", "email", "first_name", "last_name", "is_staff", "user_type", "account_type")
+    list_filter = ("is_staff", "is_superuser", "is_active", "groups", "user_type", "account_type")
     search_fields = ("username", "first_name", "last_name", "email")
     ordering = ("username",)
     filter_horizontal = (
