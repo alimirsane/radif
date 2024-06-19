@@ -94,6 +94,14 @@ class UserPersonalSerializer(serializers.ModelSerializer):
         obj.set_customer_role()
         return obj
 
+    def validate(self, attrs):
+        if User.objects.filter(username=attrs.get('phone_number')).exists():
+            msg = {'تلفن همراه': 'کاربر با این شماره وجود دارد.'}
+            raise serializers.ValidationError(msg, code='authorization')
+        elif User.objects.filter(national_id=attrs.get('national_id')).exists():
+            msg = {'شماره ملی': 'کاربر با این شماره ملی وجود دارد.'}
+            raise serializers.ValidationError(msg, code='authorization')
+        return attrs
 
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, style={'input_type': 'password'})
@@ -128,6 +136,7 @@ class UserBusinessSerializer(serializers.ModelSerializer):
         # Creating business account
         validated_data['account_type'] = 'business'
         validated_data['username'] = validated_data['company_national_id']  # Add personal account to linked_users
+        validated_data['national_id'] = f'co{validated_data["company_national_id"]}' # Add personal account to linked_users
         validated_data['password'] = make_password(validated_data.get('password'))
         business_serializer = self.Meta.model.objects.create(**validated_data)
         business_serializer.linked_users.set([personal_account])
@@ -137,7 +146,7 @@ class UserBusinessSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'password', 'first_name', 'last_name', 'email', 'company_national_id', 'company_name',
-                  'postal_code', 'company_telephone', 'address')
+                  'postal_code', 'company_telephone', 'address', 'national_id')
         extra_kwargs = {
             'password': {'write_only': True},  # Ensure password is write only
         }
