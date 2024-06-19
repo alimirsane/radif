@@ -38,11 +38,18 @@ class UserSummerySerializer(serializers.ModelSerializer):
         fields = ['id', 'first_name', 'last_name', 'username']
 
 
+class UserBussinessLinkedAccountsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'company_national_id', 'company_name']
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     access_level_obj = AccessLevelSerializer(source='access_level', read_only=True, many=True)
     access_levels_dict = serializers.SerializerMethodField(read_only=True)
     role_obj = RoleSerializer(source='role', read_only=True, many=True)
+    bussiness_accounts = UserBussinessLinkedAccountsSerializer(source='linked_to_users', read_only=True, many=True)
 
     class Meta:
         model = User
