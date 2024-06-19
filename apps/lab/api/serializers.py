@@ -14,6 +14,7 @@ class UserSummerySerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'first_name', 'last_name',]
 
+
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
