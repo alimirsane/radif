@@ -56,7 +56,7 @@ def export_excel(queryset):
     return file_url
 
 
-def payment_record_row_list(payment_record):
+def payment_record2_row_list(payment_record):
     datetime_format = '%Y/%m/%d-%H:%M:%S'
 
     return [
@@ -79,6 +79,48 @@ def payment_record_row_list(payment_record):
     ]
 
 
+def payment_record2():
+    return payment_record2_row_list, [
+            'پرداخت کننده',
+            # 'order',
+            # 'payment_type',
+            'مقدار',
+            'موفق',
+            'شارژ',
+            'کد تراکنش',
+            # 'tref',
+            # 'payment_order_guid',
+            'شماره درخواست درگاه',
+            # 'payment_link',
+            'برگشت',
+            'لاگ',
+            'ساخته شده در',
+            'ویرایش شده در'
+        ], 'Payment2'
+
+
+def payment_record_row_list(payment_record):
+    datetime_format = '%Y/%m/%d-%H:%M:%S'
+
+    return [
+        payment_record.payer.get_full_name(),
+        # payment_record.order,
+        # payment_record.payment_type,
+        payment_record.amount,
+        payment_record.successful,
+        payment_record.charged,
+        payment_record.transaction_code,
+        payment_record.tref,
+        # payment_record.payment_order_guid,
+        payment_record.payment_order_id,
+        # payment_record.payment_link,
+        payment_record.called_back,
+        payment_record.log_text,
+        payment_record.created_at.strftime(datetime_format) if payment_record.created_at else None,
+        payment_record.updated_at.strftime(datetime_format) if payment_record.updated_at else None,
+    ]
+
+
 def payment_record():
     return payment_record_row_list, [
             'پرداخت کننده',
@@ -88,7 +130,7 @@ def payment_record():
             'موفق',
             'شارژ',
             'کد تراکنش',
-            # 'tref',
+            'کد مرجع بانک',
             # 'payment_order_guid',
             'شماره درخواست درگاه',
             # 'payment_link',
