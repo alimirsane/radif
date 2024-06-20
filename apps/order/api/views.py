@@ -363,6 +363,7 @@ class PaymentRecordManagerListView(ListAPIView):
     """
     # permission_classes = [IsAuthenticated, IsExpertOrAdminOrManager]
     serializer_class = PaymentRecordListSerializer
+    queryset = PaymentRecord.objects.all().order_by("-created_at")
 
     pagination_class = DefaultPagination
     # filterset_fields = {'event': ['exact', 'in'],
@@ -372,7 +373,7 @@ class PaymentRecordManagerListView(ListAPIView):
     #                     }
     def get_queryset(self):
         queryset = PaymentRecord.objects.all()
-        return queryset.distinct().order_by("-created_at")
+        return queryset.order_by("-created_at")
 
 
     def get(self, request, *args, **kwargs):
