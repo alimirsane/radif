@@ -191,18 +191,18 @@ class RequestChangeStatusAPIView(UpdateAPIView):
     #     return self.request.user.requests.all()
 
 class OwnedRequestListAPIView(ListCreateAPIView):
-    queryset = Request.objects.all().order_by('-created_at')
+    queryset = Request.objects.filter(is_completed=True).order_by('-created_at')
     serializer_class = RequestListSerializer
 
     def get_queryset(self):
-        return self.request.user.requests.all().order_by('-created_at')
+        return self.request.user.requests.filter(is_completed=True).order_by('-created_at')
 
 class OwnedRequestDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Request.objects.all()
     serializer_class = RequestDetailSerializer
 
     def get_queryset(self):
-        return self.request.user.requests.all().order_by('-created_at')
+        return self.request.user.requests.filter(is_completed=True).order_by('-created_at')
 
 
 class DepartmentListAPIView(ListCreateAPIView):
