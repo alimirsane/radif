@@ -149,9 +149,9 @@ class RequestListAPIView(ListCreateAPIView):
                                           self.required_access_levels, self.request.method)
         queryset = []
         if filter_key == 'all':
-            queryset = Request.objects.all()
+            queryset = Request.objects.filter(is_completed=True)
         elif filter_key == 'owner':
-            queryset = Request.objects.filter(experiment__laboratory__technical_manager=self.request.user) | Request.objects.filter(experiment__laboratory__operator=self.request.user)
+            queryset = Request.objects.filter(is_completed=True, experiment__laboratory__technical_manager=self.request.user) | Request.objects.filter(is_completed=True, experiment__laboratory__operator=self.request.user)
         # elif filter_key == 'receptor':
         #     queryset = Request.objects.filter(is_completed=True)
         #         # .exclude(request_status__step__name__in=['در حال انجام', 'تکمیل شده', 'رد شده'])
