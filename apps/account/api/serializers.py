@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework.authtoken.models import Token
 
 from apps.account.models import User, EducationalLevel, EducationalField, Role, AccessLevel, GrantRequest, \
     GrantTransaction, Notification, GrantRecord
@@ -39,9 +39,15 @@ class UserSummerySerializer(serializers.ModelSerializer):
 
 
 class UserBusinessLinkedAccountsSerializer(serializers.ModelSerializer):
+
+    token = serializers.SerializerMethodField(read_only=True)
+    def get_token(self, obj):
+        token, created = Token.objects.get_or_create(user=obj)
+        return str(token)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'company_national_id', 'company_name']
+        fields = ['id', 'username', 'company_national_id', 'company_name', 'token']
 
 
 class UserSerializer(serializers.ModelSerializer):
