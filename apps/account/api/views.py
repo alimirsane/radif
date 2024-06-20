@@ -17,7 +17,7 @@ from SLIMS import renderers
 from apps.account.api.serializers import UserSerializer, UserRegistrationSerializer, EducationalFieldSerializer, \
     EducationalLevelSerializer, AccessLevelSerializer, RoleSerializer, GrantTransactionSerializer, \
     GrantRequestSerializer, GrantRequestApprovedSerializer, UserProfileSerializer, NotificationSerializer, \
-    NotificationReadSerializer, GrantRecordSerializer, UPOAuthTokenSerializer
+    NotificationReadSerializer, GrantRecordSerializer, UPOAuthTokenSerializer, UserBusinessLinkedAccountsSerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
     GrantRequest, OTPserver, Notification, GrantRecord
 from ..permissions import AccessLevelPermission, query_set_filter_key
@@ -55,7 +55,6 @@ class UserListAPIView(ListCreateAPIView):
             return Response({'error': 'Export failed'}, status=500)
         else:
             return get_list
-
 
 
 class UserDetailAPIView(RetrieveUpdateDestroyAPIView):
@@ -144,11 +143,14 @@ class ObtainAuthToken(ObtainAuthT):
         user.last_login = datetime.datetime.now()
         user.save()
 
+        linked_business_accounts = UserBusinessLinkedAccountsSerializer(instance=user)
+
         return Response({'token': token.key,
                          'name': user.get_full_name(),
                          'user_type': user.user_type,
                          'user_id': user.id,
                          'role': self.role(user),
+                         'business_accounts': linked_business_accounts.data,
                          })
 
         # return Response({'token': token.key})

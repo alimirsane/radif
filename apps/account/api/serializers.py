@@ -55,7 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
     access_level_obj = AccessLevelSerializer(source='access_level', read_only=True, many=True)
     access_levels_dict = serializers.SerializerMethodField(read_only=True)
     role_obj = RoleSerializer(source='role', read_only=True, many=True)
-    bussiness_accounts = UserBusinessLinkedAccountsSerializer(source='linked_to_users', read_only=True, many=True)
+    # business_accounts = UserBusinessLinkedAccountsSerializer(source='linked_to_users', read_only=True, many=True)
 
     class Meta:
         model = User
