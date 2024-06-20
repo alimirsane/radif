@@ -40,9 +40,9 @@ class UserListAPIView(ListCreateAPIView):
         filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
         queryset = []
         if filter_key == 'all':
-            queryset = User.objects.all()
+            queryset = User.objects.filter(user_type='staff')
         elif filter_key == 'owner':
-            queryset = User.objects.filter(laboratory__technical_manager=self.request.user)
+            queryset = User.objects.filter(user_type='staff')
         return queryset
 
     def get(self, request, *args, **kwargs):
