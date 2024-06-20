@@ -22,7 +22,7 @@ class FormSerializer(serializers.ModelSerializer):
         model = Form
         exclude = []
 
-    experiment_objs = ExperimentSummerySerializer(source='experiments', many=True)
+    experiment_objs = ExperimentSummerySerializer(source='experiments', many=True, read_only=True)
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
