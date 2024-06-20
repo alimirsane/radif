@@ -372,7 +372,7 @@ class PaymentRecordManagerListView(ListAPIView):
     #                     }
     def get_queryset(self):
         queryset = PaymentRecord.objects.all()
-        return queryset.distinct().order_by("-created_at")
+        return queryset.order_by("-created_at")
 
 
     def get(self, request, *args, **kwargs):

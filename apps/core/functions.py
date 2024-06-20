@@ -138,7 +138,7 @@ def payment_record():
             'لاگ',
             'ساخته شده در',
             'ویرایش شده در'
-        ], 'Payment'
+        ], 'PaymentRecord'
 
 
 def grant_request_row_list(grant_request):
