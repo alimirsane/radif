@@ -143,7 +143,7 @@ class ObtainAuthToken(ObtainAuthT):
         user.last_login = datetime.datetime.now()
         user.save()
 
-        linked_business_accounts = UserBusinessLinkedAccountsSerializer(instance=user)
+        linked_business_accounts = UserBusinessLinkedAccountsSerializer(instance=user.linked_to_users.all())
 
         return Response({'token': token.key,
                          'name': user.get_full_name(),
