@@ -7,7 +7,8 @@ from rest_framework.generics import get_object_or_404
 # from apps.account.models import Profile
 # from apps.account.api.serializers import ProfileSummeryTicketSerializer
 # from applications.account.serializers import ProfileSerializer, ProfileSummerySerializer, ProfileSummeryTicketSerializer
-from apps.lab.api.serializers import UserSummerySerializer
+from apps.account.api.serializers import UserProfileSerializer
+from apps.lab.api.serializers import UserSummerySerializer, RequestDetailSerializer
 from apps.order.models import Order, PromotionCode, Transaction, PaymentRecord, Ticket
 # from apps.service.models import EventTicket, Service
 from apps.order.sharifpayment import SharifPayment
@@ -160,6 +161,7 @@ class PaymentSummarySerializer(serializers.ModelSerializer):
 class PaymentRecordListSerializer(serializers.ModelSerializer):
     order_obj = serializers.SerializerMethodField(read_only=True)
     payer_obj = UserSummerySerializer(read_only=True, source='payer')
+    request_obj = RequestDetailSerializer(read_only=True, source='request')
 
     def get_order_obj(self, obj):
         order = obj.order
@@ -182,6 +184,21 @@ class PromotionCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PromotionCode
         fields = ['code']
+
+
+class PaymentRecordInvoiceSerializer(serializers.ModelSerializer):
+    order_obj = serializers.SerializerMethodField(read_only=True)
+    payer_obj = UserProfileSerializer(read_only=True, source='payer')
+    request_obj = RequestDetailSerializer(read_only=True, source='order.request')
+
+    def get_order_obj(self, obj):
+        order = obj.order
+        return OrderDetailSerializer(order, context=self.context).data
+
+    class Meta:
+        model = PaymentRecord
+        exclude = ['log_text']
+
 
 
 class AddPromotionCodeSerializer(serializers.ModelSerializer):

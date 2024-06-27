@@ -20,8 +20,8 @@ from apps.account.permissions import IsExpertOrAdminOrManager
 from apps.order.models import Order, PaymentRecord, Transaction, PromotionCode, Ticket
 from apps.order.api.serializers import OrderSerializer, OrderDetailSerializer, OrderIssueSerializer, \
     OrderCancelSerializer, OrderPaymentSerializer, PaymentRecordSerializer, OrderBoughtSerializer, \
-    PromotionCodeSerializer,  PaymentSummarySerializer, \
-    PaymentRecordListSerializer, PaymentRecordConfirmSerializer
+    PromotionCodeSerializer, PaymentSummarySerializer, \
+    PaymentRecordListSerializer, PaymentRecordConfirmSerializer, PaymentRecordInvoiceSerializer
 # PromotionCodeStrSerializer,TransactionSerializer
 # TicketSerializer, SubscriptionSerializer
 # from apps.order.zarrinpal import ZarrinPalConfirmSerializer, ZarrinPalSerializer
@@ -375,6 +375,10 @@ class PaymentRecordManagerListView(ListAPIView):
         queryset = PaymentRecord.objects.all()
         return queryset.order_by("-created_at")
 
+    def get_serializer_class(self):
+        if self.request.query_params.get('invoice_print', 'False').lower() == 'true':
+            return PaymentRecordInvoiceSerializer
+        return PaymentRecordListSerializer
 
     def get(self, request, *args, **kwargs):
         get_list = self.list(request, *args, **kwargs)
