@@ -256,6 +256,19 @@ class Request(models.Model):
         self.price = price
         self.save()
 
+    def current_month_counter(self):
+        now = jdatetime.date.today()
+        start_of_month = jdatetime.datetime(now.year, now.month, 1)
+
+        if now.month == 12:
+            end_of_month = jdatetime.datetime(now.year + 1, 1, 1) - jdatetime.timedelta(days=1)
+        else:
+            end_of_month = jdatetime.datetime(now.year, now.month + 1, 1) - jdatetime.timedelta(days=1)
+
+        start_of_month_gregorian = start_of_month.togregorian()
+        end_of_month_gregorian = end_of_month.togregorian().replace(hour=23, minute=59, second=59)
+
+        return Request.objects.filter(created_at__range=(start_of_month_gregorian, end_of_month_gregorian)).count()
 
 # class Sample(models.Model):
 #     name = models.CharField(max_length=255)
@@ -309,6 +322,14 @@ class FormResponse(models.Model):
 
     def owners(self):
         return self.request.owners()
+
+    def set_form_number(self):
+        request_formresponses = self.request.formresponse.all().order_by('id')
+        counter = 1
+        for request_formresponse in request_formresponses:
+            request_formresponse.form_number = f'{self.request.request_number.replace("-","")}{counter:03d}'
+            request_formresponse.save()
+            counter += 1
 
 class Workflow(models.Model):
     name = models.CharField(max_length=100, verbose_name='نام گردش کار')

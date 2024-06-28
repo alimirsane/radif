@@ -10,19 +10,15 @@ from apps.lab.models import FormResponse, Request, Status
 @receiver(post_save, sender=FormResponse)
 def create_form_number(sender, instance, created, **kwargs):
     if created or not instance.form_number:
-        date_code = jdatetime.datetime.now().strftime('%y%m')
-        request_code = str(instance.request.id)
-        object_id = str(instance.id)
-        instance.form_number = f'{date_code}-{request_code}-{object_id}'
-        instance.save()
+        instance.set_form_number()
 
 
 @receiver(post_save, sender=Request)
 def create_form_number(sender, instance, created, **kwargs):
     if created or not instance.request_number:
         date_code = jdatetime.datetime.now().strftime('%Y%m')
-        object_id = str(instance.id)
-        instance.request_number = f'{date_code}-{object_id}'
+        mounth_code = instance.current_month_counter() + 1
+        instance.request_number = f'{date_code[1:]}-{mounth_code:04d}'
         instance.save()
     # if created:
     #     Notification.objects.create(user=instance.owner, type='info', title='تغییر وضعیت درخواست',
