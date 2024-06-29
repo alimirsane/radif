@@ -15,8 +15,9 @@ from apps.order.models import PaymentRecord
 def labsnet(nid, type, service):
     data = {"user_name": "sharif_uni", "password": "sharif_uni", "national_code": nid, "type": type, "services": service}
     response = requests.post('https://labsnet.ir/api/credit_list', data=data, verify=False)
-    response_text = '{"customer_name":"\\u0645\\u062d\\u0633\\u0646 \\u0686\\u06af\\u0646\\u06cc","credits":[]}'
-    json.loads(response_text)
+    # response_text = '{"customer_name":"\\u0645\\u062d\\u0633\\u0646 \\u0686\\u06af\\u0646\\u06cc","credits":[]}'
+    response_text = response.text
+    return JsonResponse(json.loads(response_text))
 
 
 def export_excel(queryset):
