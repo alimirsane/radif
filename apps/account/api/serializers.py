@@ -249,6 +249,12 @@ class GrantRequestApprovedSerializer(serializers.ModelSerializer):
         return instance
 
 
+class LansnetGrantSerializer(serializers.Serializer):
+    national_id = serializers.CharField(max_length=20, write_only=True)
+    type = serializers.ChoiceField(choices=('1', '2'), write_only=True)
+    services = serializers.CharField(max_length=100, write_only=True)
+
+
 class OTPRequestSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15)
 

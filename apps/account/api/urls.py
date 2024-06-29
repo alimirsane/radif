@@ -38,6 +38,7 @@ urlpatterns = [
     path('grant-record/', GrantRecordListAPIView.as_view(), name='grant-record-list'),
     path('grant-record/<int:pk>/', GrantRecordDetailAPIView.as_view(), name='grant-record-detail'),
 
+    path('grant-labsnet/', CheckLabsnetGrantAPIView.as_view(), name='grant-labsnet-list'),
     path('grant-request/', GrantRequestListAPIView.as_view(), name='grant-request-list'),
     path('grant-request/<int:pk>/', GrantRequestDetailAPIView.as_view(), name='grant-request-detail'),
     path('grant-request/<int:pk>/approved/', GrantRequestApprovedAPIView.as_view(), name='grant-request-detail-approved'),

@@ -17,11 +17,12 @@ from SLIMS import renderers
 from apps.account.api.serializers import UserSerializer, UserRegistrationSerializer, EducationalFieldSerializer, \
     EducationalLevelSerializer, AccessLevelSerializer, RoleSerializer, GrantTransactionSerializer, \
     GrantRequestSerializer, GrantRequestApprovedSerializer, UserProfileSerializer, NotificationSerializer, \
-    NotificationReadSerializer, GrantRecordSerializer, UPOAuthTokenSerializer, UserBusinessLinkedAccountsSerializer
+    NotificationReadSerializer, GrantRecordSerializer, UPOAuthTokenSerializer, UserBusinessLinkedAccountsSerializer, \
+    LansnetGrantSerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
     GrantRequest, OTPserver, Notification, GrantRecord
 from ..permissions import AccessLevelPermission, query_set_filter_key
-from ...core.functions import export_excel
+from ...core.functions import export_excel, labsnet
 from ...core.paginations import DefaultPagination
 
 
@@ -372,6 +373,17 @@ class GrantRequestApprovedAPIView(UpdateAPIView):
     permission_classes = [AccessLevelPermission]
     required_access_levels = ['update_all_grantrequest', 'update_owner_grantrequest']
     view_key = 'grantrequest'
+
+
+class CheckLabsnetGrantAPIView(CreateAPIView):
+    serializer_class = LansnetGrantSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        sdata = serializer.validated_data
+        response = labsnet(sdata['national_id'], sdata['type'], sdata['services'])
+        return response
 
 
 from rest_framework.views import APIView
