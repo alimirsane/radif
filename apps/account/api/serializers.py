@@ -153,6 +153,7 @@ class UserBusinessSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(validated_data.get('password'))
         business_serializer = self.Meta.model.objects.create(**validated_data)
         business_serializer.linked_users.set([personal_account])
+        business_serializer.set_customer_role()
 
         return business_serializer
 

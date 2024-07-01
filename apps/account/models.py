@@ -120,7 +120,10 @@ class User(AbstractUser):
             elif self.student_id:
                 self.role.add(Role.objects.get(role_key='student'))
             self.role.add(Role.objects.get(role_key='customer'))
-
+        elif self.user_type == 'customer' and self.account_type == 'business':
+            if False:
+                self.role.add(Role.objects.get(role_key='student'))
+            self.role.add(Role.objects.get(role_key='customer'))
 
 class Role(models.Model):
     name = models.CharField(_("name"), max_length=100)
