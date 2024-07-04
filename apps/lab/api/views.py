@@ -168,6 +168,22 @@ class RequestListAPIView(ListCreateAPIView):
                 full_url = self.request.build_absolute_uri(file_url)
                 return Response({'file_url': full_url})
             return Response({'error': 'Export failed'}, status=500)
+        elif self.request.query_params.get('step_counter', 'False').lower() == 'true':
+            qs = get_list.data.serializer.instance
+            try:
+                step_list = []
+                for step in qs.first().request_status.all().first().step.workflow.steps.all():
+                    step_dict = {
+                        'id': step.id,
+                        'name': step.name,
+                        # 'request_counter': qs.filter(request_status__id=step.id, request_status__accept=False, request_status__reject=False).count()
+                        'request_counter': qs.filter(request_status__step__id=step.id, request_status__accept=False,
+                                                     request_status__reject=False).count()
+                    }
+                    step_list.append(step_dict)
+                return Response(step_list)
+            except:
+                return Response({'error': 'request failed'}, status=500)
         else:
             return get_list
 
