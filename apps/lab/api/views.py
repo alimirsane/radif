@@ -163,7 +163,7 @@ class RequestListAPIView(ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         get_list = self.list(request, *args, **kwargs)
         if self.request.query_params.get('export_excel', 'False').lower() == 'true':
-            file_url = export_excel(self.queryset)
+            file_url = export_excel(get_list.data.serializer.instance)
             if file_url:
                 full_url = self.request.build_absolute_uri(file_url)
                 return Response({'file_url': full_url})
