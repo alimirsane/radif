@@ -46,13 +46,15 @@ class RequestFilter(django_filters.FilterSet):
 
     owner_first_name = django_filters.CharFilter(field_name='owner__first_name', lookup_expr='icontains', label='filter by owner first name')  # lookup_expr='icontains',
     owner_last_name = django_filters.CharFilter(field_name='owner__last_name', lookup_expr='icontains', label='filter by owner last name')  # lookup_expr='icontains',
+    owner_national_id = django_filters.CharFilter(field_name='owner__national_id', lookup_expr='icontains', label='filter by owner national id')  # lookup_expr='icontains',
 
     owner_fullname = django_filters.CharFilter(method='owner_fullname_search')
     search = django_filters.CharFilter(method='request_search')
 
     class Meta:
         model = Request
-        fields = ['experiment', 'search']
+        fields = ['experiment', 'search', 'experiment_name', 'experiment_name_en', 'request_number', 'owner_first_name',
+                  'owner_last_name', 'owner_fullname', 'owner_national_id']
 
     def owner_fullname_search(self, queryset, name, value):
         qs = None
