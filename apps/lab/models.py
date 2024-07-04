@@ -270,6 +270,9 @@ class Request(models.Model):
 
         return Request.objects.filter(created_at__range=(start_of_month_gregorian, end_of_month_gregorian)).count()
 
+    def get_latest_order(self):
+        return self.orders.order_by('-created_at').first()
+
 # class Sample(models.Model):
 #     name = models.CharField(max_length=255)
 #     type = models.CharField(max_length=255)

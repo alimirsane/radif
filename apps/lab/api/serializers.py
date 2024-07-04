@@ -7,6 +7,7 @@ from apps.account.models import User
 from apps.form.api.serializers import FormSerializer
 from apps.lab.models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, \
     Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult
+from apps.order.models import PaymentRecord
 
 
 class UserSummerySerializer(serializers.ModelSerializer):
@@ -234,6 +235,14 @@ class RequestListSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class OrderPaymentRecordSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PaymentRecord
+        fields = ['amount', 'payer', 'order', 'transaction_code', 'payment_order_guid', 'payment_order_id', 'payment_link']
+
+
+
 class RequestDetailSerializer(serializers.ModelSerializer):
     result_objs = RequestDetailResultSerializer(read_only=True, source='request_results', many=True)
     owner_obj = UserSerializer(read_only=True, source='owner')
@@ -243,6 +252,8 @@ class RequestDetailSerializer(serializers.ModelSerializer):
     status_objs = StatusSerializer(read_only=True, source='request_status', many=True)
 
     forms = RequestDetailFormResponseSerializer(many=True, read_only=True, source='formresponse')
+
+    payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order.payment_records')
 
     class Meta:
         model = Request
