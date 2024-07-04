@@ -253,7 +253,7 @@ class RequestDetailSerializer(serializers.ModelSerializer):
 
     forms = RequestDetailFormResponseSerializer(many=True, read_only=True, source='formresponse')
 
-    payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order.payment_records')
+    payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order_payment_records')
 
     class Meta:
         model = Request
