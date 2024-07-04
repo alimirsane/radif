@@ -21,6 +21,7 @@ from apps.account.api.serializers import UserSerializer, UserRegistrationSeriali
     LansnetGrantSerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
     GrantRequest, OTPserver, Notification, GrantRecord
+from .filters import UserFilter
 from ..permissions import AccessLevelPermission, query_set_filter_key
 from ...core.functions import export_excel, labsnet
 from ...core.paginations import DefaultPagination
@@ -30,6 +31,7 @@ class UserListAPIView(ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     search_fields = ['username', 'email', 'first_name', 'last_name']
+    filterset_class = UserFilter
 
 
     # permission and queryset
