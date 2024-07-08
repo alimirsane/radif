@@ -167,7 +167,9 @@ class Request(models.Model):
     experiment = models.ForeignKey('Experiment', on_delete=models.PROTECT, verbose_name='آزمایش')
     parameter = models.ManyToManyField('Parameter', verbose_name='پارامتر')
     price = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
-    
+
+    discount = models.PositiveIntegerField(blank=True, null=True, default=0)
+
     is_urgent = models.BooleanField(default=False)
     
     # STATUS_CHOICES = (
@@ -206,12 +208,16 @@ class Request(models.Model):
         else:
             return self.set_first_step()
 
-    def step_button_action(self, action, description, action_by):
+    def step_button_action(self, action, description, action_by, value):
         if action in ['next_step', 'previous_step', 'reject_step']:
             self.change_status(action, description, action_by)
             self.save()
         if action in ['view_result', 'print_result', 'upload_result']:
             pass
+        if action in ['request_dicount']:
+            self.discount = value
+            self.save()
+
 
     def change_status(self, action, description, action_by):
         lastest_status = self.lastest_status()

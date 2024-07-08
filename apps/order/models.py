@@ -126,6 +126,9 @@ class Order(models.Model):
             self.promotion_code.used_count += 1
             self.promotion_code.save()
 
+        if self.request.discount != 0:
+            amount -= amount * self.request.discount / 100
+
         self.amount = amount
 
     def process(self, use_balance=True):
