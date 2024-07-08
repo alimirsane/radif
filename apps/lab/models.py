@@ -439,6 +439,7 @@ class WorkflowStepButton(models.Model):
         ('view_result', 'View Result'),
         ('print_result', 'Print Result'),
         ('upload_result', 'Upload Result'),
+        ('request_discount', 'Request Discount'),
     )
 
     action_slug = models.CharField(max_length=20, default='print_result', choices=ACTION_CHOICES, verbose_name='کد عملگر')
