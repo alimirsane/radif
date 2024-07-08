@@ -144,7 +144,7 @@ class StatusSerializer(serializers.ModelSerializer):
 
 
 class RequestButtonActionSerializer(serializers.ModelSerializer):
-    action = serializers.ChoiceField(choices=['next_step', 'previous_step', 'reject_step', 'view_result', 'print_result', 'upload_result'], write_only=True)
+    action = serializers.ChoiceField(choices=['next_step', 'previous_step', 'reject_step', 'view_result', 'print_result', 'upload_result', 'request_discount'], write_only=True)
     description = serializers.CharField(max_length=100, write_only=True, required=False)
     # action_by = UserSerializer(write_only=True)
     value = serializers.CharField(write_only=True, required=False)
@@ -152,7 +152,7 @@ class RequestButtonActionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
         # fields = ['description', 'action', 'action_by']
-        fields = ['description', 'action']
+        fields = ['description', 'action', 'value']
 
     def update(self, instance, validated_data):
         # validated_data['action_by'] = self.context['request'].user
