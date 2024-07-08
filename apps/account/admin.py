@@ -6,7 +6,6 @@ from .models import User, EducationalField, EducationalLevel, AccessLevel, Role,
 from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
 import re
-from ..lab.signals import create_form_number
 
 
 class UserAdmin(UAdmin):

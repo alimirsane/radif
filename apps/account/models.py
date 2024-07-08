@@ -7,8 +7,7 @@ from django.utils import timezone
 import requests
 import json
 import datetime
-from django.utils import timezone
-
+from django.db import transaction
 
 class EducationalField(models.Model):
     name = models.CharField(max_length=100)
@@ -145,6 +144,7 @@ class AccessLevel(models.Model):
 class GrantTransaction(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_transactions', verbose_name="فرستنده")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_transactions', verbose_name="گیرنده")
+    grant_record = models.ForeignKey('GrantRecord', on_delete=models.PROTECT, null=True, blank=True)
     amount = models.BigIntegerField(default=0, verbose_name="مقدار", help_text='مقدار به ریال')
     datetime = models.DateTimeField(default=timezone.now, verbose_name="زمان")
     expiration_date = models.DateField(null=True, blank=True, verbose_name="انقضا")
@@ -158,23 +158,8 @@ class GrantTransaction(models.Model):
     def __str__(self):
         return str(self.sender) + " -> " + str(self.receiver) + " : " + str(self.amount) + " : " + str(self.datetime) + " : " + str(self.expiration_date)
 
-    def check_amount(self, amount):
-        return self.sender.research_grant >= amount
-
     def pay(self):
-        try:
-            if self.check_amount(self.amount):
-                self.sender.research_grant -= self.amount
-                self.receiver.research_grant += self.amount
-                self.status = 'success'
-                self.sender.save()
-                self.receiver.save()
-                self.save()
-            else:
-                self.status = 'failure'
-                self.save()
-        except:
-            self.status = 'failure'
+            self.status = 'success'
             self.save()
 
     def owners(self):
@@ -186,19 +171,17 @@ class GrantRecord(models.Model):
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_records', verbose_name="گیرنده")
     amount = models.BigIntegerField(default=0, verbose_name="مقدار", help_text='مقدار به ریال')
     expiration_date = models.DateField(null=True, blank=True, verbose_name="انقضا")
-    # STATUS_CHOICES = (
-    #     ('unknown', 'Unknown'),
-    #     ('success', 'Success'),
-    #     ('failure', 'Failure'),
-    # )
-    # status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='unknown')
     created_at = models.DateTimeField(default=timezone.now, verbose_name="زمان")
 
     def __str__(self):
         return str(self.receiver) + " : " + str(self.amount) + " : " + str(self.expiration_date)
 
-    # def check_amount(self, amount):
-    #     return self.sender.research_grant >= amount
+    def get_total_transactions(self):
+        return self.granttransaction_set.aggregate(total_amount=models.Sum('amount'))['total_amount'] or 0
+
+    def has_sufficient_funds(self, amount):
+        total_transactions = self.get_total_transactions()
+        return self.amount >= total_transactions + amount
 
     # def pay(self):
     #     try:
@@ -223,12 +206,14 @@ class GrantRecord(models.Model):
 class GrantRequest(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_requests', verbose_name="فرستنده")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_requests', verbose_name="گیرنده")
-    requested_amount = models.BigIntegerField(default=0, verbose_name="مقدار درخواستی", help_text='مثدار به ریال')
-    approved_amount = models.BigIntegerField(default=0, null=True, blank=True, verbose_name="مقدار دریافتی", help_text='مثدار به ریال')
+    approved_grant_record = models.ForeignKey(GrantRecord, on_delete=models.PROTECT, null=True, blank=True)
+    approved_amount = models.BigIntegerField(default=0, null=True, blank=True, verbose_name="مقدار دریافتی", help_text='مقدار به ریال')
     approved_datetime = models.DateTimeField(null=True, blank=True, verbose_name="زمان تایید")
+
+    requested_amount = models.BigIntegerField(default=0, verbose_name="مقدار درخواستی", help_text='مقدار به ریال')
     datetime = models.DateTimeField(default=timezone.now, verbose_name="زمان")
     expiration_date = models.DateField(null=True, blank=True, verbose_name="انقضا")
-    transaction = models.ForeignKey(GrantTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name='grant_request', verbose_name="انقضا")
+    transaction = models.ForeignKey(GrantTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name='grant_request', verbose_name="گرنت تراکنش")
     STATUS_CHOICES = (
         ('sent', 'Sent'),
         ('seen', 'Seen'),
@@ -242,22 +227,61 @@ class GrantRequest(models.Model):
     def __str__(self):
         return str(self.sender) + " -> " + str(self.receiver) + " : " + str(self.requested_amount) + " : " + str(self.approved_amount) + " : " + str(self.datetime) + " : " + str(self.expiration_date) + " : " + str(self.status)
 
-    def approve(self, approved_amount, expiration_date):
+    def approve(self, approved_amount, expiration_date, approved_grant_record):
         try:
-            self.approved_amount = approved_amount
-            self.expiration_date = expiration_date
-            self.approved_datetime = timezone.now()
-            if self.transaction:
-                self.transaction.amount = approved_amount
-            else:
-                self.transaction = GrantTransaction.objects.create(sender=self.receiver, receiver=self.sender,
-                                                                   amount=self.approved_amount,
-                                                                   expiration_date=expiration_date)
-            self.transaction.pay()
-            self.status = 'approved'
+            expiration_date = approved_grant_record.expiration_date
+            with transaction.atomic():
+                # Check if the GrantRecord is still valid
+                if approved_grant_record.expiration_date and approved_grant_record.expiration_date < timezone.now().date():
+                    raise ValueError("GrantRecord has expired and cannot be used for this request.")
+
+                # Check if the GrantRecord has sufficient funds
+                if not approved_grant_record.has_sufficient_funds(approved_amount):
+                    raise ValueError("GrantRecord does not have sufficient funds.")
+
+                self.approved_amount = approved_amount
+                self.expiration_date = expiration_date
+                self.approved_grant_record = approved_grant_record
+                self.approved_datetime = timezone.now()
+
+                if self.transaction:
+                    self.transaction.amount = approved_amount
+                else:
+                    self.transaction = GrantTransaction.objects.create(
+                        sender=self.receiver,
+                        receiver=self.sender,
+                        amount=self.approved_amount,
+                        expiration_date=expiration_date,
+                        grant_record=approved_grant_record
+                    )
+
+                self.transaction.pay()
+                self.status = 'approved'
+                self.save()
+        except Exception as e:
+            self.status = 'failed'
             self.save()
-        except:
-            pass
+            print(f"Error in approve: {e}")
+
+    #
+    # def approve(self, approved_amount, expiration_date):
+    #     try:
+    #         expiration_date = self.approved_grant_record.expiration_date
+    #         self.approved_amount = approved_amount
+    #         self.expiration_date = expiration_date
+    #         self.approved_datetime = timezone.now()
+    #         if self.transaction:
+    #             self.transaction.amount = approved_amount
+    #         else:
+    #             self.transaction = GrantTransaction.objects.create(sender=self.receiver, receiver=self.sender,
+    #                                                                amount=self.approved_amount,
+    #                                                                expiration_date=expiration_date,
+    #                                                                grant_record=self.approved_grant_record)
+    #         self.transaction.pay()
+    #         self.status = 'approved'
+    #         self.save()
+    #     except:
+    #         pass
 
     def owners(self):
         return [self.sender, self.receiver]

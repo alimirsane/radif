@@ -232,21 +232,22 @@ class GrantRequestSerializer(serializers.ModelSerializer):
 class GrantRequestApprovedSerializer(serializers.ModelSerializer):
     class Meta:
         model = GrantRequest
-        fields = ('approved_amount', 'expiration_date')
+        fields = ('approved_amount', 'expiration_date', 'approved_grant_record')
 
     def validate(self, attrs):
         if attrs.get('approved_amount') < 50000:
             raise serializers.ValidationError("The approved amount must be greater than 50,000 rials.")
-        if self.instance.receiver.research_grant < attrs.get('approved_amount'):
-            raise serializers.ValidationError("You don't have enough research grant.")
-        if datetime.date.today() > attrs.get('expiration_date'):
-            raise serializers.ValidationError("The request expired date is invalid")
+        if not attrs.get('approved_grant_record').has_sufficient_funds(attrs.get('approved_amount')):
+            raise serializers.ValidationError("You don't have enough grant in this grant record.")
+        if datetime.date.today() > attrs.get('approved_grant_record').expiration_date:
+            raise serializers.ValidationError("The grant record expired!")
         return attrs
 
     def update(self, instance, validated_data):
         approved_amount = validated_data.get('approved_amount', None)
         expiration_date = validated_data.get('expiration_date', None)
-        instance.approve(approved_amount, expiration_date)
+        approved_grant_record = validated_data.get('approved_grant_record', None)
+        instance.approve(approved_amount, expiration_date, approved_grant_record)
         return instance
 
 
