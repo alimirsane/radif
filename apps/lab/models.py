@@ -209,15 +209,16 @@ class Request(models.Model):
             return self.set_first_step()
 
     def step_button_action(self, action, description, action_by, value):
-        if action in ['next_step', 'previous_step', 'reject_step']:
+        if action in ['next', 'previous', 'reject']:
             self.change_status(action, description, action_by)
             self.save()
-        if action in ['view_result', 'print_result', 'upload_result']:
+        elif action in ['view_result', 'print_result', 'upload_result']:
             pass
-        if action in ['request_dicount']:
+        elif action in ['request_discount']:
             self.discount = value
             self.save()
-
+        else:
+            pass
 
     def change_status(self, action, description, action_by):
         lastest_status = self.lastest_status()

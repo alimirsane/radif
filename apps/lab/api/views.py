@@ -9,7 +9,7 @@ from apps.lab.api.serializers import ExperimentSerializer, LaboratorySerializer,
     RequestListSerializer, RequestDetailSerializer, DepartmentSerializer, LaboratoryDetailSerializer, \
     ExperimentDetailSerializer, \
     FormResponseSerializer, LabTypeSerializer, RequestChangeStatusSerializer, WorkflowSerializer, \
-    RequestResultSerializer
+    RequestResultSerializer, RequestButtonActionSerializer
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -201,7 +201,8 @@ class RequestDetailAPIView(RetrieveUpdateDestroyAPIView):
 
 class RequestChangeStatusAPIView(UpdateAPIView):
     queryset = Request.objects.all()
-    serializer_class = RequestChangeStatusSerializer
+    serializer_class = RequestButtonActionSerializer
+    # serializer_class = RequestChangeStatusSerializer
 
     # def get_queryset(self):
     #     return self.request.user.requests.all()

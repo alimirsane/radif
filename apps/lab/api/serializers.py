@@ -144,20 +144,15 @@ class StatusSerializer(serializers.ModelSerializer):
 
 
 class RequestButtonActionSerializer(serializers.ModelSerializer):
-    action = serializers.ChoiceField(choices=['next_step', 'previous_step', 'reject_step', 'view_result', 'print_result', 'upload_result', 'request_discount'], write_only=True)
+    action = serializers.CharField(write_only=True)
     description = serializers.CharField(max_length=100, write_only=True, required=False)
-    # action_by = UserSerializer(write_only=True)
     value = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Request
-        # fields = ['description', 'action', 'action_by']
         fields = ['description', 'action', 'value']
 
     def update(self, instance, validated_data):
-        # validated_data['action_by'] = self.context['request'].user
-        # validated_data['action_by'] = User.objects.get(id=1)
-        # action_by = User.objects.get(id=1)
         action_by = self.context['request'].user
         description = validated_data.pop('description', None)
         action = validated_data.pop('action', None)
@@ -165,18 +160,7 @@ class RequestButtonActionSerializer(serializers.ModelSerializer):
 
         instance.step_button_action(action, description, action_by, value)
 
-        # obj = super().update(instance, validated_data)
-        # if action in ['next_step','previous_step','reject_step']:
-        #     instance.change_status(action, description, action_by)
-        #     instance.save()
-        # if action in ['view_result','print_result','upload_result']:
-
-        # obj.change_status(action)
-        # obj.save()
         return RequestDetailSerializer(instance)
-
-
-
 
 
 class RequestChangeStatusSerializer(serializers.ModelSerializer):
