@@ -487,7 +487,7 @@ class NotificationList(ListAPIView):
 
     # permission and queryset
     permission_classes = [AccessLevelPermission]
-    required_access_levels = ['view_all_notification', 'view_owner_notification']
+    required_access_levels = ['view_owner_notification']
     view_key = 'notification'
 
     def get_queryset(self):
@@ -517,7 +517,7 @@ class NotificationReadDetail(UpdateAPIView):
 
     # permission and queryset
     permission_classes = [AccessLevelPermission]
-    required_access_levels = ['update_all_notification', 'update_owner_notification']
+    required_access_levels = ['update_owner_notification']
     view_key = 'notification'
 
     def get_queryset(self):
@@ -571,6 +571,6 @@ class NotificationDetail(RetrieveUpdateDestroyAPIView):
 
     # permission and queryset
     permission_classes = [AccessLevelPermission]
-    required_access_levels = ['view_all_notification', 'view_owner_notification', 'update_all_notification', 'update_owner_notification', 'delete_all_notification', 'delete_owner_notification']
+    required_access_levels = ['view_owner_notification', 'update_owner_notification', 'delete_owner_notification']
     view_key = 'notification'
 
