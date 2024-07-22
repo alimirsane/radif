@@ -47,6 +47,7 @@ urlpatterns = [
     path("notification/create/", NotificationCreate.as_view(), name='notification-create'),
     path("notification/<int:pk>/", NotificationDetail.as_view(), name='notification-detail'),
     path("notification/<int:pk>/read/", NotificationReadDetail.as_view(), name='notification-detail'),
+    path("notification/read-all", NotificationReadAllList.as_view(), name='notification-list'),
 
     path('sso/', django_cas_ng.LoginView.as_view(), name='cas_ng_login'),
     path('slo/', django_cas_ng.LogoutView.as_view(), name='cas_ng_logout'),

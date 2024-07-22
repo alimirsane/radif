@@ -530,6 +530,38 @@ class NotificationReadDetail(UpdateAPIView):
         return queryset
 
 
+class NotificationReadAllList(ListAPIView):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+    # permission_classes = [IsAuthenticated]
+    pagination_class = DefaultPagination
+
+    filterset_fields = {
+                        'user': ['exact', 'in'],
+                        'title': ['contains'],
+                        'content': ['contains'],
+                        'type': ['exact', 'in'],
+                        'is_read': ['exact'],
+                        'created_at': ['gt', 'lt', 'gte', 'lte'],
+    }
+    # permission and queryset
+    permission_classes = [AccessLevelPermission]
+    required_access_levels = ['update_all_notification', 'update_owner_notification']
+    view_key = 'notification'
+
+    def get_queryset(self):
+        filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
+        queryset = []
+        if filter_key == 'all':
+            queryset = Notification.objects.all().order_by('-created_at')
+        elif filter_key == 'owner':
+            queryset = Notification.objects.filter(user=self.request.user).order_by('-created_at')
+
+        # read all
+        queryset.update(is_read=True)
+
+        return queryset
+
 
 class NotificationDetail(RetrieveUpdateDestroyAPIView):
     queryset = Notification.objects.all()
