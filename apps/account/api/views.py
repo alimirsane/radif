@@ -546,7 +546,7 @@ class NotificationReadAllList(ListAPIView):
     }
     # permission and queryset
     permission_classes = [AccessLevelPermission]
-    required_access_levels = ['update_all_notification', 'update_owner_notification']
+    required_access_levels = ['update_owner_notification']
     view_key = 'notification'
 
     def get_queryset(self):
