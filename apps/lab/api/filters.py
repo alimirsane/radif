@@ -51,10 +51,15 @@ class RequestFilter(django_filters.FilterSet):
     owner_fullname = django_filters.CharFilter(method='owner_fullname_search')
     search = django_filters.CharFilter(method='request_search')
 
+    request_status = django_filters.CharFilter(method="request_status_field")
+
+    def request_status_field(self, queryset, name, value):
+        return queryset.filter(request_status__step__id=value, request_status__complete=False)
+
     class Meta:
         model = Request
         fields = ['experiment', 'search', 'experiment_name', 'experiment_name_en', 'request_number', 'owner_first_name',
-                  'owner_last_name', 'owner_fullname', 'owner_national_id']
+                  'owner_last_name', 'owner_fullname', 'owner_national_id', 'request_status']
 
     def owner_fullname_search(self, queryset, name, value):
         qs = None
