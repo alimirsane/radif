@@ -2,6 +2,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 
 from apps.account.permissions import AccessLevelPermission, query_set_filter_key
 from apps.core.functions import export_excel
+from apps.core.paginations import DefaultPagination
 from apps.lab.api.filters import ParameterFilter, FormResponseFilter, LaboratoryFilter, RequestFilter
 from apps.lab.models import Experiment, Laboratory, Device, Parameter, Request, Department, FormResponse, LabType, \
     Status, Workflow, RequestResult
@@ -136,6 +137,7 @@ class RequestListAPIView(ListCreateAPIView):
     queryset = Request.objects.all().order_by('-created_at')
     serializer_class = RequestListSerializer
     filterset_class = RequestFilter
+    pagination_class = DefaultPagination
 
     # permission and filter param
     permission_classes = [AccessLevelPermission]
