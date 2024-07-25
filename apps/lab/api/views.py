@@ -178,6 +178,7 @@ class RequestListAPIView(ListCreateAPIView):
                     step_dict = {
                         'id': step.id,
                         'name': step.name,
+                        'step_color': step.next_button_color,
                         # 'request_counter': qs.filter(request_status__id=step.id, request_status__accept=False, request_status__reject=False).count()
                         'request_counter': qs.filter(request_status__step__id=step.id, request_status__accept=False,
                                                      request_status__reject=False).count()
