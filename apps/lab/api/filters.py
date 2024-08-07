@@ -48,6 +48,9 @@ class RequestFilter(django_filters.FilterSet):
     owner_last_name = django_filters.CharFilter(field_name='owner__last_name', lookup_expr='icontains', label='filter by owner last name')  # lookup_expr='icontains',
     owner_national_id = django_filters.CharFilter(field_name='owner__national_id', lookup_expr='icontains', label='filter by owner national id')  # lookup_expr='icontains',
 
+    start_date = django_filters.DateFilter(field_name='created_at', lookup_expr='gte', label='filter by created_at')  # lookup_expr='icontains',
+    end_date = django_filters.DateFilter(field_name='created_at', lookup_expr='lte', label='filter by created_at')  # lookup_expr='icontains',
+
     owner_fullname = django_filters.CharFilter(method='owner_fullname_search')
     search = django_filters.CharFilter(method='request_search')
 

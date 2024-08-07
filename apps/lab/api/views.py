@@ -138,6 +138,7 @@ class RequestListAPIView(ListCreateAPIView):
     serializer_class = RequestListSerializer
     filterset_class = RequestFilter
     pagination_class = DefaultPagination
+    ordering = ('created_at',)
 
     # permission and filter param
     permission_classes = [AccessLevelPermission]
