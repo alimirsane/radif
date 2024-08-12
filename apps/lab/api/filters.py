@@ -98,4 +98,4 @@ class ExperimentFilter(django_filters.FilterSet):
         fields = ['search']
 
     def experiment_search(self, queryset, name, value):
-        return queryset.filter(Q(name__icontains=value) | Q(name_en__icontains=value))\
+        return queryset.filter(Q(name__icontains=value) | Q(name_en__icontains=value))
