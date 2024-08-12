@@ -237,11 +237,11 @@ class Request(models.Model):
         if action == 'next':
             lastest_status.accept = True
             Status.objects.create(request=lastest_status.request, step=lastest_status.step.next_step)
-            self.handle_status_changed(lastest_status.step.next_step)
+            self.handle_status_changed(lastest_status.step.next_step, action, lastest_status)
         elif action == 'previous':
             lastest_status.reject = True
             Status.objects.create(request=lastest_status.request, step=lastest_status.step.previous_step)
-            self.handle_status_changed(lastest_status.step.previous_step)
+            self.handle_status_changed(lastest_status.step.previous_step, action, lastest_status)
         elif action == 'reject':
             lastest_status.reject = True
             Status.objects.create(request=lastest_status.request, step=lastest_status.step.reject_step)
@@ -251,12 +251,12 @@ class Request(models.Model):
         lastest_status.action_by = action_by
         lastest_status.save()
 
-    def handle_status_changed(self, new_step, action=None, lastest_status=None):
+    def handle_status_changed(self, new_step, action, lastest_status):
         if new_step.name == 'در حال انجام':
             self.delivery_date = datetime.datetime.now() + datetime.timedelta(days=self.experiment.estimated_result_time)
             self.save()
         if action == 'reject':
-            if lastest_status.name == 'در حال انجام' or lastest_status.name == 'در ‌انتظار نمونه' :
+            if lastest_status.step.name == 'در حال انجام' or lastest_status.step.name == 'در ‌انتظار نمونه':
                 self.is_returned = True
                 self.save()
                 try:
@@ -267,8 +267,7 @@ class Request(models.Model):
                     order.save()
                 except:
                     self.description += '\n تگ استرداد با خطا مواجه شد'
-
-
+                    self.save()
 
     def owners(self):
         return [self.owner] + self.experiment.owners()
