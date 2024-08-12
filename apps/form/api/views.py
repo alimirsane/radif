@@ -1,6 +1,7 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 from apps.account.permissions import AccessLevelPermission, query_set_filter_key
+from apps.form.api.filters import FormFilter
 from apps.form.api.serializers import FormSerializer
 from apps.form.models import Form
 
@@ -8,6 +9,7 @@ from apps.form.models import Form
 class FormListAPIView(ListCreateAPIView):
     queryset = Form.objects.all()
     serializer_class = FormSerializer
+    filterset_class = FormFilter
 
     # permission and filter param
     permission_classes = [AccessLevelPermission]

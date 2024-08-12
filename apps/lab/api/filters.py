@@ -1,7 +1,7 @@
 import django_filters
 from django.db.models import Q
 
-from apps.lab.models import Parameter, FormResponse, Laboratory, Request
+from apps.lab.models import Parameter, FormResponse, Laboratory, Request, Device, Experiment
 
 
 class ParameterFilter(django_filters.FilterSet):
@@ -77,3 +77,25 @@ class RequestFilter(django_filters.FilterSet):
 
     def request_search(self, queryset, name, value):
         return queryset.filter(Q(experiment__name__icontains=value) | Q(request_number__exact=value))
+
+
+class DeviceFilter(django_filters.FilterSet):
+    search = django_filters.CharFilter(method='device_search')
+
+    class Meta:
+        model = Device
+        fields = ['search']
+
+    def device_search(self, queryset, name, value):
+        return queryset.filter(Q(name__icontains=value) | Q(description__icontains=value))
+
+
+class ExperimentFilter(django_filters.FilterSet):
+    search = django_filters.CharFilter(method='experiment_search')
+
+    class Meta:
+        model = Experiment
+        fields = ['search']
+
+    def experiment_search(self, queryset, name, value):
+        return queryset.filter(Q(name__icontains=value) | Q(name_en__icontains=value))\

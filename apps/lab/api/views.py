@@ -3,7 +3,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from apps.account.permissions import AccessLevelPermission, query_set_filter_key
 from apps.core.functions import export_excel
 from apps.core.paginations import DefaultPagination
-from apps.lab.api.filters import ParameterFilter, FormResponseFilter, LaboratoryFilter, RequestFilter
+from apps.lab.api.filters import ParameterFilter, FormResponseFilter, LaboratoryFilter, RequestFilter, DeviceFilter, \
+    ExperimentFilter
 from apps.lab.models import Experiment, Laboratory, Device, Parameter, Request, Department, FormResponse, LabType, \
     Status, Workflow, RequestResult
 from apps.lab.api.serializers import ExperimentSerializer, LaboratorySerializer, DeviceSerializer, ParameterSerializer, \
@@ -17,6 +18,7 @@ from rest_framework import status
 class ExperimentListAPIView(ListCreateAPIView):
     queryset = Experiment.objects.all()
     serializer_class = ExperimentSerializer
+    filterset_class = ExperimentFilter
 
     # permission and queryset
     permission_classes = [AccessLevelPermission]
@@ -76,7 +78,8 @@ class LaboratoryDetailAPIView(RetrieveUpdateDestroyAPIView):
 class DeviceListAPIView(ListCreateAPIView):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
-    
+    filterset_class = DeviceFilter
+
     # permission and filter param
     permission_classes = [AccessLevelPermission]
     required_access_levels = ['view_all_device', 'view_owner_device', 'create_all_device']
