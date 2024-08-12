@@ -15,6 +15,7 @@ class Laboratory(models.Model):
     name_en = models.CharField(max_length=255, verbose_name='نام انگلیسی')
     technical_manager = models.ForeignKey(User, related_name='tm_laboratories', blank=True, null=True, limit_choices_to={'user_type': 'staff'}, on_delete=models.PROTECT)
     operator = models.ForeignKey(User, related_name='op_laboratories', blank=True, null=True, limit_choices_to={'user_type': 'staff'}, on_delete=models.PROTECT)
+    operators = models.ManyToManyField(User, related_name='ops_laboratories', blank=True, null=True, limit_choices_to={'user_type': 'staff'})
     department = models.ForeignKey('Department', related_name='laboratories', blank=True, null=True, on_delete=models.PROTECT, verbose_name='دپارتمان')
     lab_type = models.ForeignKey('LabType', related_name='laboratories', blank=True, null=True, on_delete=models.PROTECT, verbose_name='نوع آزمایشگاه')
     # standard_code = models.CharField(max_length=255)
@@ -56,8 +57,11 @@ class Laboratory(models.Model):
     def get_operator_laboratory(self, operator):
         return self.get_unhidden_laboratory().filter(operator=operator)
 
+    # def owners(self):
+    #     return [self.technical_manager, self.operator]
+
     def owners(self):
-        return [self.technical_manager, self.operator]
+        return [self.technical_manager, self.operator] + [operator for operator in self.operators.all()]
 
 
 class Experiment(models.Model):
