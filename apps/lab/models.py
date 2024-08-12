@@ -198,6 +198,8 @@ class Request(models.Model):
     request_number = models.CharField(max_length=20, blank=True, verbose_name='شماره درخواست')
     is_completed = models.BooleanField(default=False, blank=True, null=True, verbose_name='تکمیل شده')
 
+    is_returned = models.BooleanField(default=False, verbose_name='عودت شده')
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روز رسانی')
 
