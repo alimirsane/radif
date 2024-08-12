@@ -178,6 +178,7 @@ class Request(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
 
     discount = models.PositiveIntegerField(blank=True, null=True, default=0)
+    discount_description = models.CharField(max_length=120, blank=True, null=True, verbose_name='توضیحات تخفیف')
 
     is_urgent = models.BooleanField(default=False)
     
