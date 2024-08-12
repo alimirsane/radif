@@ -245,18 +245,30 @@ class Request(models.Model):
         elif action == 'reject':
             lastest_status.reject = True
             Status.objects.create(request=lastest_status.request, step=lastest_status.step.reject_step)
-            self.handle_status_changed(lastest_status.step.reject_step)
+            self.handle_status_changed(lastest_status.step.reject_step, action, lastest_status)
         lastest_status.complete = True
         lastest_status.description = description
         lastest_status.action_by = action_by
         lastest_status.save()
 
-    def handle_status_changed(self, new_step):
+    def handle_status_changed(self, new_step, action=None, lastest_status=None):
         if new_step.name == 'در حال انجام':
             self.delivery_date = datetime.datetime.now() + datetime.timedelta(days=self.experiment.estimated_result_time)
             self.save()
-        else:
-            return False
+        if action == 'reject':
+            if lastest_status.name == 'در حال انجام' or lastest_status.name == 'در ‌انتظار نمونه' :
+                self.is_returned = True
+                self.save()
+                try:
+                    payment_records = self.get_latest_order_payment_records().filter(successful=True)
+                    payment_records.update(is_returned=True)
+                    order = self.get_latest_order()
+                    order.is_returned = True
+                    order.save()
+                except:
+                    self.description += '\n تگ استرداد با خطا مواجه شد'
+
+
 
     def owners(self):
         return [self.owner] + self.experiment.owners()
@@ -291,7 +303,13 @@ class Request(models.Model):
 
     def get_latest_order_payment_records(self):
         try:
-            return self.orders.order_by('-created_at').first().get_payment_records()
+            return self.get_latest_order().get_payment_records()
+        except:
+            return []
+
+    def get_latest_order(self):
+        try:
+            return self.orders.order_by('-created_at').first()
         except:
             return []
 
