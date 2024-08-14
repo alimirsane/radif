@@ -169,16 +169,20 @@ class RequestListAPIView(ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         get_list = self.list(request, *args, **kwargs)
         if self.request.query_params.get('export_excel', 'False').lower() == 'true':
-            file_url = export_excel(get_list.data.serializer.instance)
+            ids = [r.id for r in get_list.data['results'].serializer.instance]
+            qs = Request.objects.filter(id__in=ids)
+            file_url = export_excel(qs)
             if file_url:
                 full_url = self.request.build_absolute_uri(file_url)
                 return Response({'file_url': full_url})
             return Response({'error': 'Export failed'}, status=500)
         elif self.request.query_params.get('step_counter', 'False').lower() == 'true':
-            qs = get_list.data.serializer.instance
+            ids = [r.id for r in get_list.data['results'].serializer.instance]
+            qs = Request.objects.filter(id__in=ids)
+            # qs = get_list.data['results'].serializer.instance
             try:
                 step_list = []
-                for step in qs.first().request_status.all().first().step.workflow.steps.all():
+                for step in qs[0].request_status.all().first().step.workflow.steps.all():
                     step_dict = {
                         'id': step.id,
                         'name': step.name,
