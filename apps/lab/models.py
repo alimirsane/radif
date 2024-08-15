@@ -266,7 +266,7 @@ class Request(models.Model):
                     order.is_returned = True
                     order.save()
                 except:
-                    self.description += '\n تگ استرداد با خطا مواجه شد'
+                    self.description = self.description + '\n تگ استرداد با خطا مواجه شد'
                     self.save()
 
     def owners(self):
