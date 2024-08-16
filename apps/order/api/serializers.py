@@ -161,7 +161,7 @@ class PaymentSummarySerializer(serializers.ModelSerializer):
 class PaymentRecordListSerializer(serializers.ModelSerializer):
     order_obj = serializers.SerializerMethodField(read_only=True)
     payer_obj = UserSummerySerializer(read_only=True, source='payer')
-    request_obj = RequestDetailSerializer(read_only=True, source='request')
+    request_obj = RequestDetailSerializer(read_only=True, source='order.request')
 
     def get_order_obj(self, obj):
         order = obj.order
