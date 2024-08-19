@@ -74,7 +74,7 @@ class FormResponseAdmin(admin.ModelAdmin):
 
 
 def access_level_generator(modeladmin, request, queryset):
-    keys = ['User', 'GrantTransaction', 'GrantRequest', 'Notification',  # account
+    keys = ['User', 'GrantTransaction', 'GrantRequest', 'Notification', 'GrantRecord',  # account
             'Form',  # form
             'Laboratory', 'Experiment', 'Device', 'Parameter', 'Request', 'FormResponse',  # lab
             'PromotionCode', 'Order', 'PaymentRecord', 'Transaction',  # order

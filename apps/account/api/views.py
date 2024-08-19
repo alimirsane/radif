@@ -321,11 +321,30 @@ class GrantRecordListAPIView(ListCreateAPIView):
     serializer_class = GrantRecordSerializer
     filterset_class = GrantRecordFilter
 
+    # permission and queryset
+    permission_classes = [AccessLevelPermission]
+    required_access_levels = ['view_all_grantrecord', 'view_owner_grantrecord', 'create_all_grantrecord']
+    view_key = 'grantrecord'
+
+    def get_queryset(self):
+        filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
+        queryset = []
+        if filter_key == 'all':
+            queryset = GrantRecord.objects.all()
+        elif filter_key == 'owner':
+            queryset = GrantRecord.objects.filter(receiver=self.request.user)
+        return queryset.distinct()
+
+
 
 class GrantRecordDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = GrantRecord.objects.all()
     serializer_class = GrantRecordSerializer
 
+    # permission and queryset
+    permission_classes = [AccessLevelPermission]
+    required_access_levels = ['view_all_grantrecord', 'view_owner_grantrecord', 'update_all_grantrecord', 'update_owner_grantrecord', 'delete_all_grantrecord', 'delete_owner_grantrecord']
+    view_key = 'grantrecord'
 
 class GrantRequestListAPIView(ListCreateAPIView):
     queryset = GrantRequest.objects.all()
