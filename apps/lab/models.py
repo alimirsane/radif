@@ -355,6 +355,9 @@ class FormResponse(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روز رسانی')
 
+    is_main = models.BooleanField(default=False, blank=True, null=True, verbose_name='اصلی')
+    response_count = models.IntegerField(default=0, verbose_name='تعداد پاسخ‌ها')  # فیلد جدید
+
     class Meta:
         verbose_name = 'پاسخ فرم'
         verbose_name_plural = 'پاسخ فرم‌ها'
@@ -372,6 +375,17 @@ class FormResponse(models.Model):
             request_formresponse.form_number = f'{self.request.request_number.replace("-","")}{counter:03d}'
             request_formresponse.save()
             counter += 1
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.response_count > 0:
+            for _ in range(self.response_count):
+                new_response = self
+                new_response.pk = None
+                new_response.is_main = False
+                new_response.save()
+        self.set_form_number()
 
 class Workflow(models.Model):
     name = models.CharField(max_length=100, verbose_name='نام گردش کار')
