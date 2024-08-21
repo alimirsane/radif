@@ -376,16 +376,6 @@ class FormResponse(models.Model):
             request_formresponse.save()
             counter += 1
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        if self.response_count > 0:
-            for _ in range(self.response_count):
-                new_response = self
-                new_response.pk = None
-                new_response.is_main = False
-                new_response.save()
-        self.set_form_number()
 
 class Workflow(models.Model):
     name = models.CharField(max_length=100, verbose_name='نام گردش کار')

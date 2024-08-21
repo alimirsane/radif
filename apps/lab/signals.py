@@ -7,6 +7,23 @@ from apps.account.models import Notification
 from apps.lab.models import FormResponse, Request, Status
 
 
+@receiver(post_save, sender=Request)
+def create_form_responses(sender, instance, created, **kwargs):
+    if created:
+        return
+    previous_instance = Request.objects.filter(pk=instance.pk).first()
+    if previous_instance and not previous_instance.is_completed and instance.is_completed:
+        form_responses = FormResponse.objects.filter(request=instance, is_main=True)
+        for form_response in form_responses:
+            copies_needed = form_response.response_count - 1
+            if copies_needed > 0:
+                for _ in range(copies_needed):
+                    new_response = form_response
+                    new_response.pk = None
+                    new_response.is_main = False
+                    new_response.save()
+
+
 @receiver(post_save, sender=FormResponse)
 def create_form_number(sender, instance, created, **kwargs):
     if created or not instance.form_number:
