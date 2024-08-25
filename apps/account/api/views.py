@@ -46,7 +46,7 @@ class UserListAPIView(ListCreateAPIView):
             queryset = User.objects.all()
         elif filter_key == 'owner':
             # queryset = User.objects.filter(user_type='staff')
-            queryset = User.objects.filter(role_id__in=[10])
+            queryset = User.objects.filter(role__id__in=[10])
         return queryset
 
     def get(self, request, *args, **kwargs):
