@@ -40,7 +40,7 @@ class UserAdmin(UAdmin):
             },
         ),
     )
-    list_display = ("username", "national_id", "email", "first_name", "last_name", "is_staff", "user_type", "account_type")
+    list_display = ("username", "national_id", "email", "first_name", "last_name", "is_staff", "user_type", "account_type", "role_str")
     list_filter = ("is_staff", "is_superuser", "is_active", "groups", "user_type", "account_type")
     search_fields = ("username", "first_name", "last_name", "email")
     ordering = ("username",)
@@ -51,6 +51,9 @@ class UserAdmin(UAdmin):
     # readonly_fields = ('research_grant', 'labsnet_grant')
     model = User
 
+    @admin.display(description='Role')
+    def role_str(self, obj):
+        return ", ".join([str(x) for x in obj.role.all()])
 
 # class GroupAdmin(GroupAdmin):
 #     model = Group
