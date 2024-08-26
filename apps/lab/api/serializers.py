@@ -69,6 +69,7 @@ class ExperimentDetailSerializer(serializers.ModelSerializer):
 class LaboratorySerializer(serializers.ModelSerializer):
     technical_manager_obj = UserSummerySerializer(read_only=True, source='technical_manager')
     operator_obj = UserSummerySerializer(read_only=True, source='operator')
+    operators_obj = UserSummerySerializer(read_only=True, many=True, source='operators')
     department_obj = DepartmentSerializer(read_only=True, source='department')
     device_objs = DeviceSerializer(read_only=True, many=True, source='devices')
 
@@ -81,6 +82,7 @@ class LaboratoryDetailSerializer(serializers.ModelSerializer):
     experiments = ExperimentSerializer(read_only=True, many=True)
     technical_manager_obj = UserSerializer(read_only=True, source='technical_manager')
     operator_obj = UserSerializer(read_only=True, source='operator')
+    operators_obj = UserSerializer(read_only=True, many=True, source='operators')
     department_obj = DepartmentSerializer(read_only=True, source='department')
     device_objs = DeviceSerializer(read_only=True, many=True, source='devices')
 
