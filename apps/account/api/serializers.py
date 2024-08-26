@@ -20,7 +20,7 @@ class AccessLevelSerializer(serializers.ModelSerializer):
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        exclude = []
+        exclude = ['access_level']
 
 
 class UserFullSerializer(serializers.ModelSerializer):
