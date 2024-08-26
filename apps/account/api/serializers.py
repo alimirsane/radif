@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 
 from apps.account.models import User, EducationalLevel, EducationalField, Role, AccessLevel, GrantRequest, \
     GrantTransaction, Notification, GrantRecord
+from apps.core.functions import process_excel_and_create_grant_records
 
 
 class AccessLevelSerializer(serializers.ModelSerializer):
@@ -209,19 +210,17 @@ class GrantTransactionSerializer(serializers.ModelSerializer):
 
 class GrantRecordSerializer(serializers.ModelSerializer):
     receiver_obj = UserSummerySerializer(source='receiver', read_only=True)
+    file = serializers.FileField(write_only=True, required=False)
 
     class Meta:
         model = GrantRecord
         exclude = []
 
     def create(self, validated_data):
-        # بررسی می‌کنیم که آیا فایل اکسل در داده‌های معتبر وجود دارد یا خیر
         excel_file = self.context['request'].FILES.get('file', None)
         if excel_file:
-            # اگر فایل اکسل وجود داشت، تابع پردازش اکسل فراخوانی می‌شود
             return process_excel_and_create_grant_records(excel_file)
         else:
-            # اگر فایل اکسل وجود نداشت، به روش معمول سریالایزر آبجکت ساخته می‌شود
             return super().create(validated_data)
 
 class GrantRequestSerializer(serializers.ModelSerializer):
