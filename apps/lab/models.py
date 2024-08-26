@@ -96,8 +96,10 @@ class Experiment(models.Model):
     # result = models.CharField(max_length=255, verbose_name='نتیجه')
     estimated_result_time = models.IntegerField(blank=True, null=True, verbose_name='زمان حدودی اعلام نتیجه (روز)')
     estimated_urgent_result_time = models.IntegerField(blank=True, null=True, verbose_name='زمان حدودی اعلام نتیجه فوری (روز)')
-
-
+    labsnet_experiment_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='شناسه آزمون شبکه راهبردی')
+    labsnet_test_type_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='شناسه نوع آزمون شبکه راهبردی')
+    control_code = models.CharField(max_length=255, blank=True, null=True, verbose_name='کد کنترلی آزمون')
+    description = models.TextField(blank=True, null=True, verbose_name='توضیحات')
 
     class Meta:
         verbose_name = 'آزمایش'
