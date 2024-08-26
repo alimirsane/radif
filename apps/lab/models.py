@@ -133,6 +133,8 @@ class Device(models.Model):
 
     description = models.TextField(verbose_name='شرح خدمات', blank=True, null=True)
     application = models.TextField(verbose_name='کاربرد', blank=True, null=True)
+    accuracy = models.CharField(max_length=255, blank=True, null=True, verbose_name='دقت دستگاه')
+    device_code = models.CharField(max_length=255, blank=True, null=True, verbose_name='کد دستگاه')
 
     STATUS_CHOICES = (
         ('active', 'Active'),
@@ -186,7 +188,7 @@ class Request(models.Model):
     discount_description = models.CharField(max_length=120, blank=True, null=True, verbose_name='توضیحات تخفیف')
 
     is_urgent = models.BooleanField(default=False)
-    
+
     # STATUS_CHOICES = (
     #     ('new', 'New'),
     #     ('pending', 'Pending'),
