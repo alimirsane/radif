@@ -21,7 +21,7 @@ class Laboratory(models.Model):
     department = models.ForeignKey('Department', related_name='laboratories', blank=True, null=True, on_delete=models.PROTECT, verbose_name='دپارتمان')
     lab_type = models.ForeignKey('LabType', related_name='laboratories', blank=True, null=True, on_delete=models.PROTECT, verbose_name='نوع آزمایشگاه')
     # standard_code = models.CharField(max_length=255)
-    # control_code = models.CharField(max_length=255)
+    control_code = models.CharField(max_length=255, blank=True, null=True, verbose_name='کد کنترلی')
     STATUS_CHOICES = (
         ('active', 'Active'),
         ('inactive', 'Inactive'),
@@ -42,6 +42,8 @@ class Laboratory(models.Model):
     image = models.ImageField(blank=True, null=True, verbose_name='تصویر')
     device = models.ManyToManyField('Device', blank=True, related_name="laboratories", verbose_name='دستگاه')
     rules = models.TextField(blank=True, null=True, verbose_name='قوانین')
+
+    has_iso_17025 = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'آزمایشگاه'
