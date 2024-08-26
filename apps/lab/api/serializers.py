@@ -266,6 +266,22 @@ class RequestCertificateSerializer(serializers.ModelSerializer):
     experiment_obj = RequestExperimentSerializer(read_only=True, source='experiment')
     parameter_obj = ParameterSerializer(many=True, read_only=True, source='parameter')
     certificate_obj = CertificateSerializer(read_only=True, source='certificate')
+    dates = serializers.SerializerMethodField(read_only=True, method_name='cert_dates')
+
+    def cert_dates(self, obj):
+        try:
+            sample_date = obj.request_status.filter(step__name='در ‌انتظار نمونه').first().updated_at
+            result_date = obj.request_status.filter(step__name='تکمیل شده').first().updated_at
+        except:
+            return {
+               'sample_date': None,
+               'result_date': None,
+            }
+        return {
+            'sample_date': sample_date,
+            'result_date': result_date,
+        }
+
     class Meta:
         model = Request
         exclude = []
