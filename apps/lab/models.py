@@ -319,6 +319,24 @@ class Request(models.Model):
 #     collection_date = models.CharField(max_length=255)
 
 
+class RequestCertificate(models.Model):
+    request = models.OneToOneField('Request', on_delete=models.CASCADE, related_name='certificate',
+                                   verbose_name='درخواست')
+    issue_date = models.DateField(verbose_name='تاریخ صدور')
+    temperature = models.CharField(max_length=5, verbose_name='دما (درجه سانتی‌گراد)')
+    humidity = models.CharField(max_length=5, verbose_name='رطوبت (%)')
+    pressure = models.CharField(max_length=5, verbose_name='فشار (میلی‌بار)')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روز رسانی')
+
+    class Meta:
+        verbose_name = 'گواهی درخواست'
+        verbose_name_plural = 'گواهی‌های درخواست'
+
+    def __str__(self):
+        return f'گواهی {self.request.request_number} - {self.issue_date}'
+
+
 class Department(models.Model):
     name = models.CharField(max_length=255, verbose_name='نام')
     description = models.TextField(blank=True, null=True, verbose_name='توضیحات')

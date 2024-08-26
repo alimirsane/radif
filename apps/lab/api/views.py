@@ -1,4 +1,4 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView, RetrieveAPIView
 
 from apps.account.permissions import AccessLevelPermission, query_set_filter_key
 from apps.core.functions import export_excel
@@ -11,7 +11,7 @@ from apps.lab.api.serializers import ExperimentSerializer, LaboratorySerializer,
     RequestListSerializer, RequestDetailSerializer, DepartmentSerializer, LaboratoryDetailSerializer, \
     ExperimentDetailSerializer, \
     FormResponseSerializer, LabTypeSerializer, RequestChangeStatusSerializer, WorkflowSerializer, \
-    RequestResultSerializer, RequestButtonActionSerializer
+    RequestResultSerializer, RequestButtonActionSerializer, RequestCertificateSerializer
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -209,6 +209,17 @@ class RequestDetailAPIView(RetrieveUpdateDestroyAPIView):
                               'delete_all_request', 'delete_owner_request']
          # 'update_receptor_request', 'view_receptor_request', 'update_operator_request', 'view_operator_request'
     view_key = 'request'
+
+
+class RequestCertificateAPIView(RetrieveAPIView):
+    queryset = Request.objects.all()
+    serializer_class = RequestCertificateSerializer
+
+    # permission and filter param
+    permission_classes = [AccessLevelPermission]
+    required_access_levels = ['view_all_request', 'view_owner_request']
+    view_key = 'request'
+
 
 class RequestChangeStatusAPIView(UpdateAPIView):
     queryset = Request.objects.all()

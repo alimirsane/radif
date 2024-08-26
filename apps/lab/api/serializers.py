@@ -6,7 +6,7 @@ from apps.account.api.views import UserDetailAPIView
 from apps.account.models import User
 from apps.form.api.serializers import FormSerializer
 from apps.lab.models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, \
-    Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult
+    Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult, RequestCertificate
 from apps.order.models import PaymentRecord
 
 
@@ -252,6 +252,23 @@ class RequestDetailSerializer(serializers.ModelSerializer):
         instance.set_price()
 
         return instance
+
+
+class CertificateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = RequestCertificate
+        exclude = []
+
+
+class RequestCertificateSerializer(serializers.ModelSerializer):
+    owner_obj = UserSerializer(read_only=True, source='owner')
+    experiment_obj = RequestExperimentSerializer(read_only=True, source='experiment')
+    parameter_obj = ParameterSerializer(many=True, read_only=True, source='parameter')
+    certificate_obj = CertificateSerializer(read_only=True, source='certificate')
+    class Meta:
+        model = Request
+        exclude = []
 
 
 
