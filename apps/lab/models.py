@@ -13,6 +13,8 @@ import math
 class Laboratory(models.Model):
     name = models.CharField(max_length=255, verbose_name='نام')
     name_en = models.CharField(max_length=255, verbose_name='نام انگلیسی')
+    economic_number = models.CharField(max_length=20, blank=True, null=True, verbose_name='شماره اقتصادی')
+    national_id = models.CharField(max_length=20, blank=True, null=True, verbose_name='شناسه ملی')
     technical_manager = models.ForeignKey(User, related_name='tm_laboratories', blank=True, null=True, limit_choices_to={'user_type': 'staff'}, on_delete=models.PROTECT)
     operator = models.ForeignKey(User, related_name='op_laboratories', blank=True, null=True, limit_choices_to={'user_type': 'staff'}, on_delete=models.PROTECT)
     operators = models.ManyToManyField(User, related_name='ops_laboratories', blank=True, limit_choices_to={'user_type': 'staff'})
@@ -27,6 +29,9 @@ class Laboratory(models.Model):
     )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active', verbose_name='وضعیت')
     address = models.TextField(blank=True, null=True, verbose_name='آدرس')
+    postal_code = models.CharField(max_length=20, blank=True, null=True, verbose_name='کد پستی')
+    email = models.EmailField(blank=True, null=True, verbose_name='ایمیل')
+    fax = models.CharField(max_length=50, blank=True, null=True, verbose_name='دورنگار')
     phone_number = models.CharField(max_length=255, blank=True, null=True, verbose_name='شماره همراه')
     telephone1 = models.CharField(max_length=50, blank=True, null=True, verbose_name='شماره تلفن')
     telephone2 = models.CharField(max_length=50, blank=True, null=True, verbose_name='شماره تلفن')
