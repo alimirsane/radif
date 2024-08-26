@@ -335,7 +335,16 @@ class GrantRecordListAPIView(ListCreateAPIView):
             queryset = GrantRecord.objects.filter(receiver=self.request.user)
         return queryset.distinct()
 
-
+    def post(self, request, *args, **kwargs):
+        serializer = GrantRecordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            created_records = serializer.save()
+            if isinstance(created_records, list):
+                return Response({"detail": f"{len(created_records)} records created successfully."},
+                                status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GrantRecordDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = GrantRecord.objects.all()

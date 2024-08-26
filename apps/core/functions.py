@@ -7,9 +7,43 @@ from django.conf import settings
 from openpyxl import Workbook
 from django.http import JsonResponse
 from django.db.models import QuerySet
-from apps.account.models import GrantRequest, User
+from apps.account.models import GrantRequest, User, GrantRecord
 from apps.lab.models import Request
 from apps.order.models import PaymentRecord
+import pandas as pd
+import jdatetime
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+def process_excel_and_create_grant_records(file):
+    df = pd.read_excel(file)
+
+    created_records = []
+
+    for index, row in df.iterrows():
+        national_id = row['receiver']
+        try:
+            receiver = User.objects.get(national_id=national_id)
+        except User.DoesNotExist:
+            continue
+        shamsi_date = row['expiration_date']
+        if pd.notna(shamsi_date):
+            expiration_date = jdatetime.date(*map(int, shamsi_date.split('/'))).togregorian()
+        else:
+            expiration_date = None
+
+        grant_record = GrantRecord.objects.create(
+            title=row['title'],
+            receiver=receiver,
+            amount=row['amount'],
+            expiration_date=expiration_date,
+            created_at=timezone.now()
+        )
+        created_records.append(grant_record)
+
+    return created_records
 
 
 def labsnet(nid, type, service):
