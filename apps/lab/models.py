@@ -138,6 +138,23 @@ class Device(models.Model):
     accuracy = models.CharField(max_length=255, blank=True, null=True, verbose_name='دقت دستگاه')
     device_code = models.CharField(max_length=255, blank=True, null=True, verbose_name='کد دستگاه')
 
+    labsnet_device_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='شناسه نوع دستگاه در شبکه راهبردی')
+    labsnet_model_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='شناسه مدل دستگاه در شبکه راهبردی')
+    manufacturer_representation = models.CharField(max_length=255, blank=True, null=True, verbose_name='نمایندگی شرکت سازنده')
+    country_of_manufacture = models.CharField(max_length=255, blank=True, null=True, verbose_name='کشور سازنده')
+    commissioning_date = models.DateField(blank=True, null=True, verbose_name='تاریخ راه‌اندازی دستگاه')
+    control_code = models.CharField(max_length=255, blank=True, null=True, verbose_name='کد کنترلی دستگاه')
+
+    EX_STATUS_CHOICES = (
+        ('operational', 'سالم'),
+        ('under_repair', 'در حال تعمیر'),
+        ('commissioning', 'در حال راه‌اندازی'),
+        ('calibration', 'در حال کالیبراسیون'),
+        ('awaiting_budget', 'در انتظار بودجه برای تعمیر'),
+        ('decommissioned', 'به طور کامل از کار افتاده'),
+    )
+    extra_status = models.CharField(max_length=20, choices=EX_STATUS_CHOICES, default='operational', verbose_name='وضعیت اضافی')
+
     STATUS_CHOICES = (
         ('active', 'Active'),
         ('inactive', 'Inactive'),
