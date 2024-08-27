@@ -11,18 +11,19 @@ from apps.lab.models import FormResponse, Request, Status
 def create_form_responses(sender, instance, created, **kwargs):
     if created:
         return
-    previous_instance = Request.objects.filter(pk=instance.pk).first()
-    if previous_instance and not previous_instance.is_completed and instance.is_completed:
+    if not instance.sample_check and instance.is_completed:
         form_responses = FormResponse.objects.filter(request=instance, is_main=True)
         for form_response in form_responses:
             copies_needed = form_response.response_count - 1
-            if copies_needed > 0:
+            if copies_needed > 0 and not form_response.copy_check:
                 for _ in range(copies_needed):
                     new_response = form_response
                     new_response.pk = None
                     new_response.is_main = False
                     new_response.save()
-
+        form_responses.update(copy_check=True)
+        instance.sample_check = True
+        instance.save()
 
 @receiver(post_save, sender=FormResponse)
 def create_form_number(sender, instance, created, **kwargs):

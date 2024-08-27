@@ -225,6 +225,7 @@ class Request(models.Model):
     subject = models.CharField(max_length=100, blank=True, null=True, verbose_name='موضوع درخواست')
     request_number = models.CharField(max_length=20, blank=True, verbose_name='شماره درخواست')
     is_completed = models.BooleanField(default=False, blank=True, null=True, verbose_name='تکمیل شده')
+    sample_check = models.BooleanField(default=False, blank=True, null=True, verbose_name='چک نمونه')
 
     is_returned = models.BooleanField(default=False, verbose_name='عودت شده')
 
@@ -401,8 +402,9 @@ class FormResponse(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روز رسانی')
 
+    copy_check = models.BooleanField(default=False, blank=True, null=True, verbose_name='چک کپی')
     is_main = models.BooleanField(default=False, blank=True, null=True, verbose_name='اصلی')
-    response_count = models.IntegerField(default=0, verbose_name='تعداد پاسخ‌ها')  # فیلد جدید
+    response_count = models.IntegerField(default=0, verbose_name='تعداد پاسخ‌ها')
 
     class Meta:
         verbose_name = 'پاسخ فرم'
