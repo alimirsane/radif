@@ -404,7 +404,7 @@ class FormResponse(models.Model):
 
     copy_check = models.BooleanField(default=False, blank=True, null=True, verbose_name='چک کپی')
     is_main = models.BooleanField(default=False, blank=True, null=True, verbose_name='اصلی')
-    response_count = models.IntegerField(default=0, verbose_name='تعداد پاسخ‌ها')
+    response_count = models.IntegerField(default=1, verbose_name='تعداد پاسخ‌ها')
 
     class Meta:
         verbose_name = 'پاسخ فرم'
