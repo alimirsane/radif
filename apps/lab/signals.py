@@ -29,6 +29,7 @@ def create_form_responses(sender, instance, created, **kwargs):
 def create_form_number(sender, instance, created, **kwargs):
     if created or not instance.form_number:
         instance.set_form_number()
+    instance.request.set_price()
 
 
 @receiver(post_save, sender=Request)
