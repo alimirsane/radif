@@ -303,10 +303,10 @@ class Request(models.Model):
 
     def set_price(self):
         params = self.parameter.all()
-        formresponses = self.formresponse.all()
+        formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
         price = 0
         for param in params:
-            temp = formresponses.count() / int(param.unit_value)
+            temp = formresponses['response_count__sum'] / int(param.unit_value)
             temp = math.ceil(temp)
             if self.is_urgent:
                 price += int(param.urgent_price) * int(temp)
