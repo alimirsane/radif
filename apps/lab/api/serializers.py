@@ -140,11 +140,14 @@ class WorkflowSerializer(serializers.ModelSerializer):
 
 class StatusSerializer(serializers.ModelSerializer):
     step_obj = WorkflowStepSerializer(read_only=True, source='step')
+    action_by_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Status
         exclude = []
 
+    def get_action_by_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
 
 class RequestButtonActionSerializer(serializers.ModelSerializer):
     action = serializers.CharField(write_only=True)
