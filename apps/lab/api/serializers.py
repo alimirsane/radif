@@ -60,7 +60,7 @@ class ExperimentSerializer(serializers.ModelSerializer):
 
 class ExperimentDetailSerializer(serializers.ModelSerializer):
     device_obj = DeviceSerializer(read_only=True, source='device')
-    form_obj = FormSummerySerializer(read_only=True, source='form')
+    form_obj = FormSerializer(read_only=True, source='form')
 
     class Meta:
         model = Experiment
