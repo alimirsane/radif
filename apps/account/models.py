@@ -183,6 +183,10 @@ class GrantRecord(models.Model):
         total_transactions = self.get_total_transactions()
         return self.amount >= total_transactions + amount
 
+    def remaining_grant(self):
+        total_transactions = self.get_total_transactions()
+        return self.amount - total_transactions
+
     # def pay(self):
     #     try:
     #         if self.check_amount(self.amount):
