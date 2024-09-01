@@ -257,6 +257,7 @@ class Request(models.Model):
             pass
         elif action in ['request_discount']:
             self.discount = value
+            self.discount_description = description
             self.save()
         else:
             pass
