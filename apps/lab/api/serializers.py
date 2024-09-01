@@ -147,7 +147,10 @@ class StatusSerializer(serializers.ModelSerializer):
         exclude = []
 
     def get_action_by_name(self, obj):
-        return f"{obj.action_by.first_name} {obj.action_by.last_name}"
+        try:
+            return f"{obj.action_by.first_name} {obj.action_by.last_name}"
+        except:
+            return ""
 
 class RequestButtonActionSerializer(serializers.ModelSerializer):
     action = serializers.CharField(write_only=True)
