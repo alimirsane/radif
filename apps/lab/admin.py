@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, WorkflowStep, \
-    Status, Workflow, WorkflowStepButton
+    Status, Workflow, WorkflowStepButton, RequestResult
 
 
 @admin.register(Laboratory)
@@ -77,3 +77,8 @@ class StatusAdmin(admin.ModelAdmin):
 class WorkflowStepButtonAdmin(admin.ModelAdmin):
     list_display = ('title', 'action_slug', 'color')
     # search_fields = ('name', 'description')
+
+
+@admin.register(RequestResult)
+class RequestResultAdmin(admin.ModelAdmin):
+    list_display = ('request', 'created_at', 'description')
