@@ -216,6 +216,14 @@ class GrantRecordSerializer(serializers.ModelSerializer):
         model = GrantRecord
         exclude = []
 
+    def __init__(self, *args, **kwargs):
+        super(GrantRecordSerializer, self).__init__(*args, **kwargs)
+        request = self.context.get('request', None)
+        if request and request.FILES.get('file'):
+            for field_name, field in self.fields.items():
+                if field_name not in ['file']:
+                    field.required = False
+
     def create(self, validated_data):
         excel_file = self.context['request'].FILES.get('file', None)
         if excel_file:
