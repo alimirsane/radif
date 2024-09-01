@@ -31,3 +31,10 @@ class FormSerializer(serializers.ModelSerializer):
         except:
             ret['json_init'] = None
         return ret
+
+
+class FormSummerySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Form
+        exclude = ['json_init', 'updated_at', 'created_at']

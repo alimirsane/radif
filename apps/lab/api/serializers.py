@@ -4,7 +4,7 @@ import ast
 from apps.account.api.serializers import UserSerializer
 from apps.account.api.views import UserDetailAPIView
 from apps.account.models import User
-from apps.form.api.serializers import FormSerializer
+from apps.form.api.serializers import FormSerializer, FormSummerySerializer
 from apps.lab.models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, \
     Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult, RequestCertificate
 from apps.order.models import PaymentRecord
@@ -47,6 +47,7 @@ class ParameterSerializer(serializers.ModelSerializer):
 class ExperimentSerializer(serializers.ModelSerializer):
     device_obj = DeviceSerializer(read_only=True, source='device')
     lab_name = serializers.SerializerMethodField(read_only=True)
+    form_obj = FormSummerySerializer(read_only=True, source='form')
 
     def get_lab_name(self, obj):
         return obj.get_lab_name()
@@ -59,7 +60,7 @@ class ExperimentSerializer(serializers.ModelSerializer):
 
 class ExperimentDetailSerializer(serializers.ModelSerializer):
     device_obj = DeviceSerializer(read_only=True, source='device')
-    form_obj = FormSerializer(read_only=True, source='form')
+    form_obj = FormSummerySerializer(read_only=True, source='form')
 
     class Meta:
         model = Experiment
