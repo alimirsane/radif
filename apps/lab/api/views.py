@@ -166,38 +166,75 @@ class RequestListAPIView(ListCreateAPIView):
         #         # .exclude(request_status__step__name__in=['در انتظار بررسی', 'در انتظار پرداخت', 'در ‌انتظار نمونه'])
         return queryset.distinct()
 
-    def get(self, request, *args, **kwargs):
-        get_list = self.list(request, *args, **kwargs)
-        if self.request.query_params.get('export_excel', 'False').lower() == 'true':
-            ids = [r.id for r in get_list.data['results'].serializer.instance]
-            qs = Request.objects.filter(id__in=ids)
-            file_url = export_excel(qs)
-            if file_url:
-                full_url = self.request.build_absolute_uri(file_url)
-                return Response({'file_url': full_url})
-            return Response({'error': 'Export failed'}, status=500)
-        elif self.request.query_params.get('step_counter', 'False').lower() == 'true':
-            ids = [r.id for r in get_list.data['results'].serializer.instance]
-            qs = Request.objects.filter(id__in=ids)
-            # qs = get_list.data['results'].serializer.instance
-            try:
-                step_list = []
-                for step in qs[0].request_status.all().first().step.workflow.steps.all():
-                    step_dict = {
+    # def get(self, request, *args, **kwargs):
+    #     get_list = self.list(request, *args, **kwargs)
+    #     if self.request.query_params.get('export_excel', 'False').lower() == 'true':
+    #         ids = [r.id for r in get_list.data['results'].serializer.instance]
+    #         qs = Request.objects.filter(id__in=ids)
+    #         file_url = export_excel(qs)
+    #         if file_url:
+    #             full_url = self.request.build_absolute_uri(file_url)
+    #             return Response({'file_url': full_url})
+    #         return Response({'error': 'Export failed'}, status=500)
+    #     elif self.request.query_params.get('step_counter', 'False').lower() == 'true':
+    #         ids = [r.id for r in get_list.data['results'].serializer.instance]
+    #         qs = Request.objects.filter(id__in=ids)
+    #         # qs = get_list.data['results'].serializer.instance
+    #         try:
+    #             step_list = []
+    #             for step in qs[0].request_status.all().first().step.workflow.steps.all():
+    #                 step_dict = {
+    #                     'id': step.id,
+    #                     'name': step.name,
+    #                     'step_color': step.next_button_color,
+    #                     # 'request_counter': qs.filter(request_status__id=step.id, request_status__accept=False, request_status__reject=False).count()
+    #                     'request_counter': qs.filter(request_status__step__id=step.id, request_status__accept=False,
+    #                                                  request_status__reject=False).count()
+    #                 }
+    #                 step_list.append(step_dict)
+    #             return Response(step_list)
+    #         except:
+    #             return Response({'error': 'request failed'}, status=500)
+    #     else:
+    #         return get_list
+
+    def handle_export_excel(self, queryset):
+        file_url = export_excel(queryset)
+        if file_url:
+            full_url = self.request.build_absolute_uri(file_url)
+            return Response({'file_url': full_url})
+        return Response({'error': 'Export failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def handle_step_counter(self, queryset):
+        try:
+            step_list = []
+            if queryset.exists():
+                workflow_steps = queryset[0].request_status.all().first().step.workflow.steps.all()
+                for step in workflow_steps:
+                    step_list.append({
                         'id': step.id,
                         'name': step.name,
                         'step_color': step.next_button_color,
-                        # 'request_counter': qs.filter(request_status__id=step.id, request_status__accept=False, request_status__reject=False).count()
-                        'request_counter': qs.filter(request_status__step__id=step.id, request_status__accept=False,
-                                                     request_status__reject=False).count()
-                    }
-                    step_list.append(step_dict)
-                return Response(step_list)
-            except:
-                return Response({'error': 'request failed'}, status=500)
-        else:
-            return get_list
+                        'request_counter': queryset.filter(
+                            request_status__step__id=step.id,
+                            request_status__accept=False,
+                            request_status__reject=False
+                        ).count()
+                    })
+            return Response(step_list)
+        except Exception as e:
+            return Response({'error': f'Step counter calculation failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        if request.query_params.get('export_excel', 'False').lower() == 'true':
+            return self.handle_export_excel(queryset)
+
+        if request.query_params.get('step_counter', 'False').lower() == 'true':
+            return self.handle_step_counter(queryset)
+
+        return super().get(request, *args, **kwargs)
 
 class RequestDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Request.objects.all()
