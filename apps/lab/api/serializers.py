@@ -1,5 +1,6 @@
 from rest_framework import serializers
 import ast
+import json
 
 from apps.account.api.serializers import UserSerializer
 from apps.account.api.views import UserDetailAPIView
@@ -73,10 +74,24 @@ class LaboratorySerializer(serializers.ModelSerializer):
     operators_obj = UserSummerySerializer(read_only=True, many=True, source='operators')
     department_obj = DepartmentSerializer(read_only=True, source='department')
     device_objs = DeviceSerializer(read_only=True, many=True, source='devices')
+    operators = serializers.CharField(write_only=True)
 
     class Meta:
         model = Laboratory
         exclude = ['device']
+
+    def to_internal_value(self, data):
+        internal_value = super(LaboratorySerializer, self).to_internal_value(data)
+
+        operators_data = data.get('operators', '[]')
+        try:
+            operator_ids = json.loads(operators_data)
+            operators = User.objects.filter(id__in=operator_ids)
+            internal_value['operators'] = operators
+        except (ValueError, TypeError):
+            raise serializers.ValidationError({"operators": "Invalid operators data."})
+
+        return internal_value
 
 
 class LaboratoryDetailSerializer(serializers.ModelSerializer):
@@ -86,10 +101,25 @@ class LaboratoryDetailSerializer(serializers.ModelSerializer):
     operators_obj = UserSerializer(read_only=True, many=True, source='operators')
     department_obj = DepartmentSerializer(read_only=True, source='department')
     device_objs = DeviceSerializer(read_only=True, many=True, source='devices')
+    operators = serializers.CharField(write_only=True)
 
     class Meta:
         model = Laboratory
         exclude = ['device']
+
+    def to_internal_value(self, data):
+        internal_value = super(LaboratoryDetailSerializer, self).to_internal_value(data)
+
+        # Parse the JSON string for operators and convert it to a list of User instances
+        operators_data = data.get('operators', '[]')
+        try:
+            operator_ids = json.loads(operators_data)
+            operators = User.objects.filter(id__in=operator_ids)
+            internal_value['operators'] = operators
+        except (ValueError, TypeError):
+            raise serializers.ValidationError({"operators": "Invalid operators data."})
+
+        return internal_value
 
 
 class RequestExperimentSerializer(serializers.ModelSerializer):
