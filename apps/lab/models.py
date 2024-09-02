@@ -61,8 +61,8 @@ class Laboratory(models.Model):
     def get_technical_manager_laboratory(self, technical_manager):
         return self.get_unhidden_laboratory().filter(technical_manager=technical_manager)
 
-    def get_operator_laboratory(self, operator):
-        return self.get_unhidden_laboratory().filter(operator=operator)
+    def get_operators_laboratory(self, operators):
+        return self.get_unhidden_laboratory().filter(operators=operators)
 
     # def owners(self):
     #     return [self.technical_manager, self.operator]
