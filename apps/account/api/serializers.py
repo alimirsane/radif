@@ -170,6 +170,17 @@ class UserBusinessSerializer(serializers.ModelSerializer):
 
         return business_serializer
 
+    def validate(self, attrs):
+        # بررسی یوزرنیم تکراری برای شرکت
+        if User.objects.filter(username=attrs.get('company_national_id')).exists():
+            raise serializers.ValidationError({'نام کاربری': 'نام کاربری/شناسه ملی شرکت تکراری است.'})
+
+        # بررسی شناسه ملی شرکت تکراری
+        if User.objects.filter(national_id=f'co{attrs.get("company_national_id")}').exists():
+            raise serializers.ValidationError({'شناسه ملی شرکت': 'این شرکت قبلاً ثبت شده است.'})
+
+        return attrs
+
     class Meta:
         model = User
         fields = ('username', 'password', 'first_name', 'last_name', 'email', 'company_national_id', 'company_name',
@@ -190,6 +201,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         serializer = serializer_class(data=validated_data)
         serializer.is_valid(raise_exception=True)
         return serializer.save()
+
+    def validate(self, attrs):
+        # بررسی یوزرنیم تکراری
+        if User.objects.filter(username=attrs.get('username')).exists():
+            raise serializers.ValidationError({'تلفن همراه': 'نام کاربری تکراری است.'})
+
+        # بررسی ایمیل تکراری
+        if User.objects.filter(email=attrs.get('email')).exists():
+            raise serializers.ValidationError({'ایمیل': 'ایمیل تکراری است.'})
+
+        national_id = attrs.get('national_id')
+        if national_id:
+            if not national_id.isdigit() or len(national_id) != 10:
+                raise serializers.ValidationError({'کد ملی': 'کد ملی باید 10 رقمی و عددی باشد.'})
+
+            if User.objects.filter(national_id=national_id).exists():
+                raise serializers.ValidationError({'کد ملی': 'کد ملی تکراری است.'})
+
+        return attrs
 
     class Meta:
         model = User
