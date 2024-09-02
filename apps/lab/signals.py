@@ -58,5 +58,5 @@ def create_form_number(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Status)
 def set_request_status_notification(sender, instance, created, **kwargs):
-    if created:
+    if created and instance.request.is_completed:
         Notification.objects.create(user=instance.request.owner, type='info', title='تغییر وضعیت درخواست', content=f'وضعیت درخواست شماره {instance.step.name} به {instance.request.request_number} تغییر کرد')
