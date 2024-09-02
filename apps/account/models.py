@@ -72,6 +72,7 @@ class User(AbstractUser):
     linked_users = models.ManyToManyField('self', symmetrical=False, related_name='linked_to_users', blank=True)
 
     OTP = models.CharField(max_length=64, null=True, blank=True)
+    is_sharif_student = models.BooleanField(default=False, verbose_name='دانشجوی شریف')
 
     phone_validator = PhoneValidator()
 
