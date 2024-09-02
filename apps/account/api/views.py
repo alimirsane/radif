@@ -71,7 +71,7 @@ class UserDetailAPIView(RetrieveUpdateDestroyAPIView):
     view_key = 'user'
 
 
-class UserDetailPasswordAPIView(RetrieveUpdateDestroyAPIView):
+class UserDetailPasswordAPIView(UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserPasswordSerializer
 
