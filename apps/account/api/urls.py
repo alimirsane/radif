@@ -17,8 +17,10 @@ urlpatterns = [
 
     path('users/', UserListAPIView.as_view(), name='users-list'),
     path('users/<int:pk>/', UserDetailAPIView.as_view(), name='user-detail'),
+    path('users/<int:pk>/password/', UserDetailPasswordAPIView.as_view(), name='user-detail-password'),
 
     path('users/my-profile/', UserProfileAPIView.as_view(), name='user-profile-detail'),
+    path('users/my-profile/password/', UserDetailPasswordAPIView.as_view(), name='user-profile-password'),
 
     path('educational-fields/', EducationalFieldListAPIView.as_view(), name='requests-list'),
     path('educational-fields/<int:pk>/', EducationalFieldDetailAPIView.as_view(), name='request-detail'),

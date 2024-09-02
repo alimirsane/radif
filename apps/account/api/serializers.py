@@ -77,6 +77,18 @@ class UserSerializer(serializers.ModelSerializer):
             validated_data['password'] = make_password(validated_data.get('national_id'))
         return super().create(validated_data)
 
+class UserPasswordSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+
+    class Meta:
+        model = User
+        fields = ('password', 'id')
+
+    def update(self, instance, validated_data):
+        if validated_data.get('password'):
+            validated_data['password'] = make_password(validated_data.get('password'))
+        return super().update(instance, validated_data)
+
 
 #
 # class UserRegistrationSerializer(serializers.ModelSerializer):

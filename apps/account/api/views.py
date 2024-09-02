@@ -18,7 +18,7 @@ from apps.account.api.serializers import UserSerializer, UserRegistrationSeriali
     EducationalLevelSerializer, AccessLevelSerializer, RoleSerializer, GrantTransactionSerializer, \
     GrantRequestSerializer, GrantRequestApprovedSerializer, UserProfileSerializer, NotificationSerializer, \
     NotificationReadSerializer, GrantRecordSerializer, UPOAuthTokenSerializer, UserBusinessLinkedAccountsSerializer, \
-    LansnetGrantSerializer
+    LansnetGrantSerializer, UserPasswordSerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
     GrantRequest, OTPserver, Notification, GrantRecord
 from .filters import UserFilter, GrantRecordFilter
@@ -71,8 +71,25 @@ class UserDetailAPIView(RetrieveUpdateDestroyAPIView):
     view_key = 'user'
 
 
+class UserDetailPasswordAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserPasswordSerializer
+
+    # permission and queryset
+    permission_classes = [AccessLevelPermission]
+    required_access_levels = ['view_all_user', 'view_owner_user', 'update_all_user', 'update_owner_user', 'delete_all_user', 'delete_owner_user']
+    view_key = 'user'
+
+
 class UserProfileAPIView(RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
+class UserProfilePasswordAPIView(UpdateAPIView):
+    serializer_class = UserPasswordSerializer
 
     def get_object(self):
         return self.request.user
