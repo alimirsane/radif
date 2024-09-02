@@ -49,17 +49,32 @@ class UserListAPIView(ListCreateAPIView):
             queryset = User.objects.filter(role__id__in=[10])
         return queryset
 
-    def get(self, request, *args, **kwargs):
-        get_list = self.list(request, *args, **kwargs)
-        if self.request.query_params.get('export_excel', 'False').lower() == 'true':
-            file_url = export_excel(get_list.data.serializer.instance)
-            if file_url:
-                full_url = self.request.build_absolute_uri(file_url)
-                return Response({'file_url': full_url})
-            return Response({'error': 'Export failed'}, status=500)
-        else:
-            return get_list
+    # def get(self, request, *args, **kwargs):
+    #     get_list = self.list(request, *args, **kwargs)
+    #     if self.request.query_params.get('export_excel', 'False').lower() == 'true':
+    #         file_url = export_excel(get_list.data.serializer.instance)
+    #         if file_url:
+    #             full_url = self.request.build_absolute_uri(file_url)
+    #             return Response({'file_url': full_url})
+    #         return Response({'error': 'Export failed'}, status=500)
+    #     else:
+    #         return get_list
+    #
 
+    def handle_export_excel(self, queryset):
+        file_url = export_excel(queryset)
+        if file_url:
+            full_url = self.request.build_absolute_uri(file_url)
+            return Response({'file_url': full_url.replace('http://', 'https://')})
+        return Response({'error': 'Export failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        if request.query_params.get('export_excel', 'False').lower() == 'true':
+            return self.handle_export_excel(queryset)
+
+        return super().get(request, *args, **kwargs)
 
 class UserDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
@@ -389,17 +404,32 @@ class GrantRequestListAPIView(ListCreateAPIView):
         elif filter_key == 'owner':
             queryset = GrantRequest.objects.filter(sender=self.request.user) | GrantRequest.objects.filter(receiver=self.request.user)
         return queryset.distinct()
+    #
+    # def get(self, request, *args, **kwargs):
+    #     get_list = self.list(request, *args, **kwargs)
+    #     if self.request.query_params.get('export_excel', 'False').lower() == 'true':
+    #         file_url = export_excel(get_list.data.serializer.instance)
+    #         if file_url:
+    #             full_url = self.request.build_absolute_uri(file_url)
+    #             return Response({'file_url': full_url})
+    #         return Response({'error': 'Export failed'}, status=500)
+    #     else:
+    #         return get_list
+
+    def handle_export_excel(self, queryset):
+        file_url = export_excel(queryset)
+        if file_url:
+            full_url = self.request.build_absolute_uri(file_url)
+            return Response({'file_url': full_url.replace('http://', 'https://')})
+        return Response({'error': 'Export failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request, *args, **kwargs):
-        get_list = self.list(request, *args, **kwargs)
-        if self.request.query_params.get('export_excel', 'False').lower() == 'true':
-            file_url = export_excel(get_list.data.serializer.instance)
-            if file_url:
-                full_url = self.request.build_absolute_uri(file_url)
-                return Response({'file_url': full_url})
-            return Response({'error': 'Export failed'}, status=500)
-        else:
-            return get_list
+        queryset = self.get_queryset()
+
+        if request.query_params.get('export_excel', 'False').lower() == 'true':
+            return self.handle_export_excel(queryset)
+
+        return super().get(request, *args, **kwargs)
 
 
 class GrantRequestDetailAPIView(RetrieveUpdateDestroyAPIView):

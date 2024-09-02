@@ -343,20 +343,34 @@ class PaymentRecordListView(ListAPIView):
 
     # set_user = True
     # model_name = 'order'
+    #
+    # def get(self, request, *args, **kwargs):
+    #     get_list = self.list(request, *args, **kwargs)
+    #     if self.request.query_params.get('export_excel', 'False').lower() == 'true':
+    #         ids = [r.id for r in get_list.data['results'].serializer.instance]
+    #         qs = PaymentRecord.objects.filter(id__in=ids)
+    #         file_url = export_excel(qs)
+    #         if file_url:
+    #             full_url = self.request.build_absolute_uri(file_url)
+    #             return Response({'file_url': full_url})
+    #         return Response({'error': 'Export failed'}, status=500)
+    #     else:
+    #         return get_list
+
+    def handle_export_excel(self, queryset):
+        file_url = export_excel(queryset)
+        if file_url:
+            full_url = self.request.build_absolute_uri(file_url)
+            return Response({'file_url': full_url.replace('http://', 'https://')})
+        return Response({'error': 'Export failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request, *args, **kwargs):
-        get_list = self.list(request, *args, **kwargs)
-        if self.request.query_params.get('export_excel', 'False').lower() == 'true':
-            ids = [r.id for r in get_list.data['results'].serializer.instance]
-            qs = PaymentRecord.objects.filter(id__in=ids)
-            file_url = export_excel(qs)
-            if file_url:
-                full_url = self.request.build_absolute_uri(file_url)
-                return Response({'file_url': full_url})
-            return Response({'error': 'Export failed'}, status=500)
-        else:
-            return get_list
+        queryset = self.get_queryset()
 
+        if request.query_params.get('export_excel', 'False').lower() == 'true':
+            return self.handle_export_excel(queryset)
+
+        return super().get(request, *args, **kwargs)
 
 class PaymentRecordManagerListView(ListAPIView):
     """
@@ -381,20 +395,34 @@ class PaymentRecordManagerListView(ListAPIView):
         if self.request.query_params.get('invoice_print', 'False').lower() == 'true':
             return PaymentRecordInvoiceSerializer
         return PaymentRecordListSerializer
+    #
+    # def get(self, request, *args, **kwargs):
+    #     get_list = self.list(request, *args, **kwargs)
+    #     if self.request.query_params.get('export_excel', 'False').lower() == 'true':
+    #         ids = [r.id for r in get_list.data['results'].serializer.instance]
+    #         qs = PaymentRecord.objects.filter(id__in=ids)
+    #         file_url = export_excel(qs)
+    #         if file_url:
+    #             full_url = self.request.build_absolute_uri(file_url)
+    #             return Response({'file_url': full_url})
+    #         return Response({'error': 'Export failed'}, status=500)
+    #     else:
+    #         return get_list
+
+    def handle_export_excel(self, queryset):
+        file_url = export_excel(queryset)
+        if file_url:
+            full_url = self.request.build_absolute_uri(file_url)
+            return Response({'file_url': full_url.replace('http://', 'https://')})
+        return Response({'error': 'Export failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request, *args, **kwargs):
-        get_list = self.list(request, *args, **kwargs)
-        if self.request.query_params.get('export_excel', 'False').lower() == 'true':
-            ids = [r.id for r in get_list.data['results'].serializer.instance]
-            qs = PaymentRecord.objects.filter(id__in=ids)
-            file_url = export_excel(qs)
-            if file_url:
-                full_url = self.request.build_absolute_uri(file_url)
-                return Response({'file_url': full_url})
-            return Response({'error': 'Export failed'}, status=500)
-        else:
-            return get_list
+        queryset = self.get_queryset()
 
+        if request.query_params.get('export_excel', 'False').lower() == 'true':
+            return self.handle_export_excel(queryset)
+
+        return super().get(request, *args, **kwargs)
 
 class PaymentRecordConfirmDetailView(UpdateAPIView):
     # permission_classes = [IsAuthenticated]
