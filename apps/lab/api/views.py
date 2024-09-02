@@ -320,7 +320,7 @@ class FormResponseDetailAPIView(RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         request = instance.request
         instance.delete()
-        if instance.request:
+        if request:
             request.set_price()
 
     # def destroy(self, request, *args, **kwargs):
