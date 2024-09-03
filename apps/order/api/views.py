@@ -361,7 +361,7 @@ class PaymentRecordListView(ListAPIView):
         file_url = export_excel(queryset)
         if file_url:
             full_url = self.request.build_absolute_uri(file_url)
-            return Response({'file_url': full_url.replace('http://', 'https://')})
+            return Response({'file_url': full_url})  # full_url.replace('http://', 'https://')})
         return Response({'error': 'Export failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request, *args, **kwargs):
@@ -413,7 +413,7 @@ class PaymentRecordManagerListView(ListAPIView):
         file_url = export_excel(queryset)
         if file_url:
             full_url = self.request.build_absolute_uri(file_url)
-            return Response({'file_url': full_url.replace('http://', 'https://')})
+            return Response({'file_url': full_url})  # full_url.replace('http://', 'https://')})
         return Response({'error': 'Export failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request, *args, **kwargs):
