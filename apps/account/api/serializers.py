@@ -1,6 +1,7 @@
 import datetime
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
+from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
@@ -266,11 +267,20 @@ class GrantRecordSerializer(serializers.ModelSerializer):
             for field_name, field in self.fields.items():
                 if field_name not in ['file']:
                     field.required = False
+    #
+    # def create(self, validated_data):
+    #     excel_file = self.context['request'].FILES.get('file', None)
+    #     if excel_file:
+    #         return process_excel_and_create_grant_records(excel_file)
+    #     else:
+    #         return super().create(validated_data)
 
     def create(self, validated_data):
         excel_file = self.context['request'].FILES.get('file', None)
-        if excel_file:
+        if excel_file and isinstance(excel_file, (InMemoryUploadedFile, TemporaryUploadedFile)):
             return process_excel_and_create_grant_records(excel_file)
+        elif excel_file:
+            raise serializers.ValidationError({"file": "The uploaded file is not valid."})
         else:
             return super().create(validated_data)
 
