@@ -1,4 +1,5 @@
 import datetime
+from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 
 from rest_framework import parsers
 from rest_framework.authtoken.models import Token
@@ -18,12 +19,12 @@ from apps.account.api.serializers import UserSerializer, UserRegistrationSeriali
     EducationalLevelSerializer, AccessLevelSerializer, RoleSerializer, GrantTransactionSerializer, \
     GrantRequestSerializer, GrantRequestApprovedSerializer, UserProfileSerializer, NotificationSerializer, \
     NotificationReadSerializer, GrantRecordSerializer, UPOAuthTokenSerializer, UserBusinessLinkedAccountsSerializer, \
-    LansnetGrantSerializer, UserPasswordSerializer
+    LansnetGrantSerializer, UserPasswordSerializer, GrantRecordFileSerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
     GrantRequest, OTPserver, Notification, GrantRecord
 from .filters import UserFilter, GrantRecordFilter
 from ..permissions import AccessLevelPermission, query_set_filter_key
-from ...core.functions import export_excel, labsnet
+from ...core.functions import export_excel, labsnet, process_excel_and_create_grant_records
 from ...core.paginations import DefaultPagination
 
 
@@ -347,6 +348,18 @@ class GrantTransactionDetailAPIView(RetrieveUpdateDestroyAPIView):
     view_key = 'granttransaction'
 
 
+class GrantRecordUploadAPIView(CreateAPIView):
+    serializer_class = GrantRecordFileSerializer
+
+    def post(self, request, *args, **kwargs):
+        file = request.FILES.get('file', None)
+        if not file or not isinstance(file, (InMemoryUploadedFile, TemporaryUploadedFile)):
+            return Response({"error": "No file provided or file is invalid."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            created_records = process_excel_and_create_grant_records(file)
+            return Response({"detail": f"{len(created_records)} records created successfully."}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GrantRecordListAPIView(ListCreateAPIView):
     queryset = GrantRecord.objects.all()

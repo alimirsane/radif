@@ -251,6 +251,14 @@ class GrantTransactionSerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class GrantRecordFileSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(write_only=True)
+
+    class Meta:
+        model = GrantRecord
+        fields = ['file']
+
+
 class GrantRecordSerializer(serializers.ModelSerializer):
     receiver_obj = UserSummerySerializer(source='receiver', read_only=True, required=False)
     # file = serializers.FileField(write_only=True, required=False, )
