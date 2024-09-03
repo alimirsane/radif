@@ -253,7 +253,7 @@ class GrantTransactionSerializer(serializers.ModelSerializer):
 
 class GrantRecordSerializer(serializers.ModelSerializer):
     receiver_obj = UserSummerySerializer(source='receiver', read_only=True)
-    file = serializers.FileField(write_only=True, required=False)
+    # file = serializers.FileField(write_only=True, required=False, )
     remaining_grant = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
