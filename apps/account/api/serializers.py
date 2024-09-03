@@ -109,7 +109,7 @@ class UserPersonalSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'password', 'first_name', 'last_name', 'national_id', 'email', 'student_id',
-                  'educational_level', 'educational_field', 'postal_code')
+                  'educational_level', 'educational_field', 'postal_code', 'is_sharif_student')
         extra_kwargs = {
             'password': {'write_only': True},  # Ensure password is write only
         }
@@ -135,7 +135,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'password', 'first_name', 'last_name', 'national_id', 'email', 'student_id',
-                  'educational_level', 'educational_field', 'postal_code', 'address')
+                  'educational_level', 'educational_field', 'postal_code', 'address', 'is_sharif_student')
         extra_kwargs = {
             'password': {'write_only': True},  # Ensure password is write only
             'national_id': {'read_only': True},
@@ -225,7 +225,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'password', 'user_type', 'account_type', 'first_name', 'last_name', 'national_id',
                   'email', 'company_national_id', 'postal_code', 'address', 'company_name', 'company_telephone',
-                  'student_id', 'educational_level', 'educational_field'
+                  'student_id', 'educational_level', 'educational_field', 'is_sharif_student'
                   )
         extra_kwargs = {
             'password': {'write_only': True},  # Ensure password is write only
