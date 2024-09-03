@@ -27,7 +27,7 @@ def create_form_responses(sender, instance, created, **kwargs):
                         new_response = form_response
                         new_response.pk = None
                         new_response.is_main = False
-                        new_response.set_form_number()
+                        # new_response.set_form_number()
                         new_response.save()
             form_responses.update(copy_check=True)
             instance.sample_check = True
