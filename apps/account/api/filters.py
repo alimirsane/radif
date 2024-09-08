@@ -18,8 +18,8 @@ class UserFilter(django_filters.FilterSet):
 
 class GrantRecordFilter(django_filters.FilterSet):
 
-    start_date = django_filters.DateFilter(field_name='date_joined', lookup_expr='gte', label='filter by created_at')  # lookup_expr='icontains',
-    end_date = django_filters.DateFilter(field_name='date_joined', lookup_expr='lte', label='filter by created_at')  # lookup_expr='icontains',
+    start_date = django_filters.DateFilter(field_name='created_at', lookup_expr='gte', label='filter by created_at')  # lookup_expr='icontains',
+    end_date = django_filters.DateFilter(field_name='created_at', lookup_expr='lte', label='filter by created_at')  # lookup_expr='icontains',
 
     class Meta:
         model = GrantRecord
@@ -28,8 +28,8 @@ class GrantRecordFilter(django_filters.FilterSet):
 
 class GrantRequestFilter(django_filters.FilterSet):
 
-    start_date = django_filters.DateFilter(field_name='date_joined', lookup_expr='gte', label='filter by created_at')  # lookup_expr='icontains',
-    end_date = django_filters.DateFilter(field_name='date_joined', lookup_expr='lte', label='filter by created_at')  # lookup_expr='icontains',
+    start_date = django_filters.DateFilter(field_name='datetime', lookup_expr='gte', label='filter by created_at')  # lookup_expr='icontains',
+    end_date = django_filters.DateFilter(field_name='datetime', lookup_expr='lte', label='filter by created_at')  # lookup_expr='icontains',
 
     class Meta:
         model = GrantRequest
