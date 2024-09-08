@@ -51,12 +51,16 @@ def labsnet(nid, type, service):
     import json
     # data = {"user_name": "sharif_uni", "password": "sharif_uni", "national_code": 4723686509, "type": 1,
     #         "services": "[15737, 15737]"}
-    json = '{"user_name": "sharif_uni", "password": "sharif_uni", "national_code": "4723686509", "type": "1", "services": [115901, 15737]}'
+
+    sdata = '{"user_name": "sharif_uni", "password": "sharif_uni", "national_code": "4723686509", "type": "1", "services": [115901, 15737]}'
+    jsdata = json.loads(sdata)
+    response = requests.post('https://labsnet.ir/api/credit_list', data=jsdata, verify=False)
+    response.text
+    # response_text = '{"customer_name":"\\u0645\\u062d\\u0633\\u0646 \\u0686\\u06af\\u0646\\u06cc","credits":[]}'
 
     data = {"user_name": "sharif_uni", "password": "sharif_uni", "national_code": nid, "type": type, "services": list(service)}
-
-    response = requests.post('https://labsnet.ir/api/credit_list', json=data, verify=False)
-    # response_text = '{"customer_name":"\\u0645\\u062d\\u0633\\u0646 \\u0686\\u06af\\u0646\\u06cc","credits":[]}'
+    jdata = json.loads(data)
+    response = requests.post('https://labsnet.ir/api/credit_list', data=jdata, verify=False)
     response_text = response.text
     return JsonResponse(json.loads(response_text))
 
