@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from apps.core.functions import export_excel
 from apps.core.paginations import DefaultPagination
 from apps.account.permissions import IsExpertOrAdminOrManager
+from apps.order.api.filters import PaymentRecordFilter
 from apps.order.models import Order, PaymentRecord, Transaction, PromotionCode, Ticket
 from apps.order.api.serializers import OrderSerializer, OrderDetailSerializer, OrderIssueSerializer, \
     OrderCancelSerializer, OrderPaymentSerializer, PaymentRecordSerializer, OrderBoughtSerializer, \
@@ -327,6 +328,7 @@ class PaymentRecordListView(ListAPIView):
     # permission_classes = [HasViewAccess, CanIssueOrder]
     # permission_classes = [IsAuthenticated]
     serializer_class = PaymentRecordListSerializer
+    filterset_class = PaymentRecordFilter
 
     pagination_class = DefaultPagination
     # filterset_fields = {'event': ['exact', 'in'],
@@ -380,6 +382,7 @@ class PaymentRecordManagerListView(ListAPIView):
     # permission_classes = [IsAuthenticated, IsExpertOrAdminOrManager]
     serializer_class = PaymentRecordListSerializer
     queryset = PaymentRecord.objects.all().order_by("-created_at")
+    filterset_class = PaymentRecordFilter
 
     pagination_class = DefaultPagination
     # filterset_fields = {'event': ['exact', 'in'],

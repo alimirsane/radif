@@ -1,5 +1,5 @@
 import django_filters
-from apps.account.models import User, GrantRecord
+from apps.account.models import User, GrantRecord, GrantRequest
 
 
 class UserFilter(django_filters.FilterSet):
@@ -23,4 +23,14 @@ class GrantRecordFilter(django_filters.FilterSet):
 
     class Meta:
         model = GrantRecord
+        fields = ['start_date', 'end_date']
+
+
+class GrantRequestFilter(django_filters.FilterSet):
+
+    start_date = django_filters.DateFilter(field_name='date_joined', lookup_expr='gte', label='filter by created_at')  # lookup_expr='icontains',
+    end_date = django_filters.DateFilter(field_name='date_joined', lookup_expr='lte', label='filter by created_at')  # lookup_expr='icontains',
+
+    class Meta:
+        model = GrantRequest
         fields = ['start_date', 'end_date']
