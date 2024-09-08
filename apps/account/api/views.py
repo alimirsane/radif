@@ -22,7 +22,7 @@ from apps.account.api.serializers import UserSerializer, UserRegistrationSeriali
     LansnetGrantSerializer, UserPasswordSerializer, GrantRecordFileSerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
     GrantRequest, OTPserver, Notification, GrantRecord
-from .filters import UserFilter, GrantRecordFilter
+from .filters import UserFilter, GrantRecordFilter, GrantRequestFilter
 from ..permissions import AccessLevelPermission, query_set_filter_key
 from ...core.functions import export_excel, labsnet, process_excel_and_create_grant_records
 from ...core.paginations import DefaultPagination
@@ -403,6 +403,7 @@ class GrantRecordDetailAPIView(RetrieveUpdateDestroyAPIView):
 class GrantRequestListAPIView(ListCreateAPIView):
     queryset = GrantRequest.objects.all()
     serializer_class = GrantRequestSerializer
+    filterset_class = GrantRequestFilter
 
     # permission and queryset
     permission_classes = [AccessLevelPermission]
