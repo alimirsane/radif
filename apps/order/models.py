@@ -98,7 +98,7 @@ class Order(models.Model):
 
     promotion_code = models.ForeignKey(PromotionCode, on_delete=models.SET_NULL, related_name='orders', verbose_name="کد تخفیف",
                                        blank=True, null=True)
-    is_returned = models.BooleanField(default=False, verbose_name='عودت شده')
+    is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated at")
@@ -261,7 +261,7 @@ class PaymentRecord(models.Model):
 
     called_back = models.BooleanField(default=False, verbose_name='برگشت')
 
-    is_returned = models.BooleanField(default=False, verbose_name='عودت شده')
+    is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
 
     log_text = models.TextField(default="", verbose_name="Log Text")
 

@@ -227,7 +227,7 @@ class Request(models.Model):
     is_completed = models.BooleanField(default=False, verbose_name='تکمیل شده')
     sample_check = models.BooleanField(default=False, verbose_name='چک نمونه')
 
-    is_returned = models.BooleanField(default=False, verbose_name='عودت شده')
+    is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روز رسانی')
@@ -290,13 +290,18 @@ class Request(models.Model):
                 self.is_returned = True
                 self.save()
                 try:
-                    payment_records = self.get_latest_order_payment_records().filter(successful=True)
-                    payment_records.update(is_returned=True)
                     order = self.get_latest_order()
                     order.is_returned = True
                     order.save()
                 except:
-                    self.description = self.description + '\n تگ استرداد با خطا مواجه شد'
+                    self.description += '\n تگ استرداد برای سفارش با خطا مواجه شد'
+                    self.save()
+
+                try:
+                    payment_records = self.get_latest_order_payment_records().filter(successful=True)
+                    payment_records.update(is_returned=True)
+                except:
+                    self.description += '\n تگ استرداد برای پرداخت با خطا مواجه شد'
                     self.save()
 
     def owners(self):
