@@ -209,6 +209,7 @@ class Request(models.Model):
     discount_description = models.CharField(max_length=120, blank=True, null=True, verbose_name='توضیحات تخفیف')
 
     is_urgent = models.BooleanField(default=False)
+    is_sample_returned = models.BooleanField(default=False, verbose_name='عودت نمونه')
 
     # STATUS_CHOICES = (
     #     ('new', 'New'),
