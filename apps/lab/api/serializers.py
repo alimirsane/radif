@@ -229,6 +229,8 @@ class RequestChangeStatusSerializer(serializers.ModelSerializer):
 
 
 class RequestDetailResultSerializer(serializers.ModelSerializer):
+    result_by_obj = UserSummerySerializer(read_only=True, source='result_by')
+
     class Meta:
         model = RequestResult
         exclude = []
