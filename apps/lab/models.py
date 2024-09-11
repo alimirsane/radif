@@ -573,6 +573,7 @@ def request_result_directory_path(instance, filename):
 
 class RequestResult(models.Model):
     request = models.ForeignKey(Request, on_delete=models.CASCADE, related_name='request_results', verbose_name='درخواست')
+    result_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='کاربر')
     file = models.FileField(upload_to=request_result_directory_path, verbose_name='فایل')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     description = models.TextField(blank=True, verbose_name='توضیحات')

@@ -14,7 +14,7 @@ from apps.order.models import PaymentRecord
 class UserSummerySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name',]
+        fields = ['id', 'username', 'first_name', 'last_name']
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -360,7 +360,16 @@ class FormResponseSerializer(serializers.ModelSerializer):
 
 class RequestResultSerializer(serializers.ModelSerializer):
     # request_obj = FormResponseRequestSerializer(read_only=True, source='request')
+    result_by_obj = UserSummerySerializer(read_only=True, source='result_by')
 
     class Meta:
         model = RequestResult
         exclude = []
+
+    def create(self, validated_data):
+        validated_data['result_by'] = self.context['request'].user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data['result_by'] = self.context['request'].user
+        return super().update(instance, validated_data)
