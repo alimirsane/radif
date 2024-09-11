@@ -319,6 +319,8 @@ class Request(models.Model):
                 price += int(param.urgent_price) * int(temp)
             else:
                 price += int(param.price) * int(temp)
+        if self.is_sample_returned:
+            price += int(850000)
         self.price = price
         self.save()
 
