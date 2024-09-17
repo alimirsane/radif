@@ -73,6 +73,7 @@ class User(AbstractUser):
 
     OTP = models.CharField(max_length=64, null=True, blank=True)
     is_sharif_student = models.BooleanField(default=False, verbose_name='دانشجوی شریف')
+    is_partner = models.BooleanField(default=False, verbose_name='شرکت همکار')
 
     phone_validator = PhoneValidator()
 

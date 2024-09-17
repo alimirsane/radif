@@ -185,6 +185,7 @@ class Parameter(models.Model):
     name_en = models.CharField(max_length=255, blank=True, null=True, verbose_name='نام انگلیسی')
     price = models.DecimalField(max_digits=10, decimal_places=0, verbose_name='قیمت')
     urgent_price = models.DecimalField(max_digits=10, decimal_places=0, verbose_name='قیمت فوری')
+    partner_price = models.DecimalField(max_digits=10, blank=True, null=True, decimal_places=0, verbose_name='قیمت همکار')
     unit_value = models.IntegerField(blank=True, null=True, default=1, verbose_name='مقدار واحد', help_text='مقدار عددی بر حسب نمونه، مبنای محاسبه قیمت')
     unit = models.CharField(choices=UNIT_TYPES, max_length=25, blank=True, null=True, verbose_name='واحد')
 
@@ -315,10 +316,13 @@ class Request(models.Model):
         for param in params:
             temp = formresponses['response_count__sum'] / int(param.unit_value)
             temp = math.ceil(temp)
-            if self.is_urgent:
-                price += int(param.urgent_price) * int(temp)
+            if self.owner.is_partner:
+                price += int(param.partner_price) * int(temp)
             else:
-                price += int(param.price) * int(temp)
+                if self.is_urgent:
+                    price += int(param.urgent_price) * int(temp)
+                else:
+                    price += int(param.price) * int(temp)
         if self.is_sample_returned:
             price += int(850000)
         self.price = price
