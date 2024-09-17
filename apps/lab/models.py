@@ -317,7 +317,10 @@ class Request(models.Model):
             temp = formresponses['response_count__sum'] / int(param.unit_value)
             temp = math.ceil(temp)
             if self.owner.is_partner:
-                price += int(param.partner_price) * int(temp)
+                if param.partner_price:
+                    price += int(param.partner_price) * int(temp)
+                else:
+                    price += int(param.price) * int(temp)
             else:
                 if self.is_urgent:
                     price += int(param.urgent_price) * int(temp)
