@@ -142,6 +142,33 @@ class RequestDetailFormResponseSerializer(serializers.ModelSerializer):
         model = FormResponse
         exclude = ['response']
 
+
+class RequestListMainFormResponseSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FormResponse
+        exclude = ['response', 'response_json']
+
+    def get_children(self, obj):
+        return RequestListMainFormResponseSerializer(
+            FormResponse.objects.filter(parent=obj), many=True
+        ).data
+
+
+class RequestDetailMainFormResponseSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FormResponse
+        exclude = ['response']
+
+    def get_children(self, obj):
+        return RequestDetailMainFormResponseSerializer(
+            FormResponse.objects.filter(parent=obj), many=True
+        ).data
+
+
 class WorkflowStepButtonSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkflowStepButton
@@ -246,7 +273,8 @@ class RequestListSerializer(serializers.ModelSerializer):
     # latest_status_obj = serializers.SerializerMethodField(source='get_get_request_status_obj') #
     latest_status_obj = StatusSerializer(read_only=True, source='lastest_status')
 
-    forms = RequestListFormResponseSerializer(many=True, read_only=True, source='formresponse')
+    # forms = RequestListFormResponseSerializer(many=True, read_only=True, source='formresponse')
+    forms = serializers.SerializerMethodField()
 
     # def latest_status_obj_(self, obj):
     #     lastest_status = obj.lastest_status()
@@ -260,6 +288,11 @@ class RequestListSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user
         return super().create(validated_data)
+
+    def get_forms(self, obj):
+        return RequestListMainFormResponseSerializer(
+            FormResponse.objects.filter(request=obj, is_main=True), many=True
+        ).data
 
 
 class OrderPaymentRecordSerializer(serializers.ModelSerializer):
@@ -278,7 +311,8 @@ class RequestDetailSerializer(serializers.ModelSerializer):
 
     status_objs = StatusSerializer(read_only=True, source='request_status', many=True)
 
-    forms = RequestDetailFormResponseSerializer(many=True, read_only=True, source='formresponse')
+    # forms = RequestDetailFormResponseSerializer(many=True, read_only=True, source='formresponse')
+    forms = serializers.SerializerMethodField()
 
     payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order_payment_records')
 
@@ -291,8 +325,12 @@ class RequestDetailSerializer(serializers.ModelSerializer):
         # if 'parameter' in validated_data:
         instance.save()
         instance.set_price()
-
         return instance
+
+    def get_forms(self, obj):
+        return RequestDetailMainFormResponseSerializer(
+            FormResponse.objects.filter(request=obj, is_main=True), many=True
+        ).data
 
 
 class CertificateSerializer(serializers.ModelSerializer):
