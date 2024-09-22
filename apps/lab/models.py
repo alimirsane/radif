@@ -212,21 +212,12 @@ class Request(models.Model):
     is_urgent = models.BooleanField(default=False)
     is_sample_returned = models.BooleanField(default=False, verbose_name='عودت نمونه')
 
-    # STATUS_CHOICES = (
-    #     ('new', 'New'),
-    #     ('pending', 'Pending'),
-    #     ('rejected', 'Rejected'),
-    #     ('done', 'Done'),
-    #     ('canceled', 'Canceled'),
-    # )
-    #
-    # status = models.CharField(max_length=10, null=True, blank=True, default='new', choices=STATUS_CHOICES, verbose_name='وضعیت')
-
     delivery_date = models.DateField(blank=True, null=True, verbose_name='تاریخ تحویل')
     description = models.TextField(blank=True, null=True, verbose_name='توضیحات')
     subject = models.CharField(max_length=100, blank=True, null=True, verbose_name='موضوع درخواست')
     request_number = models.CharField(max_length=20, blank=True, verbose_name='شماره درخواست')
     is_completed = models.BooleanField(default=False, verbose_name='تکمیل شده')
+    is_cancelled = models.BooleanField(default=False, verbose_name='لغو شده')
     sample_check = models.BooleanField(default=False, verbose_name='چک نمونه')
 
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
