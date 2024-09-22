@@ -412,6 +412,7 @@ class FormResponse(models.Model):
     copy_check = models.BooleanField(default=False, blank=True, null=True, verbose_name='چک کپی')
     is_main = models.BooleanField(default=False, blank=True, null=True, verbose_name='اصلی')
     response_count = models.IntegerField(default=1, verbose_name='تعداد پاسخ‌ها')
+    parent = models.ForeignKey('self', null=True, blank=True, related_name='child_form_response', on_delete=models.SET_NULL, verbose_name='نمونه مادر')
 
     class Meta:
         verbose_name = 'پاسخ فرم'
