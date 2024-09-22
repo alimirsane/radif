@@ -22,15 +22,16 @@ def create_form_responses(sender, instance, created, **kwargs):
             form_responses = FormResponse.objects.filter(request=instance, is_main=True)
             for form_response in form_responses:
                 copies_needed = form_response.response_count - 1
+                main_response = form_response
                 if copies_needed > 0 and not form_response.copy_check:
                     for _ in range(copies_needed):
-                        new_response = form_response
-                        new_response.pk = None
-                        new_response.is_main = False
-                        new_response.save()
-                        new_response.parent = form_response
-                        # new_response.set_form_number()
-                        new_response.save()
+                        new_response = FormResponse.objects.create(request=main_response.request,
+                                                                    form_number=main_response.form_number,
+                                                                    response=main_response.response,
+                                                                    response_json=main_response.response_json,
+                                                                    is_main=False,
+                                                                    parent=main_response)
+
             form_responses.update(copy_check=True)
             instance.sample_check = True
             instance.save()
