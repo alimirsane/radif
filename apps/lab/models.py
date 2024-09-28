@@ -200,10 +200,19 @@ class Parameter(models.Model):
         return self.experiment.owners()
 
 
+class DiscountHistory(models.Model):
+    request = models.ForeignKey('Request', on_delete=models.CASCADE, related_name='request_discounts', verbose_name='درخواست')
+    discount = models.PositiveIntegerField(blank=True, null=True, default=0)
+    description = models.TextField(blank=True, verbose_name='توضیحات')
+    action_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='کاربر')
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True, verbose_name='تاریخ ایجاد')
+
+
 class Request(models.Model):
     owner = models.ForeignKey(User, blank=True, null=True, related_name='requests', limit_choices_to={'user_type': 'customer'}, on_delete=models.PROTECT, verbose_name='درخواست کننده')
     experiment = models.ForeignKey('Experiment', on_delete=models.PROTECT, verbose_name='آزمایش')
     parameter = models.ManyToManyField('Parameter', verbose_name='پارامتر')
+    price_wod = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
     price = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
 
     discount = models.PositiveIntegerField(blank=True, null=True, default=0)
@@ -252,6 +261,7 @@ class Request(models.Model):
             self.discount = value
             self.discount_description = description
             self.save()
+            DiscountHistory.objects.create(request=self, discount=value, description=description, action_by=action_by)
         else:
             pass
 
