@@ -303,6 +303,7 @@ class OrderPaymentRecordSerializer(serializers.ModelSerializer):
 
 
 class DiscountHistorySerializer(serializers.ModelSerializer):
+    action_by_obj = UserSummerySerializer(source='action_by')
 
     class Meta:
         model = DiscountHistory
