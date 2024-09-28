@@ -16,13 +16,14 @@ from rest_framework.response import Response
 # from apps.account.permissions import IsExpertOrAdminOrManager
 from apps.core.functions import export_excel
 from apps.core.paginations import DefaultPagination
-from apps.account.permissions import IsExpertOrAdminOrManager
+from apps.account.permissions import IsExpertOrAdminOrManager, AccessLevelPermission
 from apps.order.api.filters import PaymentRecordFilter
 from apps.order.models import Order, PaymentRecord, Transaction, PromotionCode, Ticket
 from apps.order.api.serializers import OrderSerializer, OrderDetailSerializer, OrderIssueSerializer, \
     OrderCancelSerializer, OrderPaymentSerializer, PaymentRecordSerializer, OrderBoughtSerializer, \
     PromotionCodeSerializer, PaymentSummarySerializer, \
-    PaymentRecordListSerializer, PaymentRecordConfirmSerializer, PaymentRecordInvoiceSerializer
+    PaymentRecordListSerializer, PaymentRecordConfirmSerializer, PaymentRecordInvoiceSerializer, \
+    OrderPaymentRecordSerializer
 # PromotionCodeStrSerializer,TransactionSerializer
 # TicketSerializer, SubscriptionSerializer
 # from apps.order.zarrinpal import ZarrinPalConfirmSerializer, ZarrinPalSerializer
@@ -440,6 +441,18 @@ class PaymentRecordConfirmDetailView(UpdateAPIView):
         return PaymentRecord.objects.get(transaction_code=self.kwargs['id2'])
 
 
+class PaymentRecordTRefDetailView(UpdateAPIView):
+    serializer_class = OrderPaymentRecordSerializer
+    # permission_classes = [AccessLevelPermission]
+    # required_access_levels = ['update_all_paymentrecord', 'update_owner_paymentrecord']
+    # view_key = 'paymentrecord'
+    queryset = PaymentRecord.objects.all()
+
+    # def get_queryset(self):
+    #     return PaymentRecord.objects.get(transaction_code=self.kwargs['id2'])
+
+    # def get_object(self):
+    #     return PaymentRecord.objects.get(transaction_code=self.kwargs['id2'])
 
 #
 #

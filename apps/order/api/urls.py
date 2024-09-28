@@ -4,7 +4,7 @@ from apps.order.api.views import OrderIssueView, OrderListView, OrderDetailView,
     OrderPaymentView, OrderCancelView, \
     PromotionCodeListView, PromotionCodeDetailView, PaymentRecordListView, \
     OrderBoughtListView, PaymentRecordManagerListView, \
-    PaymentRecordConfirmDetailView
+    PaymentRecordConfirmDetailView, PaymentRecordTRefDetailView
 
 # TicketManagerListView,TransactionDetailView,PromotionCodeStrView,TransactionListView,TransactionManagerListView
     # TicketListView, TicketDetailView
@@ -67,6 +67,7 @@ urlpatterns = [
    # path('promo-code/<str:code>/', PromotionCodeStrView.as_view()),
 
     path('payment-record/list/', PaymentRecordListView.as_view()),
+    path('payment-record/<int:pk>/manager/', PaymentRecordTRefDetailView.as_view()),
     path('payment-record/manager/list/', PaymentRecordManagerListView.as_view()),
 
     #    path('promo-codes/add/', AddPromotionCodeView.as_view()),

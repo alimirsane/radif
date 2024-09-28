@@ -243,12 +243,15 @@ class Order(models.Model):
 
 class PaymentRecord(models.Model):
     TYPES = (('order', 'پرداخت سفارش'), ('account', 'شارژ اکانت'))
+    SETTLEMENT_TYPES = (('pos', 'کارتخوان'), ('opay', 'درگاه'))
 
     payer = models.ForeignKey(User, on_delete=models.PROTECT, related_name='payment_records', verbose_name='پرداخت کننده', blank=True, null=True)
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='payment_records', verbose_name="سفارش",
                                       help_text="The order we want to pay for.", blank=True, null=True)
     payment_type = models.CharField(max_length=31, choices=TYPES, default='order', verbose_name='نوع پرداخت',
                                     help_text="Choices: ['شارژ اکانت', 'پرداخت سفارش']")
+    settlement_type = models.CharField(max_length=31, choices=TYPES, default='opay', verbose_name='نوع تسویه',
+                                    help_text="Choices: ['درگاه', 'کارتخوان']")
     amount = models.BigIntegerField(default=0, verbose_name='مقدار')
     successful = models.BooleanField(default=False, verbose_name='موفق')
     charged = models.BooleanField(default=False, verbose_name='شارژ شده')

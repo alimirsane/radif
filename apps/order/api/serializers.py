@@ -78,7 +78,7 @@ class PaymentRecordSerializer(serializers.ModelSerializer):
 class OrderPaymentRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentRecord
-        fields = ['amount', 'transaction_code', 'tref', 'successful', 'payer', 'order', 'payment_order_guid', 'payment_order_id', 'payment_link']
+        fields = ['id', 'amount', 'settlement_type', 'transaction_code', 'tref', 'successful', 'payer', 'order', 'payment_order_guid', 'payment_order_id', 'payment_link']
 
 
 #used
