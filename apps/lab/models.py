@@ -212,6 +212,7 @@ class Request(models.Model):
     owner = models.ForeignKey(User, blank=True, null=True, related_name='requests', limit_choices_to={'user_type': 'customer'}, on_delete=models.PROTECT, verbose_name='درخواست کننده')
     experiment = models.ForeignKey('Experiment', on_delete=models.PROTECT, verbose_name='آزمایش')
     parameter = models.ManyToManyField('Parameter', verbose_name='پارامتر')
+    price_sample_returned = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
     price_wod = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
     price = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
 
@@ -328,8 +329,9 @@ class Request(models.Model):
                 else:
                     price += int(param.price) * int(temp)
         if self.is_sample_returned:
-            price += int(850000)
-        self.price = price
+            self.price_sample_returned = int(850000)
+        self.price_wod = price
+        self.price = (self.price_wod - self.price_wod * self.discount / 100) + self.price_sample_returned
         self.save()
 
     def current_month_counter(self):

@@ -120,15 +120,16 @@ class Order(models.Model):
         amount = 0
         if self.request:
             amount = self.request.price
-            self.amount_wo_pc = self.request.price
+            self.amount_wo_pc = self.request.price_wod
 
         if self.promotion_code:
             amount -= amount * self.promotion_code.percent_off / 100
             self.promotion_code.used_count += 1
             self.promotion_code.save()
 
-        if self.request.discount != 0:
-            amount -= amount * self.request.discount / 100
+        # if self.request.discount != 0:
+        #     amount -= amount * self.request.discount / 100
+            # price = amount * self.request.discount / 100
 
         self.amount = amount
 
