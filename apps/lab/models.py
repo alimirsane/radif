@@ -330,6 +330,8 @@ class Request(models.Model):
                     price += int(param.price) * int(temp)
         if self.is_sample_returned:
             self.price_sample_returned = int(850000)
+        else:
+            self.price_sample_returned = int(0)
         self.price_wod = price
         self.price = (self.price_wod - self.price_wod * self.discount / 100) + self.price_sample_returned
         self.save()
