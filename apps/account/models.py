@@ -31,6 +31,20 @@ class EducationalLevel(models.Model):
         return self.name
 
 
+class Department(models.Model):
+    name = models.CharField(max_length=255, verbose_name='نام')
+    description = models.TextField(blank=True, null=True, verbose_name='توضیحات')
+
+    # manager = models.ForeignKey('Personnel', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='مدیر')
+
+    class Meta:
+        verbose_name = 'دپارتمان'
+        verbose_name_plural = 'دپارتمان‌ها'
+
+    def __str__(self):
+        return self.name
+
+
 class PhoneValidator(validators.RegexValidator):
     regex = r'^\+\d{1,3}\d{9,12}$'
     message = _('Enter a valid phone number.')
@@ -58,15 +72,18 @@ class User(AbstractUser):
 
     educational_field = models.ForeignKey(EducationalField, on_delete=models.PROTECT, null=True, blank=True)
     educational_level = models.ForeignKey(EducationalLevel, on_delete=models.PROTECT, null=True, blank=True)
+    department = models.ForeignKey('Department', related_name='users', blank=True, null=True, on_delete=models.PROTECT, verbose_name='دپارتمان')
+
     student_id = models.CharField(_("student ID"), max_length=50, unique=True, null=True, blank=True, help_text=_("Enter your student ID."))
     address = models.CharField(_("address"), max_length=255, null=True, blank=True, help_text=_("Enter your address."))
+    telephone = models.CharField(_("telephone"), max_length=255, null=True, blank=True, help_text=_("Enter your company telephone."))
 
     postal_code = models.CharField(_("postal code"), max_length=20, blank=True, null=True, help_text=_("Enter your postal code."))
     company_national_id = models.CharField(_("company national ID"), max_length=11, unique=True, null=True, blank=True, help_text=_("Enter your company national ID."))
     company_name = models.CharField(_("company name"), max_length=150, null=True, blank=True, help_text=_("Enter your company name."))
-
-    research_grant = models.BigIntegerField(default=0, verbose_name="گرنت پژوهشی")
-    labsnet_grant = models.BigIntegerField(default=0, verbose_name="گرنت لبزنت")
+    company_economic_number = models.CharField(_("company economic number"), max_length=25, unique=True, null=True, blank=True, help_text=_("Enter your company economic number."))
+    # research_grant = models.BigIntegerField(default=0, verbose_name="گرنت پژوهشی")
+    # labsnet_grant = models.BigIntegerField(default=0, verbose_name="گرنت لبزنت")
 
     company_telephone = models.CharField(_("company telephone"), max_length=255, null=True, blank=True, help_text=_("Enter your company telephone."))
     linked_users = models.ManyToManyField('self', symmetrical=False, related_name='linked_to_users', blank=True)
