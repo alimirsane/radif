@@ -333,7 +333,7 @@ class Request(models.Model):
         else:
             self.price_sample_returned = int(0)
         self.price_wod = price
-        self.price = (self.price_wod - self.price_wod * self.discount / 100) + self.price_sample_returned
+        self.price = (price - (price * self.discount / 100)) + self.price_sample_returned
         self.save()
 
     def current_month_counter(self):
