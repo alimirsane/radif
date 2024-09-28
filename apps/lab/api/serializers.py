@@ -7,7 +7,7 @@ from apps.account.api.views import UserDetailAPIView
 from apps.account.models import User
 from apps.form.api.serializers import FormSerializer, FormSummerySerializer
 from apps.lab.models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, \
-    Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult, RequestCertificate
+    Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult, RequestCertificate, DiscountHistory
 from apps.order.models import PaymentRecord
 
 
@@ -302,6 +302,12 @@ class OrderPaymentRecordSerializer(serializers.ModelSerializer):
         fields = ['amount', 'transaction_code', 'tref', 'successful', 'payment_type', 'created_at']
 
 
+class DiscountHistorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DiscountHistory
+        exclude = []
+
 
 class RequestDetailSerializer(serializers.ModelSerializer):
     result_objs = RequestDetailResultSerializer(read_only=True, source='request_results', many=True)
@@ -315,6 +321,7 @@ class RequestDetailSerializer(serializers.ModelSerializer):
     forms = serializers.SerializerMethodField()
 
     payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order_payment_records')
+    discount_history_objs = DiscountHistorySerializer(many=True, source='request_discounts')
 
     class Meta:
         model = Request
