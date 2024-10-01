@@ -155,9 +155,9 @@ class RequestListAPIView(ListCreateAPIView):
                                           self.required_access_levels, self.request.method)
         queryset = []
         if filter_key == 'all':
-            queryset = Request.objects.filter(has_parent_request=False)
+            queryset = Request.objects.filter(is_completed=True, has_parent_request=False)
         elif filter_key == 'owner':
-            queryset = Request.objects.filter(has_parent_request=False, experiment__laboratory__technical_manager=self.request.user) | Request.objects.filter(is_completed=True, experiment__laboratory__operators=self.request.user)
+            queryset = Request.objects.filter(is_completed=True, has_parent_request=False, experiment__laboratory__technical_manager=self.request.user) | Request.objects.filter(is_completed=True, experiment__laboratory__operators=self.request.user)
         # elif filter_key == 'receptor':
         #     queryset = Request.objects.filter(is_completed=True)
         #         # .exclude(request_status__step__name__in=['در حال انجام', 'تکمیل شده', 'رد شده'])
@@ -271,7 +271,7 @@ class OwnedRequestListAPIView(ListCreateAPIView):
     serializer_class = RequestListSerializer
 
     def get_queryset(self):
-        return self.request.user.requests.filter(is_completed=True).order_by('-created_at')
+        return self.request.user.requests.filter(has_parent_request=False).order_by('-created_at')
 
 class OwnedRequestDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Request.objects.all()
