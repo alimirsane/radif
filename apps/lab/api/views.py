@@ -278,7 +278,7 @@ class OwnedRequestDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = RequestDetailSerializer
 
     def get_queryset(self):
-        return self.request.user.requests.filter(is_completed=True).order_by('-created_at')
+        return self.request.user.requests.filter(has_parent_request=False).order_by('-created_at')
 
 
 class DepartmentListAPIView(ListCreateAPIView):
