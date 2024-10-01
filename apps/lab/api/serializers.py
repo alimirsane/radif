@@ -290,6 +290,14 @@ class ChildRequestListSerializer(serializers.ModelSerializer):
         model = Request
         exclude = []
 
+    def create(self, validated_data):
+        validated_data['owner'] = self.context['request'].user
+        return super().create(validated_data)
+
+    def get_forms(self, obj):
+        return RequestListMainFormResponseSerializer(
+            FormResponse.objects.filter(request=obj, is_main=True), many=True
+        ).data
 
 class RequestListSerializer(serializers.ModelSerializer):
     result_objs = RequestDetailResultSerializer(read_only=True, source='request_results', many=True)
@@ -355,6 +363,20 @@ class ChildRequestDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
         exclude = []
+
+    def update(self, instance, validated_data):
+        super().update(instance, validated_data)
+        # if 'parameter' in validated_data:
+        instance.save()
+        if not instance.has_parent_request:
+            instance.update_parent_status()
+        instance.set_price()
+        return instance
+
+    def get_forms(self, obj):
+        return RequestDetailMainFormResponseSerializer(
+            FormResponse.objects.filter(request=obj, is_main=True), many=True
+        ).data
 
 
 class RequestDetailSerializer(serializers.ModelSerializer):

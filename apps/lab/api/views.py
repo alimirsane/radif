@@ -214,7 +214,7 @@ class RequestListAPIView(ListCreateAPIView):
                     step_list.append({
                         'id': step.id,
                         'name': step.name,
-                        'step_color': step.next_button_color,
+                        'step_color': step.step_color,
                         'request_counter': queryset.filter(
                             request_status__step__id=step.id,
                             request_status__accept=False,
