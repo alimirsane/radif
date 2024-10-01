@@ -263,11 +263,35 @@ class RequestDetailResultSerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class ChildRequestListSerializer(serializers.ModelSerializer):
+    result_objs = RequestDetailResultSerializer(read_only=True, source='request_results', many=True)
+    owner_obj = UserSerializer(read_only=True, source='owner')
+    experiment_obj = RequestExperimentSerializer(read_only=True, source='experiment')
+    parameter_obj = ParameterSerializer(many=True, read_only=True, source='parameter')
+
+    status_objs = StatusSerializer(read_only=True, source='request_status',many=True)
+    # latest_status_obj = serializers.SerializerMethodField(source='get_get_request_status_obj') #
+    latest_status_obj = StatusSerializer(read_only=True, source='lastest_status')
+
+    # forms = RequestListFormResponseSerializer(many=True, read_only=True, source='formresponse')
+    forms = serializers.SerializerMethodField()
+
+    # def latest_status_obj_(self, obj):
+    #     lastest_status = obj.lastest_status()
+    #     return StatusSerializer(instance=lastest_status)
+    #     # return obj.lastest_status()
+
+    class Meta:
+        model = Request
+        exclude = []
+
+
 class RequestListSerializer(serializers.ModelSerializer):
     result_objs = RequestDetailResultSerializer(read_only=True, source='request_results', many=True)
     owner_obj = UserSerializer(read_only=True, source='owner')
     experiment_obj = RequestExperimentSerializer(read_only=True, source='experiment')
     parameter_obj = ParameterSerializer(many=True, read_only=True, source='parameter')
+    child_requests = ChildRequestListSerializer(many=True, read_only=True)
 
     status_objs = StatusSerializer(read_only=True, source='request_status',many=True)
     # latest_status_obj = serializers.SerializerMethodField(source='get_get_request_status_obj') #
@@ -309,8 +333,7 @@ class DiscountHistorySerializer(serializers.ModelSerializer):
         model = DiscountHistory
         exclude = []
 
-
-class RequestDetailSerializer(serializers.ModelSerializer):
+class ChildRequestDetailSerializer(serializers.ModelSerializer):
     result_objs = RequestDetailResultSerializer(read_only=True, source='request_results', many=True)
     owner_obj = UserSerializer(read_only=True, source='owner')
     experiment_obj = RequestExperimentSerializer(read_only=True, source='experiment')
@@ -328,10 +351,32 @@ class RequestDetailSerializer(serializers.ModelSerializer):
         model = Request
         exclude = []
 
+
+class RequestDetailSerializer(serializers.ModelSerializer):
+    result_objs = RequestDetailResultSerializer(read_only=True, source='request_results', many=True)
+    owner_obj = UserSerializer(read_only=True, source='owner')
+    experiment_obj = RequestExperimentSerializer(read_only=True, source='experiment')
+    parameter_obj = ParameterSerializer(many=True, read_only=True, source='parameter')
+    child_requests = ChildRequestDetailSerializer(many=True, read_only=True)
+
+    status_objs = StatusSerializer(read_only=True, source='request_status', many=True)
+
+    # forms = RequestDetailFormResponseSerializer(many=True, read_only=True, source='formresponse')
+    forms = serializers.SerializerMethodField()
+
+    payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order_payment_records')
+    discount_history_objs = DiscountHistorySerializer(many=True, source='request_discounts')
+
+    class Meta:
+        model = Request
+        exclude = []
+
     def update(self, instance, validated_data):
         super().update(instance, validated_data)
         # if 'parameter' in validated_data:
         instance.save()
+        if not instance.has_parent_request:
+            instance.update_parent_status()
         instance.set_price()
         return instance
 
