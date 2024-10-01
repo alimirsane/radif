@@ -548,7 +548,8 @@ class WorkflowStep(models.Model):
     next_step = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='previous_step', verbose_name='مرحله بعدی')
     reject_step = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='مرحله رد')
-
+    step_color = models.CharField(max_length=20, default='info', choices=COLOR_CHOICES,
+                                         verbose_name='رنگ دکمه تایید')
     is_first_step = models.BooleanField(default=False, verbose_name='مرحله اول')
     has_next_step = models.BooleanField(default=False, verbose_name='مرحله بعد دارد')
     has_reject_step = models.BooleanField(default=False, verbose_name='رد شدن دارد')
