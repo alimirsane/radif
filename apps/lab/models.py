@@ -537,16 +537,7 @@ class WorkflowStep(models.Model):
     description = models.TextField(blank=True, verbose_name='توضیحات')
     next_step = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='previous_step', verbose_name='مرحله بعدی')
-    next_button_title = models.CharField(max_length=100, default='تایید', verbose_name='نام دکمه تایید')
-
-    next_button_color = models.CharField(max_length=20, default='info', choices=COLOR_CHOICES,
-                                         verbose_name='رنگ دکمه تایید')
-
     reject_step = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='مرحله رد')
-    reject_button_title = models.CharField(max_length=100, default='رد', null=True, blank=True, verbose_name='نام دکمه رد')
-
-    reject_button_color = models.CharField(max_length=20, null=True, blank=True, default='info', choices=COLOR_CHOICES,
-                                         verbose_name='رنگ دکمه رد')
 
     is_first_step = models.BooleanField(default=False, verbose_name='مرحله اول')
     has_next_step = models.BooleanField(default=False, verbose_name='مرحله بعد دارد')
