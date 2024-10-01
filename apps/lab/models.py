@@ -314,9 +314,9 @@ class Request(models.Model):
             lastest_status.action_by = action_by
             lastest_status.save()
 
-        else:  # اگر درخواست مادر است
+        else:
             child_statuses = [child.lastest_status() for child in self.child_requests.all()]
-            if all(status.is_completed for status in child_statuses):  # همه فرزندان تکمیل شده‌اند
+            if all(status.is_completed for status in child_statuses):
                 super().change_status(action, description, action_by)
             else:
                 raise ValidationError(
@@ -328,10 +328,13 @@ class Request(models.Model):
                 self.is_returned = True
             else:
                 self.is_returned = False
-
-            latest_delivery_date = max(
-                child.delivery_date for child in self.child_requests.all() if child.delivery_date)
-            self.delivery_date = latest_delivery_date
+            try:
+                # self.update_delivery_date()
+                latest_delivery_date = max(
+                    child.delivery_date for child in self.child_requests.all() if child.delivery_date)
+                self.delivery_date = latest_delivery_date
+            except:
+                pass
 
             self.save()
 
@@ -520,23 +523,22 @@ class Workflow(models.Model):
 
     def get_ordered_steps(self):
         ordered_steps = []
-        reject_steps = []
+        reject_steps_set = set()
 
         step = self.first_step()
         while step:
-            ordered_steps.append(step)
+            if step not in ordered_steps:
+                ordered_steps.append(step)
             step = step.next_step
 
+
         for step in ordered_steps:
-            if step.reject_step and step.reject_step not in ordered_steps:
-                reject_steps.append(step.reject_step)
+            reject_step = step.reject_step
+            while reject_step and reject_step not in reject_steps_set:
+                reject_steps_set.add(reject_step)
+                reject_step = reject_step.reject_step
 
-                next_reject_step = step.reject_step.reject_step
-                while next_reject_step and next_reject_step not in reject_steps:
-                    reject_steps.append(next_reject_step)
-                    next_reject_step = next_reject_step.reject_step
-
-        ordered_steps.extend(reject_steps)
+        ordered_steps.extend(reject_steps_set)
 
         return ordered_steps
 
