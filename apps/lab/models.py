@@ -249,8 +249,8 @@ class Request(models.Model):
     def clean(self):
         if self.parent_request and self.child_requests.exists():
             raise ValidationError('یک درخواست فرزند نمی‌تواند فرزندان دیگری داشته باشد.')
-        if self.parent_request and self.has_parent_request:
-            raise ValidationError('یک درخواست فرزند نمی‌تواند به عنوان درخواست مادر تنظیم شود.')
+        # if self.parent_request and self.has_parent_request:
+        #     raise ValidationError('یک درخواست فرزند نمی‌تواند به عنوان درخواست مادر تنظیم شود.')
 
     def get_all_child_requests(self):
         return self.child_requests.all()
@@ -519,14 +519,25 @@ class Workflow(models.Model):
             return None
 
     def get_ordered_steps(self):
-        """
-        این تابع مراحل را بر اساس رابطه `next_step` مرتب می‌کند.
-        """
         ordered_steps = []
-        step = self.first_step()  # شروع از مرحله اول
+        reject_steps = []
+
+        step = self.first_step()
         while step:
             ordered_steps.append(step)
-            step = step.next_step  # به مرحله بعدی برو
+            step = step.next_step
+
+        for step in ordered_steps:
+            if step.reject_step and step.reject_step not in ordered_steps:
+                reject_steps.append(step.reject_step)
+
+                next_reject_step = step.reject_step.reject_step
+                while next_reject_step and next_reject_step not in reject_steps:
+                    reject_steps.append(next_reject_step)
+                    next_reject_step = next_reject_step.reject_step
+
+        ordered_steps.extend(reject_steps)
+
         return ordered_steps
 
 class WorkflowStep(models.Model):
