@@ -518,6 +518,16 @@ class Workflow(models.Model):
         except:
             return None
 
+    def get_ordered_steps(self):
+        """
+        این تابع مراحل را بر اساس رابطه `next_step` مرتب می‌کند.
+        """
+        ordered_steps = []
+        step = self.first_step()  # شروع از مرحله اول
+        while step:
+            ordered_steps.append(step)
+            step = step.next_step  # به مرحله بعدی برو
+        return ordered_steps
 
 class WorkflowStep(models.Model):
     COLOR_CHOICES = (

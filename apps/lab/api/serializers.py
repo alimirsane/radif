@@ -188,11 +188,16 @@ class WorkflowStepSerializer(serializers.ModelSerializer):
 
 
 class WorkflowSerializer(serializers.ModelSerializer):
-    steps_objs = WorkflowStepSerializer(read_only=True, source='steps', many=True)
+    # steps_objs = WorkflowStepSerializer(read_only=True, source='steps', many=True)
+    steps_objs = serializers.SerializerMethodField()
 
     class Meta:
         model = Workflow
         exclude = []
+
+    def get_steps_objs(self, obj):
+        ordered_steps = obj.get_ordered_steps()
+        return WorkflowStepSerializer(ordered_steps, many=True).data
 
 
 class StatusSerializer(serializers.ModelSerializer):
