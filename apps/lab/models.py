@@ -268,17 +268,17 @@ class Request(models.Model):
         return Status.objects.create(request=self, step=workflow.first_step())
 
     def lastest_status(self):
-        if not self.child_requests.exists():  # اگر فرزند ندارد
-            if self.request_status.order_by('-created_at').exists():
-                return self.request_status.order_by('-created_at').first()
-            else:
-                return self.set_first_step()
-        else:  # اگر درخواست مادر است
-            statuses = [child.lastest_status() for child in self.child_requests.all()]
-            if all(status.is_completed for status in statuses):  # همه فرزندان تکمیل شده‌اند
-                return self.request_status.order_by('-created_at').first()
-            else:
-                return min(statuses, key=lambda x: x.created_at)  # زودترین وضعیت فرزندان
+        # if not self.child_requests.exists():  # اگر فرزند ندارد
+        if self.request_status.order_by('-created_at').exists():
+            return self.request_status.order_by('-created_at').first()
+        else:
+            return self.set_first_step()
+        # else:  # اگر درخواست مادر است
+        #     statuses = [child.lastest_status() for child in self.child_requests.all()]
+        #     if all(status.is_completed for status in statuses):  # همه فرزندان تکمیل شده‌اند
+        #         return self.request_status.order_by('-created_at').first()
+        #     else:
+        #         return min(statuses, key=lambda x: x.created_at)  # زودترین وضعیت فرزندان
 
     def step_button_action(self, action, description, action_by, value):
         if action in ['next', 'previous', 'reject']:
