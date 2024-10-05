@@ -213,12 +213,12 @@ class Request(models.Model):
     owner = models.ForeignKey(User, blank=True, null=True, related_name='requests', limit_choices_to={'user_type': 'customer'}, on_delete=models.PROTECT, verbose_name='درخواست کننده')
     experiment = models.ForeignKey('Experiment', on_delete=models.PROTECT, verbose_name='آزمایش')
     parameter = models.ManyToManyField('Parameter', verbose_name='پارامتر')
-    price_sample_returned = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
-    price_wod = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
+    price_sample_returned = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت ارسال نمونه')
+    price_wod = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت بدون تخفیف')
     price = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
 
     parent_request = models.ForeignKey('self', null=True, blank=True, related_name='child_requests', on_delete=models.SET_NULL, verbose_name='درخواست مادر')
-    has_parent_request = models.BooleanField(default=False, verbose_name='درخواست اصلی')
+    has_parent_request = models.BooleanField(default=False, verbose_name='درخواست مادر دارد')
 
     discount = models.PositiveIntegerField(blank=True, null=True, default=0)
     discount_description = models.CharField(max_length=120, blank=True, null=True, verbose_name='توضیحات تخفیف')
@@ -246,11 +246,11 @@ class Request(models.Model):
     def __str__(self):
         return f'{self.experiment} - {self.request_number}'
 
-    def clean(self):
-        if self.parent_request and self.child_requests.exists():
-            raise ValidationError('یک درخواست فرزند نمی‌تواند فرزندان دیگری داشته باشد.')
-        # if self.parent_request and self.has_parent_request:
-        #     raise ValidationError('یک درخواست فرزند نمی‌تواند به عنوان درخواست مادر تنظیم شود.')
+    # def clean(self):
+    #     if self.parent_request and self.child_requests.exists():
+    #         raise ValidationError('یک درخواست فرزند نمی‌تواند فرزندان دیگری داشته باشد.')
+    #     if self.parent_request and self.has_parent_request:
+    #         raise ValidationError('یک درخواست فرزند نمی‌تواند به عنوان درخواست مادر تنظیم شود.')
 
     def get_all_child_requests(self):
         return self.child_requests.all()
@@ -295,32 +295,32 @@ class Request(models.Model):
             pass
 
     def change_status(self, action, description, action_by):
-        if not self.child_requests.exists():  # اگر فرزند ندارد
-            lastest_status = self.lastest_status()
-            if action == 'next':
-                lastest_status.accept = True
-                Status.objects.create(request=lastest_status.request, step=lastest_status.step.next_step)
-                self.handle_status_changed(lastest_status.step.next_step, action, lastest_status)
-            elif action == 'previous':
-                lastest_status.reject = True
-                Status.objects.create(request=lastest_status.request, step=lastest_status.step.previous_step)
-                self.handle_status_changed(lastest_status.step.previous_step, action, lastest_status)
-            elif action == 'reject':
-                lastest_status.reject = True
-                Status.objects.create(request=lastest_status.request, step=lastest_status.step.reject_step)
-                self.handle_status_changed(lastest_status.step.reject_step, action, lastest_status)
-            lastest_status.complete = True
-            lastest_status.description = description
-            lastest_status.action_by = action_by
-            lastest_status.save()
+        # if not self.child_requests.exists():  # اگر فرزند ندارد
+        lastest_status = self.lastest_status()
+        if action == 'next':
+            lastest_status.accept = True
+            Status.objects.create(request=lastest_status.request, step=lastest_status.step.next_step)
+            self.handle_status_changed(lastest_status.step.next_step, action, lastest_status)
+        elif action == 'previous':
+            lastest_status.reject = True
+            Status.objects.create(request=lastest_status.request, step=lastest_status.step.previous_step)
+            self.handle_status_changed(lastest_status.step.previous_step, action, lastest_status)
+        elif action == 'reject':
+            lastest_status.reject = True
+            Status.objects.create(request=lastest_status.request, step=lastest_status.step.reject_step)
+            self.handle_status_changed(lastest_status.step.reject_step, action, lastest_status)
+        lastest_status.complete = True
+        lastest_status.description = description
+        lastest_status.action_by = action_by
+        lastest_status.save()
 
-        else:
-            child_statuses = [child.lastest_status() for child in self.child_requests.all()]
-            if all(status.is_completed for status in child_statuses):
-                super().change_status(action, description, action_by)
-            else:
-                raise ValidationError(
-                    'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که تمام فرزندان به مرحله بعد رفته باشند.')
+        # else:
+        #     child_statuses = [child.lastest_status() for child in self.child_requests.all()]
+        #     if all(status.is_completed for status in child_statuses):
+        #         super().change_status(action, description, action_by)
+        #     else:
+        #         raise ValidationError(
+        #             'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که تمام فرزندان به مرحله بعد رفته باشند.')
 
     def update_parent_status(self):
         if self.child_requests.exists():
