@@ -234,6 +234,8 @@ class Request(models.Model):
     is_cancelled = models.BooleanField(default=False, verbose_name='لغو شده')
     sample_check = models.BooleanField(default=False, verbose_name='چک نمونه')
 
+    labsnet = models.BooleanField(default=False, verbose_name='اعتبار لبزنت')
+
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
