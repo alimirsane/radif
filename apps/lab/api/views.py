@@ -267,7 +267,7 @@ class RequestChangeStatusAPIView(UpdateAPIView):
     #     return self.request.user.requests.all()
 
 class OwnedRequestListAPIView(ListCreateAPIView):
-    queryset = Request.objects.filter(is_completed=True).order_by('-created_at')
+    queryset = Request.objects.filter(is_completed=True, has_parent_request=False).order_by('-created_at')
     serializer_class = RequestListSerializer
 
     def get_queryset(self):
