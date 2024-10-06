@@ -35,7 +35,8 @@ def create_form_responses(sender, instance, created, **kwargs):
             form_responses.update(copy_check=True)
             instance.sample_check = True
             instance.save()
-            instance.parent_request.set_price()
+            if instance.has_parent_request:
+                instance.parent_request.set_price()
     finally:
         processing_request_signal = False
 
