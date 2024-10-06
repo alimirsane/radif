@@ -235,6 +235,7 @@ class Request(models.Model):
     sample_check = models.BooleanField(default=False, verbose_name='چک نمونه')
 
     labsnet = models.BooleanField(default=False, verbose_name='اعتبار لبزنت')
+    labsnet_discount = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='تخفیف لبزنت')
 
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
 
