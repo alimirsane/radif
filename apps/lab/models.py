@@ -369,26 +369,29 @@ class Request(models.Model):
 
     def set_price(self):
         if self.has_parent_request:
-            params = self.parameter.all()
-            formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
-            price = 0
-            for param in params:
-                temp = formresponses['response_count__sum'] / int(param.unit_value)
-                temp = math.ceil(temp)
-                if self.owner.is_partner:
-                    if param.partner_price:
-                        price += int(param.partner_price) * int(temp)
+            try:
+                params = self.parameter.all()
+                formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
+                price = 0
+                for param in params:
+                    temp = formresponses['response_count__sum'] / int(param.unit_value)
+                    temp = math.ceil(temp)
+                    if self.owner.is_partner:
+                        if param.partner_price:
+                            price += int(param.partner_price) * int(temp)
+                        else:
+                            price += int(param.price) * int(temp)
                     else:
-                        price += int(param.price) * int(temp)
-                else:
-                    if self.is_urgent:
-                        price += int(param.urgent_price) * int(temp)
-                    else:
-                        price += int(param.price) * int(temp)
-            self.price_sample_returned = int(0)
-            self.price_wod = price
-            self.price = (price - (price * self.discount / 100))
-            self.save()
+                        if self.is_urgent:
+                            price += int(param.urgent_price) * int(temp)
+                        else:
+                            price += int(param.price) * int(temp)
+                self.price_sample_returned = int(0)
+                self.price_wod = price
+                self.price = (price - (price * self.discount / 100))
+                self.save()
+            except:
+                pass
         else:
             price = 0
             children = self.child_requests.all()
