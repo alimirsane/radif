@@ -52,12 +52,19 @@ class UserBusinessLinkedAccountsSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'company_national_id', 'company_name', 'token']
 
 
+class UserPersonalLinkedAccountsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'national_id', 'first_name', 'last_name', 'email']
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     access_level_obj = AccessLevelSerializer(source='access_level', read_only=True, many=True)
     access_levels_dict = serializers.SerializerMethodField(read_only=True)
     role_obj = RoleSerializer(source='role', read_only=True, many=True)
     # business_accounts = UserBusinessLinkedAccountsSerializer(source='linked_to_users', read_only=True, many=True)
+    linked_users_objs = UserBusinessLinkedAccountsSerializer(source='linked_users', read_only=True, many=True)
 
     class Meta:
         model = User
