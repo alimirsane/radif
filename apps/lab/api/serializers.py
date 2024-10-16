@@ -327,7 +327,7 @@ class RequestListSerializer(serializers.ModelSerializer):
 
     # forms = RequestListFormResponseSerializer(many=True, read_only=True, source='formresponse')
     forms = serializers.SerializerMethodField()
-    order_obj = RequesrOrderDetailSerializer(many=True, source='orders')
+    order_obj = RequesrOrderDetailSerializer(read_only=True, many=True, source='orders')
 
     # def latest_status_obj_(self, obj):
     #     lastest_status = obj.lastest_status()
