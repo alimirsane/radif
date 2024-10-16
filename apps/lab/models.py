@@ -405,6 +405,7 @@ class Request(models.Model):
             else:
                 self.price_sample_returned = int(0)
             self.price = price + self.price_sample_returned
+            self.price_wod = self.price
             self.save()
 
     def current_month_counter(self):
