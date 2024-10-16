@@ -8,8 +8,7 @@ from apps.account.models import User
 from apps.form.api.serializers import FormSerializer, FormSummerySerializer
 from apps.lab.models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, \
     Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult, RequestCertificate, DiscountHistory
-from apps.order.api.serializers import OrderDetailSerializer
-from apps.order.models import PaymentRecord
+from apps.order.models import PaymentRecord, Order
 
 
 class UserSummerySerializer(serializers.ModelSerializer):
@@ -300,6 +299,21 @@ class ChildRequestListSerializer(serializers.ModelSerializer):
             FormResponse.objects.filter(request=obj, is_main=True), many=True
         ).data
 
+
+class OrderPaymentRecordSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PaymentRecord
+        fields = ['amount', 'transaction_code', 'tref', 'successful', 'payment_type', 'created_at']
+
+
+class RequesrOrderDetailSerializer(serializers.ModelSerializer):
+    payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
+    class Meta:
+        model = Order
+        exclude = ['order_key']
+
+
 class RequestListSerializer(serializers.ModelSerializer):
     result_objs = RequestDetailResultSerializer(read_only=True, source='request_results', many=True)
     owner_obj = UserSerializer(read_only=True, source='owner')
@@ -313,7 +327,7 @@ class RequestListSerializer(serializers.ModelSerializer):
 
     # forms = RequestListFormResponseSerializer(many=True, read_only=True, source='formresponse')
     forms = serializers.SerializerMethodField()
-    order_obj = OrderDetailSerializer(many=True, source='orders')
+    order_obj = RequesrOrderDetailSerializer(many=True, source='orders')
 
     # def latest_status_obj_(self, obj):
     #     lastest_status = obj.lastest_status()
@@ -332,13 +346,6 @@ class RequestListSerializer(serializers.ModelSerializer):
         return RequestListMainFormResponseSerializer(
             FormResponse.objects.filter(request=obj, is_main=True), many=True
         ).data
-
-
-class OrderPaymentRecordSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = PaymentRecord
-        fields = ['amount', 'transaction_code', 'tref', 'successful', 'payment_type', 'created_at']
 
 
 class DiscountHistorySerializer(serializers.ModelSerializer):
