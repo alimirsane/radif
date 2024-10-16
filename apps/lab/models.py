@@ -234,6 +234,9 @@ class Request(models.Model):
     is_cancelled = models.BooleanField(default=False, verbose_name='لغو شده')
     sample_check = models.BooleanField(default=False, verbose_name='چک نمونه')
 
+    labsnet_code1 = models.CharField(max_length=100, blank=True, null=True, verbose_name='کد لبزنت ۱')
+    labsnet_code2 = models.CharField(max_length=100, blank=True, null=True, verbose_name='کد لبزنت ۲')
+
     labsnet = models.BooleanField(default=False, verbose_name='اعتبار لبزنت')
     labsnet_discount = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='تخفیف لبزنت')
 
