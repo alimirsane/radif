@@ -41,15 +41,15 @@ class UserSummerySerializer(serializers.ModelSerializer):
 
 
 class UserBusinessLinkedAccountsSerializer(serializers.ModelSerializer):
-
     token = serializers.SerializerMethodField(read_only=True)
+
     def get_token(self, obj):
         token, created = Token.objects.get_or_create(user=obj)
         return str(token)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'company_national_id', 'company_name', 'token']
+        fields = ['id', 'username', 'national_id', 'first_name', 'last_name', 'company_national_id', 'company_name', 'token']
 
 
 class UserPersonalLinkedAccountsSerializer(serializers.ModelSerializer):
