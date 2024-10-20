@@ -401,7 +401,8 @@ class RequestDetailSerializer(serializers.ModelSerializer):
     forms = serializers.SerializerMethodField()
 
     payment_record_objs = OrderPaymentRecordSerializer(read_only=True, many=True, source='get_latest_order_payment_records')
-    order_objs = RequestOrderDetailSerializer(read_only=True, many=True, source='get_latest_order')
+    # order_objs = RequestOrderDetailSerializer(read_only=True, many=True, source='get_latest_order')
+    order_obj = RequestOrderDetailSerializer(read_only=True, many=True, source='orders')
     discount_history_objs = DiscountHistorySerializer(read_only=True, many=True, source='request_discounts')
 
     class Meta:
