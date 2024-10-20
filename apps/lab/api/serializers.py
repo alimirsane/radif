@@ -307,7 +307,7 @@ class OrderPaymentRecordSerializer(serializers.ModelSerializer):
         fields = ['amount', 'transaction_code', 'tref', 'successful', 'payment_type', 'created_at']
 
 
-class RequesrOrderDetailSerializer(serializers.ModelSerializer):
+class RequestOrderDetailSerializer(serializers.ModelSerializer):
     payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
     class Meta:
         model = Order
@@ -327,7 +327,7 @@ class RequestListSerializer(serializers.ModelSerializer):
 
     # forms = RequestListFormResponseSerializer(many=True, read_only=True, source='formresponse')
     forms = serializers.SerializerMethodField()
-    order_obj = RequesrOrderDetailSerializer(read_only=True, many=True, source='orders')
+    order_obj = RequestOrderDetailSerializer(read_only=True, many=True, source='orders')
 
     # def latest_status_obj_(self, obj):
     #     lastest_status = obj.lastest_status()
@@ -400,8 +400,9 @@ class RequestDetailSerializer(serializers.ModelSerializer):
     # forms = RequestDetailFormResponseSerializer(many=True, read_only=True, source='formresponse')
     forms = serializers.SerializerMethodField()
 
-    payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order_payment_records')
-    discount_history_objs = DiscountHistorySerializer(many=True, source='request_discounts')
+    payment_record_objs = OrderPaymentRecordSerializer(read_only=True, many=True, source='get_latest_order_payment_records')
+    order_objs = RequestOrderDetailSerializer(read_only=True, many=True, source='get_latest_order')
+    discount_history_objs = DiscountHistorySerializer(read_only=True, many=True, source='request_discounts')
 
     class Meta:
         model = Request
