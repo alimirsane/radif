@@ -428,7 +428,8 @@ class PaymentRecordManagerListView(ListAPIView):
 
         return super().get(request, *args, **kwargs)
 
-class PaymentRecordConfirmDetailView(UpdateAPIView):
+
+class PaymentRecordConfirmDetailView(RetrieveUpdateDestroyAPIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = PaymentRecordConfirmSerializer
 
