@@ -375,7 +375,7 @@ class PaymentRecordListView(ListAPIView):
 
         return super().get(request, *args, **kwargs)
 
-class PaymentRecordManagerListView(ListAPIView):
+class PaymentRecordManagerListView(ListCreateAPIView):
     """
     get:
     Get a list of payment records by manager user.
