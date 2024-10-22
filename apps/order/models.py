@@ -267,7 +267,7 @@ class PaymentRecord(models.Model):
 
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
 
-    log_text = models.TextField(default="", verbose_name="Log Text")
+    log_text = models.TextField(default="", verbose_name="Log Text", blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated at")

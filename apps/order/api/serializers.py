@@ -173,7 +173,7 @@ class PaymentRecordListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentRecord
-        exclude = ['log_text', 'tref']
+        exclude = ['log_text']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
