@@ -429,7 +429,7 @@ class PaymentRecordManagerListView(ListCreateAPIView):
         return super().get(request, *args, **kwargs)
 
 
-class PaymentRecordConfirmDetailView(RetrieveUpdateDestroyAPIView):
+class PaymentRecordConfirmDetailView(UpdateAPIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = PaymentRecordConfirmSerializer
 
@@ -442,7 +442,7 @@ class PaymentRecordConfirmDetailView(RetrieveUpdateDestroyAPIView):
         return PaymentRecord.objects.get(transaction_code=self.kwargs['id2'])
 
 
-class PaymentRecordTRefDetailView(UpdateAPIView):
+class PaymentRecordTRefDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = OrderPaymentRecordSerializer
     # permission_classes = [AccessLevelPermission]
     # required_access_levels = ['update_all_paymentrecord', 'update_owner_paymentrecord']
