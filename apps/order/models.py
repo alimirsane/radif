@@ -266,6 +266,7 @@ class PaymentRecord(models.Model):
     called_back = models.BooleanField(default=False, verbose_name='برگشت')
 
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
+    is_lock = models.BooleanField(default=False, verbose_name='قفل شده')
 
     log_text = models.TextField(default="", verbose_name="Log Text", blank=True, null=True)
 
