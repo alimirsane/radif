@@ -78,7 +78,7 @@ class PaymentRecordSerializer(serializers.ModelSerializer):
 class OrderPaymentRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentRecord
-        fields = ['id', 'amount', 'settlement_type', 'transaction_code', 'tref', 'successful', 'payer', 'order', 'payment_order_guid', 'payment_order_id', 'payment_link']
+        fields = ['id', 'amount', 'settlement_type', 'transaction_code', 'tref', 'successful', 'payer', 'order', 'payment_order_guid', 'payment_order_id', 'is_lock', 'payment_link']
 
     def validate_tref(self, value):
         if PaymentRecord.objects.filter(tref=value).exists():
