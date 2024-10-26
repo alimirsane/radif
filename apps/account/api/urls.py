@@ -45,6 +45,7 @@ urlpatterns = [
     path('grant-request/', GrantRequestListAPIView.as_view(), name='grant-request-list'),
     path('grant-request/<int:pk>/', GrantRequestDetailAPIView.as_view(), name='grant-request-detail'),
     path('grant-request/<int:pk>/approved/', GrantRequestApprovedAPIView.as_view(), name='grant-request-detail-approved'),
+    path('grant-request/<int:pk>/revoke/', GrantRequestRevokedAPIView.as_view(), name='grant-request-detail-revoked'),
 
     path("notification/", NotificationList.as_view(), name='notification-list'),
     path("notification/create/", NotificationCreate.as_view(), name='notification-create'),

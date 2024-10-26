@@ -233,6 +233,8 @@ class GrantRequest(models.Model):
     approved_amount = models.BigIntegerField(default=0, null=True, blank=True, verbose_name="مقدار دریافتی", help_text='مقدار به ریال')
     approved_datetime = models.DateTimeField(null=True, blank=True, verbose_name="زمان تایید")
 
+    remaining_amount = models.BigIntegerField(default=0, null=True, blank=True, verbose_name="مقدار باقی مانده", help_text='مقدار به ریال')
+
     requested_amount = models.BigIntegerField(default=0, verbose_name="مقدار درخواستی", help_text='مقدار به ریال')
     datetime = models.DateTimeField(default=timezone.now, verbose_name="زمان")
     expiration_date = models.DateField(null=True, blank=True, verbose_name="انقضا")
@@ -263,6 +265,7 @@ class GrantRequest(models.Model):
                     raise ValueError("GrantRecord does not have sufficient funds.")
 
                 self.approved_amount = approved_amount
+                self.remaining_amount = approved_amount
                 self.expiration_date = expiration_date
                 self.approved_grant_record = approved_grant_record
                 self.approved_datetime = timezone.now()
@@ -285,6 +288,13 @@ class GrantRequest(models.Model):
             self.status = 'failed'
             self.save()
             print(f"Error in approve: {e}")
+
+    def revoke(self):
+        self.approved_amount -= self.remaining_amount
+        self.transaction.amount -= self.remaining_amount
+        self.remaining_amount = 0
+        self.save()
+        self.transaction.save()
 
     #
     # def approve(self, approved_amount, expiration_date):

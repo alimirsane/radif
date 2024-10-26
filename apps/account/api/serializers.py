@@ -337,6 +337,14 @@ class GrantRequestApprovedSerializer(serializers.ModelSerializer):
         instance.approve(approved_amount, expiration_date, approved_grant_record)
         return instance
 
+class GrantRequestRevokeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GrantRequest
+        fields = []
+
+    def update(self, instance, validated_data):
+        instance.revoke(instance)
+        return instance
 
 class LansnetGrantSerializer(serializers.Serializer):
     national_id = serializers.CharField(max_length=20, write_only=True)

@@ -18,7 +18,7 @@ from apps.order.sharifpayment import SharifPayment
 ORDER_KEY_LENGTH = 12
 SLUG_CHARACTERS = string.digits + string.ascii_letters + string.ascii_lowercase
 
-from apps.account.models import User, Notification
+from apps.account.models import User, Notification, GrantRequest
 from apps.lab.models import Request
 
 
@@ -96,8 +96,11 @@ class Order(models.Model):
     order_code = models.CharField(max_length=255, unique=True, verbose_name="کد سفارش", blank=True, null=True)
     order_key = models.CharField(max_length=31, unique=True, verbose_name="کلید سفارش", blank=True, null=True)
 
-    promotion_code = models.ForeignKey(PromotionCode, on_delete=models.SET_NULL, related_name='orders', verbose_name="کد تخفیف",
-                                       blank=True, null=True)
+    promotion_code = models.ForeignKey(PromotionCode, on_delete=models.SET_NULL, related_name='orders', verbose_name="کد تخفیف", blank=True, null=True)
+
+    grant_request1 = models.ForeignKey(GrantRequest, on_delete=models.SET_NULL, related_name='gr_order1', blank=True, null=True)
+    grant_request2 = models.ForeignKey(GrantRequest, on_delete=models.SET_NULL, related_name='gr_order2', blank=True, null=True)
+
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
@@ -126,6 +129,31 @@ class Order(models.Model):
             amount -= amount * self.promotion_code.percent_off / 100
             self.promotion_code.used_count += 1
             self.promotion_code.save()
+
+        try:
+            if self.grant_request1 or self.grant_request2:
+                grants_amount = (self.grant_request1.remaining_amount or 0) + (self.grant_request2.remaining_amount or 0)
+                if grants_amount <= amount:
+                    amount -= grants_amount
+                    self.grant_request1.remaining_amount = 0
+                    self.grant_request2.remaining_amount = 0
+
+                if grants_amount > amount:
+                    if self.grant_request1 and self.grant_request1.remaining_amount <= amount:
+                        amount -= self.grant_request1.remaining_amount
+                        self.grant_request1.remaining_amount = 0
+                        if self.grant_request2 and amount != 0 and self.grant_request2.remaining_amount <= amount:
+                            amount -= self.grant_request2.remaining_amount
+                            self.grant_request2.remaining_amount = 0
+                        elif self.grant_request2 and amount != 0 and  amount < self.grant_request2.remaining_amount:
+                            self.grant_request2.remaining_amount -= amount
+                            amount = 0
+                    elif self.grant_request1 and amount < self.grant_request1.remaining_amount:
+                        self.grant_request1.remaining_amount -= amount
+                        amount = 0
+        except:
+            pass
+
 
         # if self.request.discount != 0:
         #     amount -= amount * self.request.discount / 100
