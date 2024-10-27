@@ -343,7 +343,7 @@ class GrantRequestRevokeSerializer(serializers.ModelSerializer):
         fields = []
 
     def update(self, instance, validated_data):
-        instance.revoke(instance)
+        instance.revoke()
         return instance
 
 class LansnetGrantSerializer(serializers.Serializer):
