@@ -116,7 +116,7 @@ class OrderCompleteView(UpdateAPIView):
     def get_queryset(self):
         queryset = Order.objects.filter(order_status='pending')
         if self.request:
-            queryset = queryset.filter(buyer=self.request.user.profile).distinct()
+            queryset = queryset.filter(buyer=self.request.user).distinct()
 
         return queryset
 
