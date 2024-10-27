@@ -322,7 +322,8 @@ class Request(models.Model):
         lastest_status.description = description
         lastest_status.action_by = action_by
         lastest_status.save()
-        self.parent_request.change_parent_status(action_by)
+        if self.parent_request:
+            self.parent_request.change_parent_status(action_by)
 
     def change_parent_status(self, action_by):
         if self.child_requests.exists():
