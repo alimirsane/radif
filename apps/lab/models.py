@@ -302,7 +302,7 @@ class Request(models.Model):
 
     def change_status(self, action, description, action_by):
         lastest_status = self.lastest_status()
-        if not self.child_requests.exists():
+        if self.parent_request:
             if self.parent_request.lastest_status().step != lastest_status.step:
                 raise ValidationError('وضعیت درخواست نمیتواند بیش از یک وضعیت با فاکتور اختلاف داشته باشد.')
 
@@ -334,20 +334,20 @@ class Request(models.Model):
                 pass
                 # raise ValidationError(
                 #     'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که هیچکدام از فرزندان در وضعیت فعلی مادر نباشند.')
-
-            all_rejected = all(child_status.step == current_step.reject_step for child_status in child_statuses)
-            any_in_next_step = any(child_status.step == current_step.next_step for child_status in child_statuses)
-
-            if any_in_next_step:
-                self.change_status('next', 'تغییر خودکار', action_by)
-
-            elif all_rejected:
-                self.change_status('reject', 'تغییر خودکار', action_by)
-
             else:
-                pass
-                # raise ValidationError(
-                #     'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که تمام فرزندان در وضعیت مناسب قرار نگرفته باشند.')
+                all_rejected = all(child_status.step == current_step.reject_step for child_status in child_statuses)
+                any_in_next_step = any(child_status.step == current_step.next_step for child_status in child_statuses)
+
+                if any_in_next_step:
+                    self.change_status('next', 'تغییر خودکار', action_by)
+
+                elif all_rejected:
+                    self.change_status('reject', 'تغییر خودکار', action_by)
+
+                else:
+                    pass
+                    # raise ValidationError(
+                    #     'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که تمام فرزندان در وضعیت مناسب قرار نگرفته باشند.')
 
 
     def update_parent_status(self):
