@@ -301,32 +301,53 @@ class Request(models.Model):
             pass
 
     def change_status(self, action, description, action_by):
-        # if not self.child_requests.exists():  # اگر فرزند ندارد
-        lastest_status = self.lastest_status()
-        if action == 'next':
-            lastest_status.accept = True
-            Status.objects.create(request=lastest_status.request, step=lastest_status.step.next_step)
-            self.handle_status_changed(lastest_status.step.next_step, action, lastest_status)
-        elif action == 'previous':
-            lastest_status.reject = True
-            Status.objects.create(request=lastest_status.request, step=lastest_status.step.previous_step)
-            self.handle_status_changed(lastest_status.step.previous_step, action, lastest_status)
-        elif action == 'reject':
-            lastest_status.reject = True
-            Status.objects.create(request=lastest_status.request, step=lastest_status.step.reject_step)
-            self.handle_status_changed(lastest_status.step.reject_step, action, lastest_status)
-        lastest_status.complete = True
-        lastest_status.description = description
-        lastest_status.action_by = action_by
-        lastest_status.save()
+        if not self.child_requests.exists():
+            lastest_status = self.lastest_status()
+            if self.parent_request.lastest_status != lastest_status:
+                raise ValidationError('وضعیت درخواست نمیتواند بیش از یک وضعیت با فاکتور اختلاف داشته باشد.')
 
-        # else:
-        #     child_statuses = [child.lastest_status() for child in self.child_requests.all()]
-        #     if all(status.is_completed for status in child_statuses):
-        #         super().change_status(action, description, action_by)
-        #     else:
-        #         raise ValidationError(
-        #             'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که تمام فرزندان به مرحله بعد رفته باشند.')
+            if action == 'next':
+                lastest_status.accept = True
+                Status.objects.create(request=lastest_status.request, step=lastest_status.step.next_step)
+                self.handle_status_changed(lastest_status.step.next_step, action, lastest_status)
+            elif action == 'previous':
+                lastest_status.reject = True
+                Status.objects.create(request=lastest_status.request, step=lastest_status.step.previous_step)
+                self.handle_status_changed(lastest_status.step.previous_step, action, lastest_status)
+            elif action == 'reject':
+                lastest_status.reject = True
+                Status.objects.create(request=lastest_status.request, step=lastest_status.step.reject_step)
+                self.handle_status_changed(lastest_status.step.reject_step, action, lastest_status)
+            lastest_status.complete = True
+            lastest_status.description = description
+            lastest_status.action_by = action_by
+            lastest_status.save()
+            self.change_parent_status(action_by)
+
+    def change_parent_status(self, action_by):
+        if self.child_requests.exists():
+            child_statuses = [child.lastest_status() for child in self.child_requests.all()]
+
+            current_step = self.lastest_status().step
+            if any(child_status.step == current_step for child_status in child_statuses):
+                pass
+                # raise ValidationError(
+                #     'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که هیچکدام از فرزندان در وضعیت فعلی مادر نباشند.')
+
+            all_rejected = all(child_status.step == current_step.reject_step for child_status in child_statuses)
+            any_in_next_step = any(child_status.step == current_step.next_step for child_status in child_statuses)
+
+            if any_in_next_step:
+                self.change_status('next', 'تغییر خودکار', action_by)
+
+            elif all_rejected:
+                self.change_status('reject', 'تغییر خودکار', action_by)
+
+            else:
+                pass
+                # raise ValidationError(
+                #     'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که تمام فرزندان در وضعیت مناسب قرار نگرفته باشند.')
+
 
     def update_parent_status(self):
         if self.child_requests.exists():
