@@ -132,7 +132,7 @@ class OrderPaymentView(UpdateAPIView):
         # if application and not application.is_super_app:
         #     queryset = queryset.filter(service__application=application)
 
-        queryset = queryset.filter(buyer=self.request.user.profile)
+        queryset = queryset.filter(buyer=self.request.user)
 
         return queryset
 
@@ -150,7 +150,7 @@ class OrderCancelView(UpdateAPIView):
     def get_queryset(self):
         queryset = Order.objects.filter(order_status='pending')
 
-        queryset = queryset.filter(buyer=self.request.user.profile)
+        queryset = queryset.filter(buyer=self.request.user)
 
         return queryset.distinct()
 
