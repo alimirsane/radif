@@ -2,7 +2,7 @@ from rest_framework import serializers
 import ast
 import json
 
-from apps.account.api.serializers import UserSerializer, GrantRecordSerializer
+from apps.account.api.serializers import UserSerializer, GrantRecordSerializer, GrantRequestSerializer
 from apps.account.api.views import UserDetailAPIView
 from apps.account.models import User
 from apps.form.api.serializers import FormSerializer, FormSummerySerializer
@@ -309,8 +309,8 @@ class OrderPaymentRecordSerializer(serializers.ModelSerializer):
 
 class RequestOrderDetailSerializer(serializers.ModelSerializer):
     payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
-    grant_record1 = GrantRecordSerializer(source='grant_request1', read_only=True, required=False)
-    grant_record2 = GrantRecordSerializer(source='grant_request2', read_only=True, required=False)
+    grant_record1 = GrantRequestSerializer(source='grant_request1', read_only=True, required=False)
+    grant_record2 = GrantRequestSerializer(source='grant_request2', read_only=True, required=False)
     class Meta:
         model = Order
         exclude = ['order_key']
