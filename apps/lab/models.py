@@ -303,7 +303,7 @@ class Request(models.Model):
     def change_status(self, action, description, action_by):
         if not self.child_requests.exists():
             lastest_status = self.lastest_status()
-            if self.parent_request.lastest_status() != lastest_status:
+            if self.parent_request.lastest_status().step != lastest_status.step:
                 raise ValidationError('وضعیت درخواست نمیتواند بیش از یک وضعیت با فاکتور اختلاف داشته باشد.')
 
             if action == 'next':
