@@ -32,7 +32,9 @@ class SharifPayment():
                  })
         response = requests.post(self.url, data={"INPUT": json.dumps(data)})
         r = json.loads(response.text)
-        print('ss')
+        print(data)
+        print('----------------------------------------------------------')
+        print(r)
         payment_record.payment_order_id = r["OrderID"]
         if r['Result'] != 0:
             return False, response
