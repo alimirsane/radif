@@ -322,7 +322,7 @@ class Request(models.Model):
             lastest_status.description = description
             lastest_status.action_by = action_by
             lastest_status.save()
-            self.change_parent_status(action_by)
+            self.parent_request.change_parent_status(action_by)
 
     def change_parent_status(self, action_by):
         if self.child_requests.exists():
@@ -330,9 +330,9 @@ class Request(models.Model):
 
             current_step = self.lastest_status().step
             if any(child_status.step == current_step for child_status in child_statuses):
-                pass
-                # raise ValidationError(
-                #     'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که هیچکدام از فرزندان در وضعیت فعلی مادر نباشند.')
+                # pass
+                raise ValidationError(
+                    'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که هیچکدام از فرزندان در وضعیت فعلی مادر نباشند.')
 
             all_rejected = all(child_status.step == current_step.reject_step for child_status in child_statuses)
             any_in_next_step = any(child_status.step == current_step.next_step for child_status in child_statuses)
@@ -344,9 +344,9 @@ class Request(models.Model):
                 self.change_status('reject', 'تغییر خودکار', action_by)
 
             else:
-                pass
-                # raise ValidationError(
-                #     'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که تمام فرزندان در وضعیت مناسب قرار نگرفته باشند.')
+                # pass
+                raise ValidationError(
+                    'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که تمام فرزندان در وضعیت مناسب قرار نگرفته باشند.')
 
 
     def update_parent_status(self):
