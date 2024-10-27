@@ -139,7 +139,7 @@ class OrderPaymentSerializer(serializers.ModelSerializer):
         fields = ['order_status']
 
     def update(self, instance, validated_data):
-        instance.process()
+        instance.process(pay=True)
         return instance
 
 
