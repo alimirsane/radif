@@ -397,7 +397,7 @@ class Request(models.Model):
         return [self.owner] + self.experiment.owners()
 
     def set_price(self):
-        if self.has_parent_request:
+        if self.parent_request:
             try:
                 params = self.parameter.all()
                 formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
