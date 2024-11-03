@@ -204,7 +204,7 @@ class DiscountHistory(models.Model):
 
 
 class Request(models.Model):
-    owner = models.ForeignKey(User, blank=True, null=True, related_name='requests', limit_choices_to={'user_type': 'customer'}, on_delete=models.PROTECT, verbose_name='درخواست کننده')
+    owner = models.ForeignKey(User, blank=True, null=True, related_name='requests', on_delete=models.PROTECT, verbose_name='درخواست کننده')
     experiment = models.ForeignKey('Experiment', on_delete=models.PROTECT, verbose_name='آزمایش')
     parameter = models.ManyToManyField('Parameter', verbose_name='پارامتر')
     price_sample_returned = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت ارسال نمونه')
