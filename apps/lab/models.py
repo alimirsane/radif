@@ -419,6 +419,7 @@ class Request(models.Model):
                 self.price_wod = price
                 self.price = (price - (price * self.discount / 100))
                 self.save()
+                self.parent_request.set_price()
             except:
                 pass
         else:
