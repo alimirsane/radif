@@ -134,12 +134,13 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 
 class OrderPaymentSerializer(serializers.ModelSerializer):
+    payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
     class Meta:
         model = Order
-        fields = ['order_status']
+        fields = ['order_status', 'payment_record']
 
     def update(self, instance, validated_data):
-        instance.process()
+        instance.process(pay=True)
         return instance
 
 

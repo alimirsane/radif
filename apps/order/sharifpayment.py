@@ -12,6 +12,7 @@ class SharifPayment():
             "Username": "clabUser",
             "Password": "pAMxeZpANQ",
         }
+        print('s')
         self.PAYURL = 'pay.sharif.edu'
 
     def pay_request(self, user, payment_record):
@@ -31,12 +32,16 @@ class SharifPayment():
                  })
         response = requests.post(self.url, data={"INPUT": json.dumps(data)})
         r = json.loads(response.text)
+        print(data)
+        print('----------------------------------------------------------')
+        print(r)
         payment_record.payment_order_id = r["OrderID"]
         if r['Result'] != 0:
             return False, response
         payment_record.payment_order_guid = r["OrderGUID"]
         payment_record.payment_order_id = r["OrderID"]
         payment_record.payment_link = f'https://{self.PAYURL}/submit2/{r["OrderID"]}/{r["OrderGUID"]}'
+        print('ss')
         payment_record.save()
 
         return True, response

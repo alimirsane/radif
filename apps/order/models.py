@@ -161,7 +161,7 @@ class Order(models.Model):
 
         self.amount = amount
 
-    def process(self, use_balance=True):
+    def process(self, use_balance=True, pay=False):
         self.calculate_price()
         if self.amount == 0:
             self.order_status = 'completed'
@@ -194,14 +194,15 @@ class Order(models.Model):
         if self.order_status == 'completed':
             self.request.change_status('next', 'Successfully paid', self.request.owner)
         else:
-            payment_record = self.get_payment_records()
-            if not payment_record.exists():
-                payment_record = PaymentRecord.objects.create(order=self, amount=self.remaining_amount(), payer=self.buyer)
-                success, response = SharifPayment().pay_request(user=self.buyer, payment_record=payment_record)
-                if success:
-                    pass
-                else:
-                    return response
+            if pay:
+                payment_record = self.get_payment_records()
+                if not payment_record.exists():
+                    payment_record = PaymentRecord.objects.create(order=self, amount=self.remaining_amount(), payer=self.buyer)
+                    success, response = SharifPayment().pay_request(user=self.buyer, payment_record=payment_record)
+                    if success:
+                        pass
+                    else:
+                        return response
 
     def set_ticket(self):
         if not Ticket.objects.filter(profile_id=self.buyer.id, order=self).exists():
