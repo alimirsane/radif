@@ -2,9 +2,7 @@ import datetime
 
 from django.db import models
 from django.db.models import Sum
-from django.utils import timezone
 import jdatetime
-import django_jalali
 from apps.account.models import User
 from apps.form.models import Form
 import math
@@ -21,7 +19,6 @@ class Laboratory(models.Model):
     operators = models.ManyToManyField(User, related_name='ops_laboratories', blank=True, limit_choices_to={'user_type': 'staff'})
     department = models.ForeignKey('Department', related_name='laboratories', blank=True, null=True, on_delete=models.PROTECT, verbose_name='دپارتمان')
     lab_type = models.ForeignKey('LabType', related_name='laboratories', blank=True, null=True, on_delete=models.PROTECT, verbose_name='نوع آزمایشگاه')
-    # standard_code = models.CharField(max_length=255)
     control_code = models.CharField(max_length=255, blank=True, null=True, verbose_name='کد کنترلی')
     STATUS_CHOICES = (
         ('active', 'Active'),
@@ -64,9 +61,6 @@ class Laboratory(models.Model):
 
     def get_operators_laboratory(self, operators):
         return self.get_unhidden_laboratory().filter(operators=operators)
-
-    # def owners(self):
-    #     return [self.technical_manager, self.operator]
 
     def owners(self):
         return [self.technical_manager, self.operator] + [operator for operator in self.operators.all()]
@@ -372,6 +366,8 @@ class Request(models.Model):
             self.save()
         if action == 'reject':
             if lastest_status.step.name == 'در حال انجام' or lastest_status.step.name == 'در ‌انتظار نمونه':
+                if self.parent_request:
+                    self.parent_request.set_price()
                 self.is_returned = True
                 self.save()
                 try:
@@ -419,7 +415,7 @@ class Request(models.Model):
                 pass
         else:
             price = 0
-            children = self.child_requests.all()
+            children = self.child_requests.exclude(request_status__step__name__in=['رد شده'])
             for child in children:
                 price += child.price
             if self.is_sample_returned:

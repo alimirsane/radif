@@ -35,11 +35,9 @@ class Department(models.Model):
     name = models.CharField(max_length=255, verbose_name='نام')
     description = models.TextField(blank=True, null=True, verbose_name='توضیحات')
 
-    # manager = models.ForeignKey('Personnel', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='مدیر')
-
     class Meta:
-        verbose_name = 'دپارتمان'
-        verbose_name_plural = 'دپارتمان‌ها'
+        verbose_name = 'دانشکده'
+        verbose_name_plural = 'دانشکده ها'
 
     def __str__(self):
         return self.name

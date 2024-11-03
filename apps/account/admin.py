@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as UAdmin
 from .models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantRequest, GrantTransaction, \
-    OTPserver, Notification, GrantRecord
+    OTPserver, Notification, GrantRecord, Department
 # from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
@@ -74,6 +74,10 @@ class FormResponseAdmin(admin.ModelAdmin):
     list_display = ('name', 'order')
     ordering = ('order',)
 
+
+@admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
+    list_display = ('name',)
 
 
 def access_level_generator(modeladmin, request, queryset):
