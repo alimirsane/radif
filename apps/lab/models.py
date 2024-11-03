@@ -375,15 +375,17 @@ class Request(models.Model):
                     order.is_returned = True
                     order.save()
                 except:
-                    self.description += '\n تگ استرداد برای سفارش با خطا مواجه شد'
-                    self.save()
+                    pass
+                    # self.description += '\n تگ استرداد برای سفارش با خطا مواجه شد'
+                    # self.save()
 
                 try:
                     payment_records = self.get_latest_order_payment_records().filter(successful=True)
                     payment_records.update(is_returned=True)
                 except:
-                    self.description += '\n تگ استرداد برای پرداخت با خطا مواجه شد'
-                    self.save()
+                    pass
+                    # self.description += '\n تگ استرداد برای پرداخت با خطا مواجه شد'
+                    # self.save()
 
     def owners(self):
         return [self.owner] + self.experiment.owners()
