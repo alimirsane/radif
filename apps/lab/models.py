@@ -3,7 +3,7 @@ import datetime
 from django.db import models
 from django.db.models import Sum
 import jdatetime
-from apps.account.models import User
+from apps.account.models import User, GrantRequest
 from apps.form.models import Form
 import math
 from django.core.exceptions import ValidationError
@@ -231,6 +231,9 @@ class Request(models.Model):
     labsnet_code1 = models.CharField(max_length=100, blank=True, null=True, verbose_name='کد لبزنت ۱')
     labsnet_code2 = models.CharField(max_length=100, blank=True, null=True, verbose_name='کد لبزنت ۲')
 
+    grant_request1 = models.ForeignKey(GrantRequest, on_delete=models.SET_NULL, related_name='gr_request1', blank=True, null=True)
+    grant_request2 = models.ForeignKey(GrantRequest, on_delete=models.SET_NULL, related_name='gr_request2', blank=True, null=True)
+
     labsnet = models.BooleanField(default=False, verbose_name='اعتبار لبزنت')
     labsnet_discount = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='تخفیف لبزنت')
 
@@ -431,8 +434,9 @@ class Request(models.Model):
                 self.price_sample_returned = int(850000)
             else:
                 self.price_sample_returned = int(0)
-            self.price = price + self.price_sample_returned
-            self.price_wod = self.price
+            # research grants
+            self.price = price + int(self.price_sample_returned) - int(self.labsnet_discount)
+            self.price_wod = price
             self.save()
 
     def current_month_counter(self):
