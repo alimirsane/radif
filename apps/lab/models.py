@@ -365,9 +365,9 @@ class Request(models.Model):
             self.delivery_date = datetime.datetime.now() + datetime.timedelta(days=self.experiment.estimated_result_time)
             self.save()
         if action == 'reject':
+            if self.parent_request:
+                self.parent_request.set_price()
             if lastest_status.step.name == 'در حال انجام' or lastest_status.step.name == 'در ‌انتظار نمونه':
-                if self.parent_request:
-                    self.parent_request.set_price()
                 self.is_returned = True
                 self.save()
                 try:
