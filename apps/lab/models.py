@@ -8,6 +8,8 @@ from apps.form.models import Form
 import math
 from django.core.exceptions import ValidationError
 
+from apps.order.models import PaymentRecord
+
 
 class Laboratory(models.Model):
     name = models.CharField(max_length=255, verbose_name='نام')
@@ -380,6 +382,10 @@ class Request(models.Model):
                     # self.save()
 
                 try:
+                    pr = self.get_latest_order_payment_records().first()
+                    PaymentRecord.objects.create(payer=pr.payer, order=pr.order, settlement_type=pr.settlement_type,
+                                                 amount=-1*self.price, charged=pr.charged, payment_type=pr.payment_type,
+                                                 successful=pr.successful, is_returned=pr.is_returned)
                     payment_records = self.get_latest_order_payment_records().filter(successful=True)
                     payment_records.update(is_returned=True)
                 except:
