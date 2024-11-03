@@ -290,6 +290,7 @@ class Request(models.Model):
             self.discount = value
             self.discount_description = description
             self.save()
+            self.set_price()
             DiscountHistory.objects.create(request=self, discount=value, description=description, action_by=action_by)
         else:
             pass
