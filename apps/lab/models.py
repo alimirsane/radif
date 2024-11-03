@@ -417,7 +417,7 @@ class Request(models.Model):
                         price += int(param.price) * int(temp)
             self.price_sample_returned = int(0)
             self.price_wod = price
-            self.price = (price - (price * self.discount / 100))
+            self.price = (price - (price * int(self.discount) / 100))
             self.save()
             self.parent_request.set_price()
             # except:
