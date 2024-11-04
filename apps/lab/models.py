@@ -430,13 +430,18 @@ class Request(models.Model):
             children = self.child_requests.exclude(request_status__step__name__in=['رد شده'])
             for child in children:
                 price += child.price
+            self.price_wod = price
+
+            # research grants
+
+            if self.labsnet_discount:
+                self.price -= int(self.labsnet_discount)
+
             if self.is_sample_returned:
                 self.price_sample_returned = int(850000)
             else:
                 self.price_sample_returned = int(0)
-            # research grants
-            self.price = price + int(self.price_sample_returned) - int(self.labsnet_discount)
-            self.price_wod = price
+            self.price = self.price + int(self.price_sample_returned)
             self.save()
 
     def current_month_counter(self):
