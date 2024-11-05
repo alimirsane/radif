@@ -269,6 +269,8 @@ class RequestChangeStatusAPIView(UpdateAPIView):
 class OwnedRequestListAPIView(ListCreateAPIView):
     queryset = Request.objects.filter(is_completed=True, has_parent_request=False).order_by('-created_at')
     serializer_class = RequestListSerializer
+    pagination_class = DefaultPagination
+
 
     def get_queryset(self):
         return self.request.user.requests.filter(is_completed=True, has_parent_request=False).order_by('-created_at')
