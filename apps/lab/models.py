@@ -438,7 +438,7 @@ class Request(models.Model):
                 self.price -= int(self.labsnet_discount)
 
             if self.is_sample_returned:
-                price_sample_returned = int(850000)
+                price_sample_returned = Decimal(850000)
                 self.price_sample_returned = price_sample_returned
                 self.price = self.price + Decimal(price_sample_returned)
             else:
