@@ -273,7 +273,7 @@ class Order(models.Model):
 
 class PaymentRecord(models.Model):
     TYPES = (('order', 'پرداخت سفارش'), ('account', 'شارژ اکانت'))
-    SETTLEMENT_TYPES = (('pos', 'کارتخوان'), ('opay', 'درگاه'))
+    SETTLEMENT_TYPES = (('pos', 'کارتخوان'), ('iopay', 'درگاه داخلی'), ('eopay', 'درگاه خارجی'), ('cash', 'نقدی'))
 
     payer = models.ForeignKey(User, on_delete=models.PROTECT, related_name='payment_records', verbose_name='پرداخت کننده', blank=True, null=True)
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='payment_records', verbose_name="سفارش",
