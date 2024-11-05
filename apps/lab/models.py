@@ -1,5 +1,5 @@
 import datetime
-
+from decimal import Decimal
 from django.db import models
 from django.db.models import Sum
 import jdatetime
@@ -418,8 +418,8 @@ class Request(models.Model):
                         price += int(param.urgent_price) * int(temp)
                     else:
                         price += int(param.price) * int(temp)
-            self.price_sample_returned = int(0)
-            self.price_wod = price
+            self.price_sample_returned = Decimal(0)
+            self.price_wod = Decimal(price)
             self.price = (price - (price * int(self.discount) / 100))
             self.save()
             self.parent_request.set_price()
@@ -438,8 +438,9 @@ class Request(models.Model):
                 self.price -= int(self.labsnet_discount)
 
             if self.is_sample_returned:
-                self.price_sample_returned = int(850000)
-                self.price = self.price + self.price_sample_returned
+                price_sample_returned = int(850000)
+                self.price_sample_returned = price_sample_returned
+                self.price = self.price + Decimal(price_sample_returned)
             else:
                 self.price_sample_returned = int(0)
             self.save()
