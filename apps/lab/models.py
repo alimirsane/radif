@@ -431,6 +431,7 @@ class Request(models.Model):
             for child in children:
                 price += child.price
             self.price_wod = price
+            self.price = price
 
             # research grants
 
@@ -438,11 +439,10 @@ class Request(models.Model):
                 self.price -= int(self.labsnet_discount)
 
             if self.is_sample_returned:
-                price_sample_returned = Decimal(850000)
-                self.price_sample_returned = price_sample_returned
-                self.price = self.price + Decimal(price_sample_returned)
+                self.price_sample_returned = Decimal(850000)
+                self.price = self.price + self.price_sample_returned
             else:
-                self.price_sample_returned = int(0)
+                self.price_sample_returned = Decimal(0)
             self.save()
 
     def current_month_counter(self):
