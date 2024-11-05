@@ -309,8 +309,6 @@ class OrderPaymentRecordSerializer(serializers.ModelSerializer):
 
 class RequestOrderDetailSerializer(serializers.ModelSerializer):
     payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
-    grant_record1 = GrantRequestSerializer(source='grant_request1', read_only=True, required=False)
-    grant_record2 = GrantRequestSerializer(source='grant_request2', read_only=True, required=False)
     class Meta:
         model = Order
         exclude = ['order_key']
@@ -330,7 +328,8 @@ class RequestListSerializer(serializers.ModelSerializer):
     # forms = RequestListFormResponseSerializer(many=True, read_only=True, source='formresponse')
     forms = serializers.SerializerMethodField()
     order_obj = RequestOrderDetailSerializer(read_only=True, many=True, source='orders')
-
+    grant_request1_obj = GrantRequestSerializer(source='grant_request1', read_only=True, required=False)
+    grant_request2_obj = GrantRequestSerializer(source='grant_request2', read_only=True, required=False)
     # def latest_status_obj_(self, obj):
     #     lastest_status = obj.lastest_status()
     #     return StatusSerializer(instance=lastest_status)
@@ -406,6 +405,8 @@ class RequestDetailSerializer(serializers.ModelSerializer):
     # order_objs = RequestOrderDetailSerializer(read_only=True, many=True, source='get_latest_order')
     order_obj = RequestOrderDetailSerializer(read_only=True, many=True, source='orders')
     discount_history_objs = DiscountHistorySerializer(read_only=True, many=True, source='request_discounts')
+    grant_request1_obj = GrantRequestSerializer(source='grant_request1', read_only=True, required=False)
+    grant_request2_obj = GrantRequestSerializer(source='grant_request2', read_only=True, required=False)
 
     class Meta:
         model = Request
