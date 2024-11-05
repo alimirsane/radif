@@ -19,9 +19,10 @@ from apps.account.api.serializers import UserSerializer, UserRegistrationSeriali
     EducationalLevelSerializer, AccessLevelSerializer, RoleSerializer, GrantTransactionSerializer, \
     GrantRequestSerializer, GrantRequestApprovedSerializer, UserProfileSerializer, NotificationSerializer, \
     NotificationReadSerializer, GrantRecordSerializer, UPOAuthTokenSerializer, UserBusinessLinkedAccountsSerializer, \
-    LansnetGrantSerializer, UserPasswordSerializer, GrantRecordFileSerializer, GrantRequestRevokeSerializer
+    LansnetGrantSerializer, UserPasswordSerializer, GrantRecordFileSerializer, GrantRequestRevokeSerializer, \
+    DepartmentSerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
-    GrantRequest, OTPserver, Notification, GrantRecord
+    GrantRequest, OTPserver, Notification, GrantRecord, Department
 from .filters import UserFilter, GrantRecordFilter, GrantRequestFilter
 from ..permissions import AccessLevelPermission, query_set_filter_key
 from ...core.functions import export_excel, labsnet, process_excel_and_create_grant_records
@@ -295,6 +296,16 @@ class EducationalLevelListAPIView(ListCreateAPIView):
 class EducationalLevelDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = EducationalLevel.objects.all()
     serializer_class = EducationalLevelSerializer
+
+
+class DepartmentListAPIView(ListCreateAPIView):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+
+
+class DepartmentDetailAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
 
 
 class RoleListAPIView(ListCreateAPIView):

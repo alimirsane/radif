@@ -25,8 +25,11 @@ urlpatterns = [
     path('educational-fields/', EducationalFieldListAPIView.as_view(), name='requests-list'),
     path('educational-fields/<int:pk>/', EducationalFieldDetailAPIView.as_view(), name='request-detail'),
 
-    path('educational-level/', EducationalLevelListAPIView.as_view(), name='department-list'),
-    path('educational-level/<int:pk>/', EducationalLevelDetailAPIView.as_view(), name='department-detail'),
+    path('educational-level/', EducationalLevelListAPIView.as_view(), name='educational_level-list'),
+    path('educational-level/<int:pk>/', EducationalLevelDetailAPIView.as_view(), name='educational_level-detail'),
+
+    path('department/', DepartmentListAPIView.as_view(), name='department-list'),
+    path('department/<int:pk>/', DepartmentDetailAPIView.as_view(), name='department-detail'),
 
     path('role/', RoleListAPIView.as_view(), name='role-list'),
     path('role/<int:pk>/', RoleDetailAPIView.as_view(), name='role-detail'),

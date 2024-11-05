@@ -8,7 +8,7 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.authtoken.models import Token
 
 from apps.account.models import User, EducationalLevel, EducationalField, Role, AccessLevel, GrantRequest, \
-    GrantTransaction, Notification, GrantRecord
+    GrantTransaction, Notification, GrantRecord, Department
 from apps.core.functions import process_excel_and_create_grant_records
 
 
@@ -249,6 +249,12 @@ class EducationalFieldSerializer(serializers.ModelSerializer):
 class EducationalLevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = EducationalLevel
+        exclude = []
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
         exclude = []
 
 
