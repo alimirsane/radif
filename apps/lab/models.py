@@ -433,7 +433,26 @@ class Request(models.Model):
             self.price_wod = price
             self.price = price
 
-            # research grants
+            # try:
+            if self.grant_request1 or self.grant_request2:
+                if self.grant_request1 and self.grant_request1.remaining_amount > 0:
+                    if self.grant_request1.remaining_amount >= self.price:
+                        self.grant_request1.remaining_amount -= self.price
+                        self.price = 0
+                    else:
+                        self.price -= self.grant_request1.remaining_amount
+                        self.grant_request1.remaining_amount = 0
+
+                if self.grant_request2 and self.price > 0 and self.grant_request2.remaining_amount > 0:
+                    if self.grant_request2.remaining_amount >= self.price:
+                        self.grant_request2.remaining_amount -= self.price
+                        self.price = 0
+                    else:
+                        self.price -= self.grant_request2.remaining_amount
+                        self.grant_request2.remaining_amount = 0
+
+            # except Exception as e:
+            #     print(f"An error occurred: {e}")
 
             if self.labsnet_discount:
                 self.price -= int(self.labsnet_discount)
