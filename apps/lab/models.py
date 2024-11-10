@@ -233,6 +233,7 @@ class Request(models.Model):
 
     grant_request1 = models.ForeignKey(GrantRequest, on_delete=models.SET_NULL, related_name='gr_request1', blank=True, null=True)
     grant_request2 = models.ForeignKey(GrantRequest, on_delete=models.SET_NULL, related_name='gr_request2', blank=True, null=True)
+    grant_request_discount = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='تخفیف پژوهشی')
 
     labsnet = models.BooleanField(default=False, verbose_name='اعتبار لبزنت')
     labsnet_discount = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='تخفیف لبزنت')
@@ -450,7 +451,7 @@ class Request(models.Model):
                     else:
                         self.price -= self.grant_request2.remaining_amount
                         self.grant_request2.remaining_amount = 0
-
+            self.grant_request_discount = self.price_wod - self.price
             # except Exception as e:
             #     print(f"An error occurred: {e}")
 
