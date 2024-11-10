@@ -367,10 +367,10 @@ class Request(models.Model):
             self.save()
 
     def handle_status_changed(self, new_step, action, lastest_status):
-        if new_step.name == 'در انتظار پذیرش':
-            str = self.labsnet_create()
-            self.labsnet_result = str
-            self.save()
+        # if new_step.name == 'در انتظار پذیرش':
+        str = self.labsnet_create()
+        self.labsnet_result = str
+        self.save()
         if new_step.name == 'در حال انجام':
             self.delivery_date = datetime.datetime.now() + datetime.timedelta(days=self.experiment.estimated_result_time)
             self.save()
