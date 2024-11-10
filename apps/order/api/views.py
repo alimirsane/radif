@@ -1,3 +1,11 @@
+import os
+import pandas as pd
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.exceptions import ValidationError
+
+
 import json
 
 from django.db.models import Q
@@ -23,7 +31,7 @@ from apps.order.api.serializers import OrderSerializer, OrderDetailSerializer, O
     OrderCancelSerializer, OrderPaymentSerializer, PaymentRecordSerializer, OrderBoughtSerializer, \
     PromotionCodeSerializer, PaymentSummarySerializer, \
     PaymentRecordListSerializer, PaymentRecordConfirmSerializer, PaymentRecordInvoiceSerializer, \
-    OrderPaymentRecordSerializer
+    OrderPaymentRecordSerializer, FileUploadSerializer
 # PromotionCodeStrSerializer,TransactionSerializer
 # TicketSerializer, SubscriptionSerializer
 # from apps.order.zarrinpal import ZarrinPalConfirmSerializer, ZarrinPalSerializer
@@ -454,6 +462,47 @@ class PaymentRecordTRefDetailView(RetrieveUpdateDestroyAPIView):
 
     # def get_object(self):
     #     return PaymentRecord.objects.get(transaction_code=self.kwargs['id2'])
+
+
+class ExcelProcessView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request):
+        file_serializer = FileUploadSerializer(data=request.data)
+
+        if file_serializer.is_valid():
+            excel_file = file_serializer.validated_data['file']
+
+            # ذخیره فایل آپلود شده در پوشه موقت
+            file_path = f'temp/{excel_file.name}'
+            # file_path = default_storage.save(f'temp/{excel_file.name}', excel_file)
+            full_path = os.path.join(settings.MEDIA_ROOT, file_path)
+
+            try:
+                # پردازش فایل اکسل
+                df = pd.read_excel(full_path)
+
+                # مثال: اضافه کردن یک ستون جدید
+                df['processed_column'] = df[df.columns[0]].apply(lambda x: x * 2 if isinstance(x, (int, float)) else x)
+
+                # ساخت فایل جدید اکسل پردازش‌شده
+                processed_filename = f'processed_{excel_file.name}'
+                processed_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', processed_filename)
+                df.to_excel(processed_file_path, index=False)
+
+                # ساخت لینک دانلود
+                download_url = f'{settings.MEDIA_URL}temp/{processed_filename}'
+
+                # حذف فایل ورودی از سرور
+                if os.path.exists(full_path):
+                    os.remove(full_path)
+
+                return Response({"download_url": request.build_absolute_uri(download_url)}, status=status.HTTP_201_CREATED)
+
+            except Exception as e:
+                raise ValidationError(f"خطا در پردازش فایل: {str(e)}")
+
+        return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #
 #

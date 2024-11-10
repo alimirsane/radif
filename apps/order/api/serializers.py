@@ -520,3 +520,7 @@ class PaymentRecordConfirmSerializer(serializers.ModelSerializer):
             except:
                 return instance
         return instance
+
+
+class FileUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
