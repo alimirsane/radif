@@ -443,6 +443,7 @@ class Request(models.Model):
                     else:
                         self.price -= self.grant_request1.remaining_amount
                         self.grant_request1.remaining_amount = 0
+                    self.grant_request1.save()
 
                 if self.grant_request2 and self.price > 0 and self.grant_request2.remaining_amount > 0:
                     if self.grant_request2.remaining_amount >= self.price:
@@ -451,6 +452,7 @@ class Request(models.Model):
                     else:
                         self.price -= self.grant_request2.remaining_amount
                         self.grant_request2.remaining_amount = 0
+                    self.grant_request2.save()
             self.grant_request_discount = self.price_wod - self.price
             # except Exception as e:
             #     print(f"An error occurred: {e}")
