@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from django.conf import settings
+from django.core.files.storage import default_storage
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.exceptions import ValidationError
@@ -474,8 +475,8 @@ class ExcelProcessView(APIView):
             excel_file = file_serializer.validated_data['file']
 
             # ذخیره فایل آپلود شده در پوشه موقت
-            file_path = f'temp/{excel_file.name}'
-            # file_path = default_storage.save(f'temp/{excel_file.name}', excel_file)
+            # file_path = f'temp/{excel_file.name}'
+            file_path = default_storage.save(f'temp/{excel_file.name}', excel_file)
             full_path = os.path.join(settings.MEDIA_ROOT, file_path)
 
             # try:
@@ -490,12 +491,7 @@ class ExcelProcessView(APIView):
             processed_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', processed_filename)
             df.to_excel(processed_file_path, index=False)
 
-            # ساخت لینک دانلود
             download_url = f'{settings.MEDIA_URL}temp/{processed_filename}'
-
-            # حذف فایل ورودی از سرور
-            # if os.path.exists(full_path):
-            #     os.remove(full_path)
 
             return Response({"download_url": request.build_absolute_uri(download_url)}, status=status.HTTP_201_CREATED)
 
