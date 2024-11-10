@@ -485,9 +485,35 @@ class ExcelProcessView(APIView):
                 # پردازش فایل اکسل
             df = pd.read_excel(full_path)
 
-            # مثال: اضافه کردن یک ستون جدید
-            # df['processed_column'] = df[df.columns[0]].apply(lambda x: x * 2 if isinstance(x, (int, float)) else x)
+            # چک کردن وجود ستون 'کد مرجع'
+            if 'شماره پيگيری' not in df.columns:
+                return Response({"error": "ستون 'شماره پيگيری' در فایل اکسل موجود نیست."}, status=status.HTTP_400_BAD_REQUEST)
 
+            # ستون‌های اضافی برای پر کردن اطلاعات از دیتابیس
+            df['payment_id'] = None
+            df['tref'] = None
+            df['amount'] = None
+            df['status'] = None
+            df['error'] = None
+
+            # پردازش رکوردها و پر کردن اطلاعات
+            for index, row in df.iterrows():
+                code = row['شماره پيگيری']
+
+                # جستجوی رکورد در PaymentRecord با توجه به کد مرجع
+                try:
+                    payment_record = PaymentRecord.objects.filter(Q(tref=code[-14:])).first()
+
+                    if payment_record:
+                        df.at[index, 'payment_id'] = payment_record.id
+                        df.at[index, 'tref'] = payment_record.tref
+                        df.at[index, 'amount'] = payment_record.amount
+                        df.at[index, 'status'] = payment_record.status
+                    else:
+                        df.at[index, 'error'] = "رکوردی یافت نشد"
+
+                except Exception as e:
+                    df.at[index, 'error'] = f"خطا: {str(e)}"
             # ساخت فایل جدید اکسل پردازش‌شده
             processed_filename = f'processed_{excel_file.name}'
             processed_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', processed_filename)
