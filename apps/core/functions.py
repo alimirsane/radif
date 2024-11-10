@@ -45,6 +45,32 @@ def process_excel_and_create_grant_records(file):
 
     return created_records
 
+def labsnet_create():
+    import requests
+    import json
+    data = {
+        "user_name": "sharif_uni", "password": "sharif_uni", "national_code": "4723686509",
+        "type": "1", "org_id": "343",
+        "services": [{
+            "test_code": 2669,
+            "test_count": 2,
+            "type_credit": "2",
+            "tariffs_basis": "2",
+            "price": 200000,
+        }]
+    }
+    response = requests.post('https://labsnet.ir/api/add_service', data=data, verify=False)
+    # response_text = '{"error":1,"response":{"type":"SERVICES_ERR_TYPE","code":2,"msg":"\\u0645\\u0634\\u062e\\u0635\\u0627\\u062a \\u0622\\u0632\\u0645\\u0648\\u0646 \\u0646\\u0627\\u0645\\u0639\\u062a\\u0628\\u0631 \\u0627\\u0633\\u062a. \\u0645\\u0642\\u062f\\u0627\\u0631 \\u0628\\u0627\\u06cc\\u062f \\u0639\\u062f\\u062f\\u06cc \\u0628\\u0627\\u0634\\u062f  ","result":[]}}'
+
+
+    data = {"user_name": "sharif_uni", "password": "sharif_uni", "national_code": nid, "type": type, "services": list(service)}
+    jdata = json.loads(data)
+    response = requests.post('https://labsnet.ir/api/credit_list', data=jdata, verify=False)
+    response_text = response.text
+    # return JsonResponse(json.loads(response_text))
+    return json.loads(response_text)
+
+
 
 def labsnet(nid, type, service):
     import requests
