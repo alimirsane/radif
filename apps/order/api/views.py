@@ -520,7 +520,7 @@ class ExcelProcessView(APIView):
             df.to_excel(processed_file_path, index=False)
 
             host = request.get_host()  # دریافت دامنه اصلی
-            download_url = urljoin(f"http://{host}", f"{settings.MEDIA_URL}temp/{processed_filename}")
+            download_url = urljoin(f"https://{host}", f"{settings.MEDIA_URL}temp/{processed_filename}")
 
 
             return Response({"download_url": download_url}, status=status.HTTP_201_CREATED)
