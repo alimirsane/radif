@@ -1,4 +1,6 @@
 import os
+from urllib.parse import urljoin
+
 import pandas as pd
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -491,9 +493,11 @@ class ExcelProcessView(APIView):
             processed_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', processed_filename)
             df.to_excel(processed_file_path, index=False)
 
-            download_url = f'{settings.MEDIA_URL}temp/{processed_filename}'
+            host = request.get_host()  # دریافت دامنه اصلی
+            download_url = urljoin(f"http://{host}", f"{settings.MEDIA_URL}temp/{processed_filename}")
 
-            return Response({"download_url": request.build_absolute_uri(download_url)}, status=status.HTTP_201_CREATED)
+
+            return Response({"download_url": download_url}, status=status.HTTP_201_CREATED)
 
             # except Exception as e:
             #     raise ValidationError(f"خطا در پردازش فایل: {str(e)}")
