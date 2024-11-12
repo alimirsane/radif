@@ -117,8 +117,8 @@ class UserPersonalSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'username', 'password', 'first_name', 'last_name', 'national_id', 'email',
-            'student_id', 'educational_level', 'educational_field', 'postal_code', 'is_sharif_student'
+            'username', 'password', 'first_name', 'last_name', 'national_id', 'email', 'department',
+            'student_id', 'educational_level', 'educational_field', 'postal_code', 'is_sharif_student', 'telephone'
         )
         extra_kwargs = {
             'password': {'write_only': True},
@@ -146,7 +146,7 @@ class UserBusinessSerializer(serializers.ModelSerializer):
         fields = (
             'username', 'password', 'first_name', 'last_name', 'email',
             'company_national_id', 'company_name', 'postal_code',
-            'company_telephone', 'address', 'national_id'
+            'company_telephone', 'address', 'national_id', 'company_economic_number'
         )
         extra_kwargs = {
             'password': {'write_only': True},
