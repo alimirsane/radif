@@ -35,7 +35,7 @@ class SharifPayment():
         print(data)
         print('----------------------------------------------------------')
         print(r)
-        payment_record.log_text = payment_record.log_text+r
+        payment_record.log_text = payment_record.log_text+str(r)
         payment_record.save()
         payment_record.payment_order_id = r["OrderID"]
         if r['Result'] != 0:
