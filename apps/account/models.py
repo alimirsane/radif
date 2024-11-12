@@ -141,6 +141,7 @@ class User(AbstractUser):
                 self.role.add(Role.objects.get(role_key='student'))
             self.role.add(Role.objects.get(role_key='customer'))
 
+
 class Role(models.Model):
     name = models.CharField(_("name"), max_length=100)
     access_level = models.ManyToManyField('AccessLevel', blank=True)

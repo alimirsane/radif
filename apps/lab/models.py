@@ -652,6 +652,7 @@ class Workflow(models.Model):
 
         return ordered_steps
 
+
 class WorkflowStep(models.Model):
     COLOR_CHOICES = (
         ('info', 'Info'),
