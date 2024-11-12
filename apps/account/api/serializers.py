@@ -153,24 +153,24 @@ class UserBusinessSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        # ساخت حساب شخصی مرتبط
+        # Extracting data for personal account
         personal_data = validated_data.copy()
         personal_data['account_type'] = 'personal'
-        personal_data['username'] = validated_data['company_national_id']
-        personal_data['national_id'] = f"co{validated_data['company_national_id']}"
 
+        # Creating personal account
         personal_serializer = UserPersonalSerializer(data=personal_data)
         personal_serializer.is_valid(raise_exception=True)
         personal_account = personal_serializer.save()
 
-        # ساخت حساب شرکتی
+        # Creating business account
         validated_data['account_type'] = 'business'
+        validated_data['username'] = validated_data['company_national_id']  # Add personal account to linked_users
+        validated_data['national_id'] = f'co{validated_data["company_national_id"]}' # Add personal account to linked_users
         validated_data['password'] = make_password(validated_data.get('password'))
-        business_user = User.objects.create(**validated_data)
-        business_user.linked_users.set([personal_account])
-        business_user.set_customer_role()
-
-        return business_user
+        business_serializer = self.Meta.model.objects.create(**validated_data)
+        business_serializer.linked_users.set([personal_account])
+        business_serializer.set_customer_role()
+        return business_serializer
 
     def validate(self, attrs):
         if User.objects.filter(username=attrs.get('company_national_id')).exists():
