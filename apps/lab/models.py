@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import models
 from django.db.models import Sum
 import jdatetime
-from apps.account.models import User, GrantRequest
+from apps.account.models import User, GrantRequest, Role
 from apps.form.models import Form
 import math
 from django.core.exceptions import ValidationError
@@ -237,6 +237,7 @@ class Request(models.Model):
 
     labsnet = models.BooleanField(default=False, verbose_name='اعتبار لبزنت')
     labsnet_discount = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='تخفیف لبزنت')
+    labsnet_description = models.CharField(max_length=200, blank=True, null=True, verbose_name='توضیحات گرنت لبزنت')
     labsnet_result = models.CharField(max_length=200, blank=True, null=True, verbose_name='نتیجه ثبت لبزنت')
 
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
@@ -677,6 +678,7 @@ class WorkflowStep(models.Model):
     has_reject_step = models.BooleanField(default=False, verbose_name='رد شدن دارد')
 
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='کاربر اختصاص یافته')
+    role_assigned_to = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='نقش موثر')
     progress = models.IntegerField(default=0, verbose_name='پیشرفت')
 
     button = models.ManyToManyField('WorkflowStepButton', verbose_name='دکمه')
