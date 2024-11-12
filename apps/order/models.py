@@ -282,7 +282,7 @@ class PaymentRecord(models.Model):
                                       help_text="The order we want to pay for.", blank=True, null=True)
     payment_type = models.CharField(max_length=31, choices=TYPES, default='order', verbose_name='نوع پرداخت',
                                     help_text="Choices: ['شارژ اکانت', 'پرداخت سفارش']")
-    settlement_type = models.CharField(max_length=31, choices=SETTLEMENT_TYPES, default='opay', verbose_name='نوع تسویه',
+    settlement_type = models.CharField(max_length=31, choices=SETTLEMENT_TYPES, default='iopay', verbose_name='نوع تسویه',
                                     help_text="Choices: ['درگاه', 'کارتخوان']")
     amount = models.BigIntegerField(default=0, verbose_name='مقدار')
     successful = models.BooleanField(default=False, verbose_name='موفق')
