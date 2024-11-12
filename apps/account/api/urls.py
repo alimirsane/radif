@@ -8,7 +8,9 @@ from apps.account.api.views import *
 urlpatterns = [
     path('', include('rest_framework.urls'), name='api_auth'),
     path('token-auth/', obtain_auth_token, name='api_auth'),
-    path('register/', UserRegistrationAPIView.as_view(), name='register'),
+    # path('register/', UserRegistrationAPIView.as_view(), name='register'),
+    path('register/personal/', UserPersonalRegistrationAPIView.as_view(), name='register_personal'),
+    path('register/business/', UserBusinessRegistrationAPIView.as_view(), name='register_business'),
     path("current-user/", GetCurrentUserView.as_view(), name='get-current-user'),
     # path("current-user/access-levels", GetCurrentUserAccessLevelView.as_view(), name='get-current-user-acess-levels'),
 

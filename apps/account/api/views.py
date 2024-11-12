@@ -20,7 +20,7 @@ from apps.account.api.serializers import UserSerializer, UserRegistrationSeriali
     GrantRequestSerializer, GrantRequestApprovedSerializer, UserProfileSerializer, NotificationSerializer, \
     NotificationReadSerializer, GrantRecordSerializer, UPOAuthTokenSerializer, UserBusinessLinkedAccountsSerializer, \
     LansnetGrantSerializer, UserPasswordSerializer, GrantRecordFileSerializer, GrantRequestRevokeSerializer, \
-    DepartmentSerializer
+    DepartmentSerializer, UserPersonalSerializer, UserBusinessSerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
     GrantRequest, OTPserver, Notification, GrantRecord, Department
 from .filters import UserFilter, GrantRecordFilter, GrantRequestFilter
@@ -112,9 +112,19 @@ class UserProfilePasswordAPIView(UpdateAPIView):
         return self.request.user
 
 
-class UserRegistrationAPIView(CreateAPIView):
+# class UserRegistrationAPIView(CreateAPIView):
+#     queryset = User.objects.all()
+#     serializer_class = UserRegistrationSerializer
+
+
+class UserPersonalRegistrationAPIView(CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserRegistrationSerializer
+    serializer_class = UserPersonalSerializer
+
+
+class UserBusinessRegistrationAPIView(CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserBusinessSerializer
 
 
 class ObtainAuthToken(ObtainAuthT):

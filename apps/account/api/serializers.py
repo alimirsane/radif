@@ -116,26 +116,95 @@ class UserPersonalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'first_name', 'last_name', 'national_id', 'email', 'student_id',
-                  'educational_level', 'educational_field', 'postal_code', 'is_sharif_student')
+        fields = (
+            'username', 'password', 'first_name', 'last_name', 'national_id', 'email',
+            'student_id', 'educational_level', 'educational_field', 'postal_code', 'is_sharif_student'
+        )
         extra_kwargs = {
-            'password': {'write_only': True},  # Ensure password is write only
+            'password': {'write_only': True},
         }
 
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data.get('password'))
-        obj = super().create(validated_data)
-        obj.set_customer_role()
-        return obj
+        user = super().create(validated_data)
+        user.set_customer_role()  # Set customer role if needed
+        return user
 
     def validate(self, attrs):
-        if User.objects.filter(username=attrs.get('phone_number')).exists():
-            msg = {'تلفن همراه': 'کاربر با این شماره وجود دارد.'}
-            raise serializers.ValidationError(msg, code='authorization')
-        elif User.objects.filter(national_id=attrs.get('national_id')).exists():
-            msg = {'شماره ملی': 'کاربر با این شماره ملی وجود دارد.'}
-            raise serializers.ValidationError(msg, code='authorization')
+        if User.objects.filter(username=attrs.get('username')).exists():
+            raise serializers.ValidationError({'username': 'کاربر با این شماره وجود دارد.'})
+        if User.objects.filter(national_id=attrs.get('national_id')).exists():
+            raise serializers.ValidationError({'national_id': 'کاربر با این کد ملی وجود دارد.'})
         return attrs
+
+
+class UserBusinessSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'password', 'first_name', 'last_name', 'email',
+            'company_national_id', 'company_name', 'postal_code',
+            'company_telephone', 'address', 'national_id'
+        )
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
+
+    def create(self, validated_data):
+        # ساخت حساب شخصی مرتبط
+        personal_data = validated_data.copy()
+        personal_data['account_type'] = 'personal'
+        personal_data['username'] = validated_data['company_national_id']
+        personal_data['national_id'] = f"co{validated_data['company_national_id']}"
+
+        personal_serializer = UserPersonalSerializer(data=personal_data)
+        personal_serializer.is_valid(raise_exception=True)
+        personal_account = personal_serializer.save()
+
+        # ساخت حساب شرکتی
+        validated_data['account_type'] = 'business'
+        validated_data['password'] = make_password(validated_data.get('password'))
+        business_user = User.objects.create(**validated_data)
+        business_user.linked_users.set([personal_account])
+        business_user.set_customer_role()
+
+        return business_user
+
+    def validate(self, attrs):
+        if User.objects.filter(username=attrs.get('company_national_id')).exists():
+            raise serializers.ValidationError({'username': 'شناسه ملی شرکت تکراری است.'})
+        if User.objects.filter(national_id=f"co{attrs.get('company_national_id')}").exists():
+            raise serializers.ValidationError({'national_id': 'این شرکت قبلاً ثبت شده است.'})
+        return attrs
+
+#
+# class UserPersonalSerializer(serializers.ModelSerializer):
+#     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+#
+#     class Meta:
+#         model = User
+#         fields = ('username', 'password', 'first_name', 'last_name', 'national_id', 'email', 'student_id',
+#                   'educational_level', 'educational_field', 'postal_code', 'is_sharif_student')
+#         extra_kwargs = {
+#             'password': {'write_only': True},  # Ensure password is write only
+#         }
+#
+#     def create(self, validated_data):
+#         validated_data['password'] = make_password(validated_data.get('password'))
+#         obj = super().create(validated_data)
+#         obj.set_customer_role()
+#         return obj
+#
+#     def validate(self, attrs):
+#         if User.objects.filter(username=attrs.get('phone_number')).exists():
+#             msg = {'تلفن همراه': 'کاربر با این شماره وجود دارد.'}
+#             raise serializers.ValidationError(msg, code='authorization')
+#         elif User.objects.filter(national_id=attrs.get('national_id')).exists():
+#             msg = {'شماره ملی': 'کاربر با این شماره ملی وجود دارد.'}
+#             raise serializers.ValidationError(msg, code='authorization')
+#         return attrs
 
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, style={'input_type': 'password'})
@@ -155,47 +224,47 @@ class UserProfileSerializer(serializers.ModelSerializer):
             validated_data['password'] = make_password(validated_data.get('password'))
         return super().update(instance, validated_data)
 
-
-class UserBusinessSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        # Extracting data for personal account
-        personal_data = validated_data.copy()
-        personal_data['account_type'] = 'personal'
-
-        # Creating personal account
-        personal_serializer = UserPersonalSerializer(data=personal_data)
-        personal_serializer.is_valid(raise_exception=True)
-        personal_account = personal_serializer.save()
-
-        # Creating business account
-        validated_data['account_type'] = 'business'
-        validated_data['username'] = validated_data['company_national_id']  # Add personal account to linked_users
-        validated_data['national_id'] = f'co{validated_data["company_national_id"]}' # Add personal account to linked_users
-        validated_data['password'] = make_password(validated_data.get('password'))
-        business_serializer = self.Meta.model.objects.create(**validated_data)
-        business_serializer.linked_users.set([personal_account])
-        business_serializer.set_customer_role()
-
-        return business_serializer
-
-    def validate(self, attrs):
-        # بررسی یوزرنیم تکراری برای شرکت
-        if User.objects.filter(username=attrs.get('company_national_id')).exists():
-            raise serializers.ValidationError({'نام کاربری': 'نام کاربری/شناسه ملی شرکت تکراری است.'})
-
-        # بررسی شناسه ملی شرکت تکراری
-        if User.objects.filter(national_id=f'co{attrs.get("company_national_id")}').exists():
-            raise serializers.ValidationError({'شناسه ملی شرکت': 'این شرکت قبلاً ثبت شده است.'})
-
-        return attrs
-
-    class Meta:
-        model = User
-        fields = ('username', 'password', 'first_name', 'last_name', 'email', 'company_national_id', 'company_name',
-                  'postal_code', 'company_telephone', 'address', 'national_id')
-        extra_kwargs = {
-            'password': {'write_only': True},  # Ensure password is write only
-        }
+#
+# class UserBusinessSerializer(serializers.ModelSerializer):
+#     def create(self, validated_data):
+#         # Extracting data for personal account
+#         personal_data = validated_data.copy()
+#         personal_data['account_type'] = 'personal'
+#
+#         # Creating personal account
+#         personal_serializer = UserPersonalSerializer(data=personal_data)
+#         personal_serializer.is_valid(raise_exception=True)
+#         personal_account = personal_serializer.save()
+#
+#         # Creating business account
+#         validated_data['account_type'] = 'business'
+#         validated_data['username'] = validated_data['company_national_id']  # Add personal account to linked_users
+#         validated_data['national_id'] = f'co{validated_data["company_national_id"]}' # Add personal account to linked_users
+#         validated_data['password'] = make_password(validated_data.get('password'))
+#         business_serializer = self.Meta.model.objects.create(**validated_data)
+#         business_serializer.linked_users.set([personal_account])
+#         business_serializer.set_customer_role()
+#
+#         return business_serializer
+#
+#     def validate(self, attrs):
+#         # بررسی یوزرنیم تکراری برای شرکت
+#         if User.objects.filter(username=attrs.get('company_national_id')).exists():
+#             raise serializers.ValidationError({'نام کاربری': 'نام کاربری/شناسه ملی شرکت تکراری است.'})
+#
+#         # بررسی شناسه ملی شرکت تکراری
+#         if User.objects.filter(national_id=f'co{attrs.get("company_national_id")}').exists():
+#             raise serializers.ValidationError({'شناسه ملی شرکت': 'این شرکت قبلاً ثبت شده است.'})
+#
+#         return attrs
+#
+#     class Meta:
+#         model = User
+#         fields = ('username', 'password', 'first_name', 'last_name', 'email', 'company_national_id', 'company_name',
+#                   'postal_code', 'company_telephone', 'address', 'national_id')
+#         extra_kwargs = {
+#             'password': {'write_only': True},  # Ensure password is write only
+#         }
 
 # UserRegistrationSerializer
 class UserRegistrationSerializer(serializers.ModelSerializer):
