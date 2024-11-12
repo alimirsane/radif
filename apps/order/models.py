@@ -195,14 +195,16 @@ class Order(models.Model):
             self.request.change_status('next', 'Successfully paid', self.request.owner)
         else:
             if pay:
-                payment_record = self.get_payment_records()
-                if not payment_record.exists():
-                    payment_record = PaymentRecord.objects.create(order=self, amount=self.remaining_amount(), payer=self.buyer)
-                    success, response = SharifPayment().pay_request(user=self.buyer, payment_record=payment_record)
-                    if success:
-                        pass
-                    else:
-                        return response
+                # payment_record = self.get_payment_records()
+                # if not payment_record.exists():
+                payment_record = PaymentRecord.objects.create(order=self, amount=self.remaining_amount(), payer=self.buyer)
+                success, response = SharifPayment().pay_request(user=self.buyer, payment_record=payment_record)
+                if success:
+                    pass
+                else:
+                    return response
+
+
 
     def set_ticket(self):
         if not Ticket.objects.filter(profile_id=self.buyer.id, order=self).exists():
