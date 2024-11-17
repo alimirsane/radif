@@ -205,3 +205,8 @@ SPECTACULAR_SETTINGS = {
 }
 
 IGNORE_PERMISSIONS = False
+
+try:
+    from .developments import *
+except Exception as e:
+    pass
