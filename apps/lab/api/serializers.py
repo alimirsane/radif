@@ -366,7 +366,7 @@ class ChildRequestDetailSerializer(serializers.ModelSerializer):
 
     # forms = RequestDetailFormResponseSerializer(many=True, read_only=True, source='formresponse')
     forms = serializers.SerializerMethodField()
-
+    latest_status_obj = StatusSerializer(read_only=True, source='lastest_status')
     payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order_payment_records')
     discount_history_objs = DiscountHistorySerializer(many=True, source='request_discounts')
 
@@ -400,7 +400,7 @@ class RequestDetailSerializer(serializers.ModelSerializer):
 
     # forms = RequestDetailFormResponseSerializer(many=True, read_only=True, source='formresponse')
     forms = serializers.SerializerMethodField()
-
+    latest_status_obj = StatusSerializer(read_only=True, source='lastest_status')
     payment_record_objs = OrderPaymentRecordSerializer(read_only=True, many=True, source='get_latest_order_payment_records')
     # order_objs = RequestOrderDetailSerializer(read_only=True, many=True, source='get_latest_order')
     order_obj = RequestOrderDetailSerializer(read_only=True, many=True, source='orders')
