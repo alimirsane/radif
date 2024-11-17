@@ -309,9 +309,13 @@ class OrderPaymentRecordSerializer(serializers.ModelSerializer):
 
 class RequestOrderDetailSerializer(serializers.ModelSerializer):
     payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
+    remaining_amount = serializers.SerializerMethodField(read_only=True, method_name="remaining_amount_")
     class Meta:
         model = Order
         exclude = ['order_key']
+
+    def remaining_amount_(self, obj):
+        return obj.remaining_amount()
 
 
 class RequestListSerializer(serializers.ModelSerializer):

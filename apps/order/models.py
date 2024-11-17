@@ -197,7 +197,7 @@ class Order(models.Model):
             if pay:
                 # payment_record = self.get_payment_records()
                 # if not payment_record.exists():
-                payment_record = PaymentRecord.objects.create(order=self, amount=self.remaining_amount(pay), payer=self.buyer)
+                payment_record = PaymentRecord.objects.create(order=self, amount=self.remaining_amount(), payer=self.buyer)
                 success, response = SharifPayment().pay_request(user=self.buyer, payment_record=payment_record)
                 if success:
                     pass
@@ -263,12 +263,12 @@ class Order(models.Model):
 
     buyer_full_name.short_description = "Buyer Full Name"
 
-    def remaining_amount(self, pay=False):
-        if pay:
-            payment_records = self.get_payment_records().filter(successful=True)
-            total_paid = payment_records.aggregate(total_amount=models.Sum('amount'))['total_amount'] or 0
-            return (self.amount - self.paid) - total_paid
-        return self.amount - self.paid
+    def remaining_amount(self):
+        # if pay:
+        payment_records = self.get_payment_records().filter(successful=True)
+        total_paid = payment_records.aggregate(total_amount=models.Sum('amount'))['total_amount'] or 0
+        return (self.amount - self.paid) - total_paid
+        # return self.amount - self.paid
 
     # def set_event_ticket(self):
     #     if not self.event_ticket:
