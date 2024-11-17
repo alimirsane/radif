@@ -61,7 +61,17 @@ class User(AbstractUser):
 
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='customer')
     account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES, default='personal')
-    national_id = models.CharField(_("national ID"), max_length=10, unique=True, null=True, blank=True, help_text=_("Enter your national ID."))
+    national_id = models.CharField(_("national ID"), max_length=10, unique=True, null=True, blank=True,
+                                   help_text=_("Enter your national ID."),
+                                   error_messages={
+                                        'required': 'کد ملی اجباری است.',
+                                        'blank': 'کد ملی نمی‌تواند خالی باشد.',
+                                        'invalid': 'کد ملی وارد شده معتبر نیست.',
+                                        'max_length': 'کد ملی باید حداکثر 10 رقم باشد.',
+                                        'min_length': 'کد ملی باید حداقل 10 رقم باشد.',
+                                        'unique': 'کاربری با این کد ملی وجود دارد.'
+                                   }
+                                   )
 
     role = models.ManyToManyField('Role', blank=True)
     access_level = models.ManyToManyField('AccessLevel', blank=True)
@@ -101,7 +111,12 @@ class User(AbstractUser):
         ),
         validators=[phone_validator],
         error_messages={
-            "unique": _("A user with that phone number already exists."),
+            'required': 'نام کاربری اجباری است.',
+            'blank': 'نام کاربری نمی‌تواند خالی باشد.',
+            'invalid': 'نام کاربری وارد شده معتبر نیست.',
+            'max_length': 'نام کاربری نباید بیشتر از 150 کاراکتر باشد.',
+            'min_length': 'نام کاربری باید حداقل 3 کاراکتر باشد.',
+            'unique': 'کاربری با این نام کاربری وجود دارد.'
         },
     )
 
