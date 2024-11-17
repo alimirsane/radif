@@ -186,7 +186,7 @@ class Order(models.Model):
                         self.order_status = 'pending'
             else:
                 self.paid = 0
-                self.transaction = Transaction.objects.create(profile=self.buyer, order=self, amount=self.paid)
+                # self.transaction = Transaction.objects.create(profile=self.buyer, order=self, amount=self.paid)
                 self.order_status = 'pending'
 
         self.save()
@@ -267,7 +267,8 @@ class Order(models.Model):
         # if pay:
         payment_records = self.get_payment_records().filter(successful=True)
         total_paid = payment_records.aggregate(total_amount=models.Sum('amount'))['total_amount'] or 0
-        return (self.amount - self.paid) - total_paid
+        # return (self.amount - self.paid) - total_paid
+        return (self.request.price - self.paid) - total_paid
         # return self.amount - self.paid
 
     # def set_event_ticket(self):
