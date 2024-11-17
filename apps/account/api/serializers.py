@@ -212,7 +212,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'password', 'first_name', 'last_name', 'national_id', 'email', 'student_id',
-                  'educational_level', 'educational_field', 'postal_code', 'address', 'is_sharif_student')
+                  'educational_level', 'educational_field', 'postal_code', 'address', 'is_sharif_student', 'telephone',
+                  'department', 'company_economic_number')
         extra_kwargs = {
             'password': {'write_only': True},  # Ensure password is write only
             'national_id': {'read_only': True},
