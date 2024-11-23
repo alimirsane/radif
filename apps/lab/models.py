@@ -486,7 +486,7 @@ class Request(models.Model):
         start_of_month_gregorian = start_of_month.togregorian()
         end_of_month_gregorian = end_of_month.togregorian().replace(hour=23, minute=59, second=59)
 
-        return Request.objects.filter(created_at__range=(start_of_month_gregorian, end_of_month_gregorian)).count()
+        return Request.objects.filter(parent_request__isnull=True, created_at__range=(start_of_month_gregorian, end_of_month_gregorian)).count()
 
     def get_latest_order_payment_records(self):
         try:
