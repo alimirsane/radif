@@ -66,12 +66,12 @@ def create_request_number(sender, instance, created, **kwargs):
 
     processing_request_signal = True
     try:
-        if not instance.request_number and not instance.parent_request:
+        if not instance.request_number and not instance.has_parent_request:
             date_code = jdatetime.datetime.now().strftime('%Y%m')
             month_code = instance.current_month_counter() + 1
             instance.request_number = f'{date_code[1:]}-{month_code:04d}'
             instance.save()
-        if not instance.request_number and instance.parent_request:
+        if not instance.request_number and instance.has_parent_request:
             if not instance.parent_request.request_number:
                 date_code = jdatetime.datetime.now().strftime('%Y%m')
                 month_code = instance.parent_request.current_month_counter() + 1
@@ -80,6 +80,8 @@ def create_request_number(sender, instance, created, **kwargs):
             child_requests = instance.parent_request.child_requests.all()
             instance.request_number = f'{instance.parent_request.request_number}-{child_requests.count():02d}'
             instance.save()
+    except Exception as e:
+        raise Exception
     finally:
         processing_request_signal = False
 
