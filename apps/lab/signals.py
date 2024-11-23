@@ -66,10 +66,14 @@ def create_request_number(sender, instance, created, **kwargs):
 
     processing_request_signal = True
     try:
-        if not instance.request_number:
+        if not instance.request_number and not instance.parent_request:
             date_code = jdatetime.datetime.now().strftime('%Y%m')
             month_code = instance.current_month_counter() + 1
             instance.request_number = f'{date_code[1:]}-{month_code:04d}'
+            instance.save()
+        if not instance.request_number and instance.parent_request:
+            child_requests = instance.parent_request.child_requests.all()
+            instance.request_number = f'{instance.parent_request.request_number}-{child_requests.count():02d}'
             instance.save()
     finally:
         processing_request_signal = False
@@ -111,5 +115,5 @@ def create_request_number(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Status)
 def set_request_status_notification(sender, instance, created, **kwargs):
-    if created and instance.request.is_completed:
-        Notification.objects.create(user=instance.request.owner, type='info', title='تغییر وضعیت درخواست', content=f'وضعیت درخواست شماره {instance.step.name} به {instance.request.request_number} تغییر کرد')
+    if created and instance.request.is_completed and not instance.request.parent_request:
+        Notification.objects.create(user=instance.request.owner, type='info', title='تغییر وضعیت درخواست', content=f'وضعیت درخواست شماره {instance.request.request_number} به {instance.step.name} تغییر کرد')
