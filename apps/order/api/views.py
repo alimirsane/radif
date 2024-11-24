@@ -519,6 +519,10 @@ class ExcelProcessView(APIView):
 
                 except Exception as e:
                     df.at[index, 'error'] = f"خطا: {str(e)}"
+
+            for col in df.select_dtypes(include=['datetime']).columns:
+                df[col] = df[col].dt.tz_localize(None)
+
             processed_filename = f'processed_{excel_file.name}'
             processed_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', processed_filename)
             df.to_excel(processed_file_path, index=False)
