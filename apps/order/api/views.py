@@ -41,7 +41,7 @@ from apps.order.api.serializers import OrderSerializer, OrderDetailSerializer, O
 # from applications.service.models import Service
 from SLIMS.envs import common as settings
 from SLIMS.renderers import SLIMSJSONRenderer
-
+from datetime import datetime
 
 class OrderIssueView(CreateAPIView):
     """
@@ -479,55 +479,68 @@ class ExcelProcessView(APIView):
             file_path = default_storage.save(f'temp/{excel_file.name}', excel_file)
             full_path = os.path.join(settings.MEDIA_ROOT, file_path)
 
-            df = pd.read_excel(full_path)
+            try:
+                df = pd.read_excel(full_path)
 
-            if 'شماره پيگيری' not in df.columns:
-                return Response({"error": "ستون 'شماره پيگيری' در فایل اکسل موجود نیست."}, status=status.HTTP_400_BAD_REQUEST)
+                if 'شماره پيگيری' not in df.columns:
+                    return Response(
+                        {"error": "ستون 'شماره پيگيری' در فایل اکسل موجود نیست."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-            payment_fields = [
-                'payment_id', 'payer', 'order', 'payment_type', 'settlement_type',
-                'amount', 'successful', 'transaction_code', 'tref', 'called_back',
-                'is_returned', 'is_lock', 'created_at', 'updated_at', 'error'
-            ]
+                payment_fields = [
+                    'payment_id', 'payer', 'order', 'payment_type', 'settlement_type',
+                    'amount', 'successful', 'transaction_code', 'tref', 'called_back',
+                    'is_returned', 'is_lock', 'created_at', 'updated_at', 'error'
+                ]
+                for field in payment_fields:
+                    df[field] = None
 
-            for field in payment_fields:
-                df[field] = None
+                for index, row in df.iterrows():
+                    code = str(row['شماره پيگيری'])
 
-            for index, row in df.iterrows():
-                code = row['شماره پيگيری']
+                    try:
+                        payment_record = PaymentRecord.objects.filter(Q(tref=code[-14:])).first()
 
-                try:
-                    payment_record = PaymentRecord.objects.filter(Q(tref=code[-14:])).first()
+                        if payment_record:
+                            df.at[index, 'payment_id'] = payment_record.id
+                            df.at[index, 'payer'] = payment_record.payer
+                            df.at[index, 'order'] = payment_record.order
+                            df.at[index, 'payment_type'] = payment_record.payment_type
+                            df.at[index, 'settlement_type'] = payment_record.settlement_type
+                            df.at[index, 'amount'] = payment_record.amount
+                            df.at[index, 'successful'] = payment_record.successful
+                            df.at[index, 'transaction_code'] = payment_record.transaction_code
+                            df.at[index, 'tref'] = payment_record.tref
+                            df.at[index, 'called_back'] = payment_record.called_back
+                            df.at[index, 'is_returned'] = payment_record.is_returned
+                            df.at[index, 'is_lock'] = payment_record.is_lock
+                            df.at[index, 'created_at'] = payment_record.created_at.replace(tzinfo=None)
+                            df.at[index, 'updated_at'] = payment_record.updated_at.replace(tzinfo=None)
+                        else:
+                            df.at[index, 'error'] = "رکوردی یافت نشد"
 
-                    if payment_record:
-                        df.at[index, 'payment_id'] = payment_record.id
-                        df.at[index, 'payer'] = payment_record.payer
-                        df.at[index, 'order'] = payment_record.order
-                        df.at[index, 'payment_type'] = payment_record.payment_type
-                        df.at[index, 'settlement_type'] = payment_record.settlement_type
-                        df.at[index, 'amount'] = payment_record.amount
-                        df.at[index, 'successful'] = payment_record.successful
-                        df.at[index, 'transaction_code'] = payment_record.transaction_code
-                        df.at[index, 'tref'] = payment_record.tref
-                        df.at[index, 'called_back'] = payment_record.called_back
-                        df.at[index, 'is_returned'] = payment_record.is_returned
-                        df.at[index, 'is_lock'] = payment_record.is_lock
-                        df.at[index, 'created_at'] = payment_record.created_at
-                        df.at[index, 'updated_at'] = payment_record.updated_at
-                    else:
-                        df.at[index, 'error'] = "رکوردی یافت نشد"
+                    except Exception as e:
+                        df.at[index, 'error'] = f"خطا: {str(e)}"
 
-                except Exception as e:
-                    df.at[index, 'error'] = f"خطا: {str(e)}"
-            processed_filename = f'processed_{excel_file.name}'
-            processed_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', processed_filename)
-            df.to_excel(processed_file_path, index=False)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                processed_filename = f'processed_{timestamp}_{excel_file.name}'
+                processed_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', processed_filename)
+                df.to_excel(processed_file_path, index=False)
 
-            host = request.get_host()
-            download_url = urljoin(f"https://{host}", f"{settings.MEDIA_URL}temp/{processed_filename}")
+                host = request.get_host()
+                download_url = urljoin(f"https://{host}", f"{settings.MEDIA_URL}temp/{processed_filename}")
 
+                return Response({"download_url": download_url}, status=status.HTTP_201_CREATED)
 
-            return Response({"download_url": download_url}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response(
+                    {"error": f"خطایی در پردازش فایل رخ داد: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            finally:
+                if os.path.exists(full_path):
+                    os.remove(full_path)
 
         return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
