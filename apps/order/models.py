@@ -216,6 +216,8 @@ class Order(models.Model):
             self.order_status = 'completed'
             self.save()
             self.request.change_status('next', 'Successfully paid', self.request.owner)
+            for child in self.request.child_requests:
+                child.change_status('next', 'Successfully paid', self.request.owner)
 
     def cancel(self):
         if self.order_status == 'pending':
