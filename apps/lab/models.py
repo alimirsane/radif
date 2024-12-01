@@ -181,6 +181,7 @@ class Parameter(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=0, verbose_name='قیمت')
     urgent_price = models.DecimalField(max_digits=10, decimal_places=0, verbose_name='قیمت فوری')
     partner_price = models.DecimalField(max_digits=10, blank=True, null=True, decimal_places=0, verbose_name='قیمت همکار')
+    partner_urgent_price = models.DecimalField(max_digits=10, blank=True, null=True, decimal_places=0, verbose_name='قیمت فوری همکار')
     unit_value = models.IntegerField(blank=True, null=True, default=1, verbose_name='مقدار واحد', help_text='مقدار عددی بر حسب نمونه، مبنای محاسبه قیمت')
     unit = models.CharField(choices=UNIT_TYPES, max_length=25, blank=True, null=True, verbose_name='واحد')
 
@@ -417,10 +418,16 @@ class Request(models.Model):
                 temp = formresponses['response_count__sum'] / int(param.unit_value)
                 temp = math.ceil(temp)
                 if self.owner.is_partner:
-                    if param.partner_price:
-                        price += int(param.partner_price) * int(temp)
+                    if self.is_urgent:
+                        if param.partner_urgent_price:
+                            price += int(param.partner_urgent_price) * int(temp)
+                        else:
+                            price += int(param.urgent_price) * int(temp)
                     else:
-                        price += int(param.price) * int(temp)
+                        if param.partner_price:
+                            price += int(param.partner_price) * int(temp)
+                        else:
+                            price += int(param.price) * int(temp)
                 else:
                     if self.is_urgent:
                         price += int(param.urgent_price) * int(temp)
