@@ -4,6 +4,8 @@ from django.contrib import admin
 
 # Register your models here.
 from apps.order.models import PromotionCode, Order, PaymentRecord, Transaction, Ticket
+from apps.order.sharifpayment import SharifPayment
+from django.contrib import messages
 
 
 class PromotionCodeAdmin(admin.ModelAdmin):
@@ -19,10 +21,20 @@ class OrderAdmin(admin.ModelAdmin):
 
 admin.site.register(Order, OrderAdmin)
 
+def check_pay(modeladmin, request, queryset):
+    for payment_record in queryset:
+        SharifPayment().pay_confirm(payment_record, 0)
+        modeladmin.message_user(request, "Checked PaymentRecord.", messages.SUCCESS)
+
+check_pay.short_description = "Check Pay"
 
 class PaymentRecordAdmin(admin.ModelAdmin):
     list_display = ['payer', 'order', 'payment_type', 'amount', 'successful', 'charged', 'transaction_code', 'created_at', 'updated_at']
+    actions = [check_pay]
 
+    # def check_pay():
+    #
+    #     pay_confirm(self, payment_record, Result):
 
 admin.site.register(PaymentRecord, PaymentRecordAdmin)
 
