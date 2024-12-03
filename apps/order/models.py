@@ -216,7 +216,7 @@ class Order(models.Model):
             self.order_status = 'completed'
             self.save()
             self.request.change_status('next', 'Successfully paid', self.request.owner)
-            for child in self.request.child_requests:
+            for child in self.request.child_requests.all():
                 child.change_status('next', 'Successfully paid', self.request.owner)
 
     def cancel(self):
@@ -270,6 +270,8 @@ class Order(models.Model):
         payment_records = self.get_payment_records().filter(successful=True)
         total_paid = payment_records.aggregate(total_amount=models.Sum('amount'))['total_amount'] or 0
         # return (self.amount - self.paid) - total_paid
+        if self.request.price == total_paid:
+            return 0
         return (self.request.price - self.paid) - total_paid
         # return self.amount - self.paid
 
