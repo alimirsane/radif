@@ -305,7 +305,7 @@ class Request(models.Model):
     def change_status(self, action, description, action_by):
         lastest_status = self.lastest_status()
         if self.parent_request:
-            if self.parent_request.lastest_status().step != lastest_status.step:
+            if self.parent_request.lastest_status().step != lastest_status.step and lastest_status.step.name != 'در انتظار پرداخت':
                 raise ValidationError('وضعیت درخواست نمیتواند بیش از یک وضعیت با فاکتور اختلاف داشته باشد.')
 
         if action == 'next':
@@ -370,10 +370,10 @@ class Request(models.Model):
 
     def handle_status_changed(self, new_step, action, lastest_status):
         if action == 'next':
-            if new_step.name == 'در انتظار نمونه':
+            if new_step.name == 'در ‌انتظار نمونه':
                 if not self.parent_request:
                     for child in self.child_requests.all():
-                        if child.lastest_status().step == new_step.previous_step:
+                        if child.lastest_status().step.name == 'در انتظار پرداخت':
                             child.change_status('next', 'Successfully paid', self.owner)
                 str = self.labsnet_create()
                 self.labsnet_result = str
