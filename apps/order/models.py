@@ -215,9 +215,12 @@ class Order(models.Model):
             self.paid += payment_record.amount
             self.order_status = 'completed'
             self.save()
-            self.request.change_status('next', 'Successfully paid', self.request.owner)
+            # self.request.change_status('next', 'Successfully paid', self.request.owner)
             for child in self.request.child_requests.all():
-                child.change_status('next', 'Successfully paid', self.request.owner)
+                try:
+                    child.change_status('next', 'Successfully paid', self.request.owner)
+                except:
+                    pass
 
     def cancel(self):
         if self.order_status == 'pending':

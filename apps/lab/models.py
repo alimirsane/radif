@@ -371,10 +371,10 @@ class Request(models.Model):
     def handle_status_changed(self, new_step, action, lastest_status):
         if action == 'next':
             if new_step.name == 'در ‌انتظار نمونه':
-                if not self.parent_request:
-                    for child in self.child_requests.all():
-                        if child.lastest_status().step.name == 'در انتظار پرداخت':
-                            child.change_status('next', 'Successfully paid', self.owner)
+                # if not self.parent_request:
+                #     for child in self.child_requests.all():
+                #         if child.lastest_status().step.name == 'در انتظار پرداخت':
+                #             child.change_status('next', 'Successfully paid', self.owner)
                 str = self.labsnet_create()
                 self.labsnet_result = str
                 self.save()
