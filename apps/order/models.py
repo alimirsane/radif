@@ -344,8 +344,8 @@ class PaymentRecord(models.Model):
     def set_payed(self):
         self.successful = True
 
-        if not self.payment_type_check():
-            self.change_to_account_type()
+        # if not self.payment_type_check():
+        #     self.change_to_account_type()
 
         try:
             if self.order and self.order.order_status == 'pending':
