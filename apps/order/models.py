@@ -161,7 +161,7 @@ class Order(models.Model):
 
         self.amount = amount
 
-    def process(self, use_balance=True, pay=False):
+    def process(self, use_balance=False, pay=False):
         self.calculate_price()
         if self.amount == 0:
             self.order_status = 'completed'
