@@ -506,10 +506,6 @@ class PaymentRecordConfirmSerializer(serializers.ModelSerializer):
     successful = serializers.ReadOnlyField()
     charged = serializers.ReadOnlyField()
     called_back = serializers.ReadOnlyField()
-    request_number = serializers.SerializerMethodField(read_only=True, method_name="request_number_")
-
-    def request_number_(self, obj):
-        return obj.order.request.request_number
 
     class Meta:
         model = PaymentRecord
