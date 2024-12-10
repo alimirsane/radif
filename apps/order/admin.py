@@ -29,7 +29,10 @@ def check_pay(modeladmin, request, queryset):
 check_pay.short_description = "Check Pay"
 
 class PaymentRecordAdmin(admin.ModelAdmin):
-    list_display = ['payer', 'order', 'payment_type', 'amount', 'successful', 'charged', 'transaction_code', 'created_at', 'updated_at']
+    # list_display = ['payer', 'order', 'payment_type', 'amount', 'successful', 'charged', 'transaction_code', 'created_at', 'updated_at']
+    list_display = ['payer', 'order', 'payment_type', 'settlement_type', 'amount', 'successful', 'charged',
+                    'transaction_code', 'tref', 'payment_order_id', 'called_back',
+                    'is_returned', 'is_lock', 'log_text', 'created_at', 'updated_at']
     actions = [check_pay]
 
     # def check_pay():

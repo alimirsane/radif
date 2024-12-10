@@ -259,7 +259,7 @@ class Order(models.Model):
     def __str__(self):
         if self.buyer:
             if self.request:
-                return "%s : %s" % (self.buyer.get_full_name(), self.request.subject)
+                return "%s : %s" % (self.buyer.get_full_name(), self.request)
         else:
             return self.order_code
 
