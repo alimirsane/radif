@@ -121,6 +121,10 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderBoughtSerializer(serializers.ModelSerializer):
     remaining_amount = serializers.SerializerMethodField(read_only=True, method_name="remaining_amount_")
+    request_number = serializers.SerializerMethodField(read_only=True, method_name="request_number_")
+
+    def request_number_(self, obj):
+        return obj.request.request_number
 
     def remaining_amount_(self, obj):
         return obj.remaining_amount()
