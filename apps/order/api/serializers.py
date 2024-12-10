@@ -120,6 +120,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderBoughtSerializer(serializers.ModelSerializer):
+    request_obj = RequestDetailSerializer(read_only=True, source='request')
     remaining_amount = serializers.SerializerMethodField(read_only=True, method_name="remaining_amount_")
 
     def remaining_amount_(self, obj):
