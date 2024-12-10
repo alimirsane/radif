@@ -120,6 +120,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderBoughtSerializer(serializers.ModelSerializer):
+    remaining_amount = serializers.SerializerMethodField(read_only=True, method_name="remaining_amount_")
+
+    def remaining_amount_(self, obj):
+        return obj.remaining_amount()
+
     class Meta:
         model = Order
         exclude = ['order_key']
