@@ -120,7 +120,6 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderBoughtSerializer(serializers.ModelSerializer):
-    request_obj = RequestDetailSerializer(read_only=True, source='request')
     remaining_amount = serializers.SerializerMethodField(read_only=True, method_name="remaining_amount_")
 
     def remaining_amount_(self, obj):
@@ -503,7 +502,10 @@ class PaymentRecordConfirmSerializer(serializers.ModelSerializer):
     successful = serializers.ReadOnlyField()
     charged = serializers.ReadOnlyField()
     called_back = serializers.ReadOnlyField()
+    request_number = serializers.SerializerMethodField(read_only=True, method_name="request_number")
 
+    def request_number(self, obj):
+        return obj.order.request.request_number
 
     class Meta:
         model = PaymentRecord
