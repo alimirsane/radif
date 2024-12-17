@@ -534,7 +534,7 @@ class Request(models.Model):
                 data[f"services[{index}][tariffs_basis]"] = 1
             else:
                 data[f"services[{index}][tariffs_basis]"] = 2
-            data[f"services[{index}][price]"] = str(child_request.price_wod)
+            data[f"services[{index}][price]"] = str(int(child_request.price_wod)/int(formresponses_count))
             gregorian_date = child_request.created_at.date()
             jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
             date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
