@@ -239,7 +239,7 @@ class Request(models.Model):
     labsnet = models.BooleanField(default=False, verbose_name='اعتبار لبزنت')
     labsnet_discount = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='تخفیف لبزنت')
     labsnet_description = models.CharField(max_length=200, blank=True, null=True, verbose_name='توضیحات گرنت لبزنت')
-    labsnet_result = models.CharField(max_length=200, blank=True, null=True, verbose_name='نتیجه ثبت لبزنت')
+    labsnet_result = models.CharField(max_length=2000, blank=True, null=True, verbose_name='نتیجه ثبت لبزنت')
 
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
 
