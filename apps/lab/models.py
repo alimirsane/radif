@@ -518,7 +518,7 @@ class Request(models.Model):
             "org_id": "343"
         }
         for index, child_request in enumerate(self.child_requests.exclude(request_status__step__name__in=['رد شده'])):
-            formresponses_count = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
+            formresponses_count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
                 'response_count__sum']
             data[f"services[{index}][test_code]"] = child_request.experiment.labsnet_experiment_id
             data[f"services[{index}][test_count]"] = formresponses_count
