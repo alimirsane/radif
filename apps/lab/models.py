@@ -513,7 +513,6 @@ class Request(models.Model):
 
     def labsnet_create(self):
         import requests
-        import json
         data = {
             "user_name": "sharif_uni",
             "password": "sharif_uni",
@@ -521,17 +520,17 @@ class Request(models.Model):
             "type": "1",
             "org_id": "343"
         }
-        for index, child_request in enumerate(self.child_requests.all()):
+        for index, child_request in enumerate(self.child_requests.exclude(request_status__step__name__in=['رد شده'])):
             formresponses_count = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
                 'response_count__sum']
             data[f"services[{index}][test_code]"] = child_request.experiment.labsnet_experiment_id
-            data[f"services[{index}][test_count]"] = formresponses_count
+            data[f"services[{index}][test_count]"] = formresponses_count if formresponses_count is not None else 0
             data[f"services[{index}][type_credit]"] = 2
             if child_request.experiment.test_unit_type == 'time':
                 data[f"services[{index}][tariffs_basis]"] = 1
             else:
                 data[f"services[{index}][tariffs_basis]"] = 2
-            data[f"services[{index}][price]"] = child_request.price_wod
+            data[f"services[{index}][price]"] = str(child_request.price_wod)
             gregorian_date = child_request.created_at.date()
             jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
             date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
@@ -544,42 +543,10 @@ class Request(models.Model):
                 verify=False
             )
             response.raise_for_status()
-            return str(response.json())
+            return f'data={str(data)} + res={str(response.json())}'
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
             return f"An error occurred: {e}"
-
-    # def labsnet_create(self):
-    #     if not self.labsnet_code1 or not self.labsnet_code2:
-    #
-    #         data = {
-    #             "user_name": "sharif_uni", "password": "sharif_uni", "national_code": "4723686509",
-    #             "type": "1", "org_id": "343",
-    #             "services": [{
-    #                 "test_code": 2669,
-    #                 "test_count": 2,
-    #                 "type_credit": "2",
-    #                 "tariffs_basis": "2",
-    #                 "price": 200000,
-    #             }]
-    #         }
-    #         response = requests.post('https://labsnet.ir/api/add_service', data=data, verify=False)
-    #         response_text = '{"error":1,"response":{"type":"SERVICES_ERR_TYPE","code":2,"msg":"\\u0645\\u0634\\u062e\\u0635\\u0627\\u062a \\u0622\\u0632\\u0645\\u0648\\u0646 \\u0646\\u0627\\u0645\\u0639\\u062a\\u0628\\u0631 \\u0627\\u0633\\u062a. \\u0645\\u0642\\u062f\\u0627\\u0631 \\u0628\\u0627\\u06cc\\u062f \\u0639\\u062f\\u062f\\u06cc \\u0628\\u0627\\u0634\\u062f  ","result":[]}}'
-    #
-    #         # data = {"user_name": "sharif_uni", "password": "sharif_uni", "national_code": nid, "type": type,
-    #         #         "services": list(service)}
-    #         # jdata = json.loads(data)
-    #         # response = requests.post('https://labsnet.ir/api/credit_list', data=jdata, verify=False)
-    #         # response_text = response.text
-    #         # return JsonResponse(json.loads(response_text))
-    #         return str(json.loads(response_text))
-    #
-
-# class Sample(models.Model):
-#     name = models.CharField(max_length=255)
-#     type = models.CharField(max_length=255)
-#     source = models.CharField(max_length=255)
-#     collection_date = models.CharField(max_length=255)
 
 
 class RequestCertificate(models.Model):
