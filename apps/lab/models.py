@@ -205,6 +205,11 @@ class DiscountHistory(models.Model):
 
 
 class Request(models.Model):
+    LABSNET_RES = (
+        (1, 'ثبت نشده'),
+        (2, 'ثبت موفق'),
+        (3, 'ثبت ناموفق')
+    )
     owner = models.ForeignKey(User, blank=True, null=True, related_name='requests', on_delete=models.PROTECT, verbose_name='درخواست کننده')
     experiment = models.ForeignKey('Experiment', on_delete=models.PROTECT, verbose_name='آزمایش')
     parameter = models.ManyToManyField('Parameter', verbose_name='پارامتر')
@@ -240,6 +245,7 @@ class Request(models.Model):
     labsnet_discount = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='تخفیف لبزنت')
     labsnet_description = models.CharField(max_length=200, blank=True, null=True, verbose_name='توضیحات گرنت لبزنت')
     labsnet_result = models.CharField(max_length=2000, blank=True, null=True, verbose_name='نتیجه ثبت لبزنت')
+    labsnet_status = models.PositiveSmallIntegerField(choices=LABSNET_RES, default=1, null=True, verbose_name='وضعیت ثبت لبزنت')
 
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
 
