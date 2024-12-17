@@ -378,8 +378,7 @@ class Request(models.Model):
         if action == 'next':
             if new_step.name == 'در ‌انتظار نمونه':
                 if not self.parent_request:
-                    str = self.labsnet_create()
-                    self.labsnet_result = str
+                    self.labsnet_create()
                     self.save()
         if new_step.name == 'در حال انجام':
             self.delivery_date = datetime.datetime.now() + datetime.timedelta(days=self.experiment.estimated_result_time)
@@ -516,6 +515,8 @@ class Request(models.Model):
 
     def labsnet_create(self):
         import requests
+        if self.labsnet_status == 2:
+            return self
         data = {
             "user_name": "sharif_uni",
             "password": "sharif_uni",
@@ -538,7 +539,7 @@ class Request(models.Model):
             jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
             date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
             data[f"services[{index}][date]"] = date_str
-
+        self.labsnet_result = f'data={str(data)}'
         try:
             response = requests.post(
                 'https://labsnet.ir/api/add_service',
@@ -546,10 +547,16 @@ class Request(models.Model):
                 verify=False
             )
             response.raise_for_status()
-            return f'data={str(data)} + res={str(response.json())}'
-        except requests.exceptions.RequestException as e:
-            print(f"An error occurred: {e}")
-            return f"An error occurred: {e}"
+            self.labsnet_result += f' + res={str(response.json())} + error={response.json()["error"]}'
+            if response.json()['error'] == 0:
+                self.labsnet_status = 2
+            else:
+                self.labsnet_status = 3
+            return self
+        except Exception as e:
+            self.labsnet_result += f' + exception={e}'
+            self.labsnet_status = 3
+            return self
 
 
 class RequestCertificate(models.Model):
