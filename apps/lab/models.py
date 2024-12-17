@@ -521,7 +521,7 @@ class Request(models.Model):
             formresponses_count = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
                 'response_count__sum']
             data[f"services[{index}][test_code]"] = child_request.experiment.labsnet_experiment_id
-            data[f"services[{index}][test_count]"] = formresponses_count if formresponses_count is not None else 0
+            data[f"services[{index}][test_count]"] = formresponses_count
             data[f"services[{index}][type_credit]"] = 2
             if child_request.experiment.test_unit_type == 'time':
                 data[f"services[{index}][tariffs_basis]"] = 1
