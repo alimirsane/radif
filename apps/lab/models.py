@@ -371,13 +371,10 @@ class Request(models.Model):
     def handle_status_changed(self, new_step, action, lastest_status):
         if action == 'next':
             if new_step.name == 'در ‌انتظار نمونه':
-                # if not self.parent_request:
-                #     for child in self.child_requests.all():
-                #         if child.lastest_status().step.name == 'در انتظار پرداخت':
-                #             child.change_status('next', 'Successfully paid', self.owner)
-                str = self.labsnet_create()
-                self.labsnet_result = str
-                self.save()
+                if not self.parent_request:
+                    str = self.labsnet_create()
+                    self.labsnet_result = str
+                    self.save()
         if new_step.name == 'در حال انجام':
             self.delivery_date = datetime.datetime.now() + datetime.timedelta(days=self.experiment.estimated_result_time)
             self.save()
