@@ -377,7 +377,7 @@ class Request(models.Model):
     def handle_status_changed(self, new_step, action, lastest_status):
         if action == 'next':
             if new_step.name == 'در ‌انتظار نمونه':
-                if not self.parent_request:
+                if not self.parent_request and not self.labsnet:
                     self.labsnet_create()
                     self.save()
         if new_step.name == 'در حال انجام':
