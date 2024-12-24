@@ -381,7 +381,7 @@ class Request(models.Model):
                     self.labsnet_create()
                     self.save()
         if new_step.name == 'در حال انجام':
-            self.delivery_date = datetime.datetime.now() + datetime.timedelta(days=self.experiment.estimated_result_time)
+            self.delivery_date = datetime.datetime.now()
             self.save()
         if action == 'reject':
             if self.parent_request:
