@@ -118,7 +118,7 @@ class UserPersonalSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'username', 'password', 'first_name', 'last_name', 'national_id', 'email', 'department',
-            'student_id', 'educational_level', 'educational_field', 'postal_code', 'is_sharif_student', 'telephone'
+            'student_id', 'educational_level', 'educational_field', 'postal_code', 'is_sharif_student', 'telephone', 'address'
         )
         extra_kwargs = {
             'password': {'write_only': True},
