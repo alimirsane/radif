@@ -519,7 +519,7 @@ class Request(models.Model):
         grant_request.remaining_amount -= used_amount
         self.price -= used_amount
         grant_request.save()
-        self.grant_request_transaction(grant_request, self, used_amount, 'use')
+        self.grant_request_transaction(grant_request, used_amount, 'use')
 
     def revoke_grant_usage(self):
         transactions = GrantRequestTransaction.objects.filter(request=self, transaction_type='use')
@@ -527,12 +527,12 @@ class Request(models.Model):
             grant_request = transaction.grant_request
             grant_request.remaining_amount += transaction.used_amount
             grant_request.save()
-            self.grant_request_transaction(grant_request, self, transaction.used_amount, 'revoke')
+            self.grant_request_transaction(grant_request, transaction.used_amount, 'revoke')
 
-    def grant_request_transaction(grant_request, request, used_amount, transaction_type):
+    def grant_request_transaction(self, grant_request, used_amount, transaction_type):
         GrantRequestTransaction.objects.create(
             grant_request=grant_request,
-            request=request,
+            request=self,
             used_amount=used_amount,
             remaining_amount_before=grant_request.remaining_amount,
             remaining_amount_after=grant_request.remaining_amount - used_amount if transaction_type == 'use' else grant_request.remaining_amount + used_amount,
