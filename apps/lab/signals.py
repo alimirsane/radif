@@ -61,7 +61,7 @@ def create_form_number(sender, instance, created, **kwargs):
 def create_request_number(sender, instance, created, **kwargs):
     global processing_request_signal
 
-    if created or processing_request_signal:
+    if processing_request_signal:
         return
 
     processing_request_signal = True
