@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import models
 from django.db.models import Sum
 import jdatetime
-from apps.account.models import User, GrantRequest, Role, GrantRequestTransaction
+from apps.account.models import User, GrantRequest, Role
 from apps.form.models import Form
 import math
 from django.core.exceptions import ValidationError
@@ -202,6 +202,24 @@ class DiscountHistory(models.Model):
     description = models.TextField(blank=True, verbose_name='توضیحات')
     action_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='کاربر')
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True, verbose_name='تاریخ ایجاد')
+
+
+class GrantRequestTransaction(models.Model):
+    grant_request = models.ForeignKey(GrantRequest, on_delete=models.CASCADE, verbose_name='درخواست گرنت')
+    request = models.ForeignKey('Request', on_delete=models.CASCADE, verbose_name='درخواست اصلی')
+    used_amount = models.BigIntegerField(default=0, verbose_name='مقدار استفاده شده')
+    remaining_amount_before = models.BigIntegerField(default=0, verbose_name='مقدار باقی مانده قبل از تراکنش')
+    remaining_amount_after = models.BigIntegerField(default=0, verbose_name='مقدار باقی مانده بعد از تراکنش')
+    TRANSACTION_TYPE_CHOICES = (('use', 'Use'), ('revoke', 'Revoke'))
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE_CHOICES, verbose_name='نوع تراکنش')
+    datetime = models.DateTimeField(auto_now_add=True, verbose_name='زمان تراکنش')
+
+    class Meta:
+        verbose_name = 'تراکنش گرنت'
+        verbose_name_plural = 'تراکنش‌های گرنت'
+
+    def __str__(self):
+        return f"{self.grant_request} - {self.transaction_type} - {self.used_amount}"
 
 
 class Request(models.Model):
