@@ -1,12 +1,10 @@
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core import validators
 from django.utils import timezone
 import requests
 import json
-import datetime
 from django.db import transaction
 
 class EducationalField(models.Model):
@@ -240,6 +238,24 @@ class GrantRecord(models.Model):
         return [self.receiver]
 
 
+class GrantRequestTransaction(models.Model):
+    grant_request = models.ForeignKey('GrantRequest', on_delete=models.CASCADE, verbose_name='درخواست گرنت')
+    # request = models.ForeignKey(Request, on_delete=models.CASCADE, verbose_name='درخواست اصلی')
+    used_amount = models.BigIntegerField(default=0, verbose_name='مقدار استفاده شده')
+    remaining_amount_before = models.BigIntegerField(default=0, verbose_name='مقدار باقی مانده قبل از تراکنش')
+    remaining_amount_after = models.BigIntegerField(default=0, verbose_name='مقدار باقی مانده بعد از تراکنش')
+    TRANSACTION_TYPE_CHOICES = (('use', 'Use'), ('revoke', 'Revoke'))
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE_CHOICES, verbose_name='نوع تراکنش')
+    datetime = models.DateTimeField(auto_now_add=True, verbose_name='زمان تراکنش')
+
+    class Meta:
+        verbose_name = 'تراکنش گرنت'
+        verbose_name_plural = 'تراکنش‌های گرنت'
+
+    def __str__(self):
+        return f"{self.grant_request} - {self.transaction_type} - {self.used_amount}"
+
+
 class GrantRequest(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_requests', verbose_name="فرستنده")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_requests', verbose_name="گیرنده")
@@ -270,11 +286,9 @@ class GrantRequest(models.Model):
         try:
             expiration_date = approved_grant_record.expiration_date
             with transaction.atomic():
-                # Check if the GrantRecord is still valid
                 if approved_grant_record.expiration_date and approved_grant_record.expiration_date < timezone.now().date():
                     raise ValueError("GrantRecord has expired and cannot be used for this request.")
 
-                # Check if the GrantRecord has sufficient funds
                 if not approved_grant_record.has_sufficient_funds(approved_amount):
                     raise ValueError("GrantRecord does not have sufficient funds.")
 

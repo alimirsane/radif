@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import models
 from django.db.models import Sum
 import jdatetime
-from apps.account.models import User, GrantRequest, Role
+from apps.account.models import User, GrantRequest, Role, GrantRequestTransaction
 from apps.form.models import Form
 import math
 from django.core.exceptions import ValidationError
@@ -455,27 +455,29 @@ class Request(models.Model):
             self.price = price
 
             # try:
-            if self.grant_request1 or self.grant_request2:
-                if self.grant_request1 and self.grant_request1.remaining_amount > 0:
-                    if self.grant_request1.remaining_amount >= self.price:
-                        self.grant_request1.remaining_amount -= self.price
-                        self.price = 0
-                    else:
-                        self.price -= self.grant_request1.remaining_amount
-                        self.grant_request1.remaining_amount = 0
-                    self.grant_request1.save()
-
-                if self.grant_request2 and self.price > 0 and self.grant_request2.remaining_amount > 0:
-                    if self.grant_request2.remaining_amount >= self.price:
-                        self.grant_request2.remaining_amount -= self.price
-                        self.price = 0
-                    else:
-                        self.price -= self.grant_request2.remaining_amount
-                        self.grant_request2.remaining_amount = 0
-                    self.grant_request2.save()
-            self.grant_request_discount = self.price_wod - self.price
+            # if self.grant_request1 or self.grant_request2:
+            #     if self.grant_request1 and self.grant_request1.remaining_amount > 0:
+            #         if self.grant_request1.remaining_amount >= self.price:
+            #             self.grant_request1.remaining_amount -= self.price
+            #             self.price = 0
+            #         else:
+            #             self.price -= self.grant_request1.remaining_amount
+            #             self.grant_request1.remaining_amount = 0
+            #         self.grant_request1.save()
+            #
+            #     if self.grant_request2 and self.price > 0 and self.grant_request2.remaining_amount > 0:
+            #         if self.grant_request2.remaining_amount >= self.price:
+            #             self.grant_request2.remaining_amount -= self.price
+            #             self.price = 0
+            #         else:
+            #             self.price -= self.grant_request2.remaining_amount
+            #             self.grant_request2.remaining_amount = 0
+            #         self.grant_request2.save()
+            # self.grant_request_discount = self.price_wod - self.price
             # except Exception as e:
             #     print(f"An error occurred: {e}")
+            self.revoke_grant_usage()
+            self.apply_grant_requests()
 
             if self.labsnet_discount:
                 self.price -= int(self.labsnet_discount)
@@ -486,6 +488,38 @@ class Request(models.Model):
             else:
                 self.price_sample_returned = Decimal(0)
             self.save()
+
+    def apply_grant_requests(self):
+        if self.grant_request1:
+            self.apply_grant(self.grant_request1)
+        if self.grant_request2:
+            self.apply_grant(self.grant_request2)
+        self.grant_request_discount = self.price_wod - self.price
+
+    def apply_grant(self, grant_request):
+        used_amount = min(grant_request.remaining_amount, self.price)
+        grant_request.remaining_amount -= used_amount
+        self.price -= used_amount
+        grant_request.save()
+        self.grant_request_transaction(grant_request, self, used_amount, 'use')
+
+    def revoke_grant_usage(self):
+        transactions = GrantRequestTransaction.objects.filter(request=self, transaction_type='use')
+        for transaction in transactions:
+            grant_request = transaction.grant_request
+            grant_request.remaining_amount += transaction.used_amount
+            grant_request.save()
+            self.grant_request_transaction(grant_request, self, transaction.used_amount, 'revoke')
+
+    def grant_request_transaction(grant_request, request, used_amount, transaction_type):
+        GrantRequestTransaction.objects.create(
+            grant_request=grant_request,
+            request=request,
+            used_amount=used_amount,
+            remaining_amount_before=grant_request.remaining_amount,
+            remaining_amount_after=grant_request.remaining_amount - used_amount if transaction_type == 'use' else grant_request.remaining_amount + used_amount,
+            transaction_type=transaction_type
+        )
 
     def current_month_counter(self):
         now = jdatetime.date.today()
