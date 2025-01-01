@@ -238,6 +238,8 @@ class Request(models.Model):
     parent_request = models.ForeignKey('self', null=True, blank=True, related_name='child_requests', on_delete=models.SET_NULL, verbose_name='درخواست مادر')
     has_parent_request = models.BooleanField(default=False, verbose_name='درخواست مادر دارد')
 
+    test_duration = models.PositiveIntegerField(blank=True, null=True, default=0)
+
     discount = models.PositiveIntegerField(blank=True, null=True, default=0)
     discount_description = models.CharField(max_length=120, blank=True, null=True, verbose_name='توضیحات تخفیف')
 
@@ -439,8 +441,11 @@ class Request(models.Model):
             formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
             price = 0
             for param in params:
-                temp = formresponses['response_count__sum'] / int(param.unit_value)
-                temp = math.ceil(temp)
+                if self.test_duration > 0:
+                    temp = self.test_duration
+                else:
+                    temp = formresponses['response_count__sum'] / int(param.unit_value)
+                    temp = math.ceil(temp)
                 if self.owner.is_partner:
                     if self.is_urgent:
                         if param.partner_urgent_price:
