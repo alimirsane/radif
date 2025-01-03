@@ -622,6 +622,39 @@ class Request(models.Model):
             return self
 
 
+    def labsnet_list(self):
+        import requests
+        if self.labsnet_status == 2:
+            return self
+        data = {
+            "user_name": "sharif_uni",
+            "password": "sharif_uni",
+            "national_code": f"{self.owner.national_id}",
+            "type": "1",
+            "org_id": "343",
+        }
+        for index, child_request in enumerate(self.child_requests.exclude(request_status__step__name__in=['رد شده'])):
+            data[f"services[{index}]"] = child_request.experiment.labsnet_experiment_id
+        self.labsnet_result = f'data={str(data)}'
+        try:
+            response = requests.post(
+                'https://labsnet.ir/api/credit_list',
+                data=data,
+                verify=False
+            )
+            response.raise_for_status()
+            self.labsnet_result += f' + res={str(response.json())} + error={response.json()["error"]}'
+            # if response.json()['error'] == 0:
+            #     return response.json()
+            # else:
+            #     return response.json()
+            return response.json()
+            # return self
+        except Exception as e:
+            self.labsnet_result += f' + exception={e}'
+            self.labsnet_status = 3
+            return self
+
 class RequestCertificate(models.Model):
     request = models.OneToOneField('Request', on_delete=models.CASCADE, related_name='certificate',
                                    verbose_name='درخواست')
