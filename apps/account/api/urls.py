@@ -1,9 +1,7 @@
 from django.urls import path, include
 import django_cas_ng.views as django_cas_ng
 from apps.account.api.views import *
-# from apps.account.api.views import UserListAPIView, UserDetailAPIView, obtain_auth_token, GetCurrentUserView, \
-#     UserRegistrationAPIView, EducationalFieldListAPIView, EducationalLevelListAPIView, EducationalFieldDetailAPIView, \
-#     EducationalLevelDetailAPIView, RoleDetailAPIView, RoleListAPIView, AccessLevelDetailAPIView, AccessLevelListAPIView
+
 
 urlpatterns = [
     path('', include('rest_framework.urls'), name='api_auth'),
@@ -46,7 +44,7 @@ urlpatterns = [
     path('grant-record/<int:pk>/', GrantRecordDetailAPIView.as_view(), name='grant-record-detail'),
     path('grant-record/file/', GrantRecordUploadAPIView.as_view(), name='grant-record-file'),
 
-    path('grant-labsnet/', CheckLabsnetGrantAPIView.as_view(), name='grant-labsnet-list'),
+    # path('grant-labsnet/', CheckLabsnetGrantAPIView.as_view(), name='grant-labsnet-list'),
     path('grant-request/', GrantRequestListAPIView.as_view(), name='grant-request-list'),
     path('grant-request/<int:pk>/', GrantRequestDetailAPIView.as_view(), name='grant-request-detail'),
     path('grant-request/<int:pk>/approved/', GrantRequestApprovedAPIView.as_view(), name='grant-request-detail-approved'),

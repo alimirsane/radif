@@ -25,7 +25,7 @@ from apps.account.models import User, EducationalField, EducationalLevel, Access
     GrantRequest, OTPserver, Notification, GrantRecord, Department
 from .filters import UserFilter, GrantRecordFilter, GrantRequestFilter
 from ..permissions import AccessLevelPermission, query_set_filter_key
-from ...core.functions import export_excel, labsnet, process_excel_and_create_grant_records
+from ...core.functions import export_excel, process_excel_and_create_grant_records
 from ...core.paginations import DefaultPagination
 
 
@@ -498,15 +498,15 @@ class GrantRequestRevokedAPIView(UpdateAPIView):
     view_key = 'grantrequest'
 
 
-class CheckLabsnetGrantAPIView(CreateAPIView):
-    serializer_class = LansnetGrantSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        sdata = serializer.validated_data
-        response = labsnet(sdata['national_id'], sdata['type'], sdata['services'])
-        return response
+# class CheckLabsnetGrantAPIView(CreateAPIView):
+#     serializer_class = LansnetGrantSerializer
+#
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         sdata = serializer.validated_data
+#         response = labsnet(sdata['national_id'], sdata['type'], sdata['services'])
+#         return response
 
 
 from rest_framework.views import APIView
