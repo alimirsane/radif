@@ -511,3 +511,6 @@ class RequestResultSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         validated_data['result_by'] = self.context['request'].user
         return super().update(instance, validated_data)
+
+class UpdateLaboratoryISOSerializer(serializers.Serializer):
+    is_visible_iso = serializers.BooleanField(required=True)

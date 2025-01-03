@@ -42,6 +42,7 @@ class Laboratory(models.Model):
     rules = models.TextField(blank=True, null=True, verbose_name='قوانین')
 
     has_iso_17025 = models.BooleanField(default=False)
+    is_visible_iso = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'آزمایشگاه'

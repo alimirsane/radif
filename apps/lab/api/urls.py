@@ -12,6 +12,9 @@ urlpatterns = [
     path('laboratories/', LaboratoryListAPIView.as_view(), name='laboratories-list'),
     path('laboratories/<int:pk>/', LaboratoryDetailAPIView.as_view(), name='laboratory-detail'),
 
+    path('api/laboratories/update-iso-visibility/', UpdateLaboratoryISOVisibilityAPIView.as_view(),
+         name='update-laboratory-iso-visibility'),
+
     path('experiments/', ExperimentListAPIView.as_view(), name='experiments-list'),
     path('experiments/<int:pk>/', ExperimentDetailAPIView.as_view(), name='experiment-detail'),
 

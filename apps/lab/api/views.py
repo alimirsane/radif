@@ -11,7 +11,7 @@ from apps.lab.api.serializers import ExperimentSerializer, LaboratorySerializer,
     RequestListSerializer, RequestDetailSerializer, DepartmentSerializer, LaboratoryDetailSerializer, \
     ExperimentDetailSerializer, \
     FormResponseSerializer, LabTypeSerializer, RequestChangeStatusSerializer, WorkflowSerializer, \
-    RequestResultSerializer, RequestButtonActionSerializer, RequestCertificateSerializer
+    RequestResultSerializer, RequestButtonActionSerializer, RequestCertificateSerializer, UpdateLaboratoryISOSerializer
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -366,3 +366,18 @@ class RequestResultDetailAPIView(RetrieveUpdateDestroyAPIView):
 
     # def get_queryset(self):
     #     return RequestResult.objects.filter(request__owner=self.request.user)
+
+
+class UpdateLaboratoryISOVisibilityAPIView(UpdateAPIView):
+    queryset = Laboratory.objects.all()
+    serializer_class = UpdateLaboratoryISOSerializer
+
+    def patch(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        is_visible_iso = serializer.validated_data['is_visible_iso']
+        self.get_queryset().update(is_visible_iso=is_visible_iso)
+        return Response(
+            {"message": f"is_visible_iso updated to {is_visible_iso} for all laboratories."},
+            status=status.HTTP_200_OK
+        )
