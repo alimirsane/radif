@@ -580,7 +580,12 @@ class Request(models.Model):
             "password": "sharif_uni",
             "national_code": f"{self.owner.national_id}",
             "type": "1",
-            "org_id": "343"
+            "org_id": "343",
+            "name": self.owner.first_name if self.owner.account_type == 'personal' else self.owner.company_name,
+            "family": self.owner.last_name if self.owner.account_type == 'personal' else "",
+            "mobile": self.owner.username.replace('+98','0'),
+            "name_rabet_company": "",
+            "family_rabet_company": "",
         }
         for index, child_request in enumerate(self.child_requests.exclude(request_status__step__name__in=['رد شده'])):
             formresponses_count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
