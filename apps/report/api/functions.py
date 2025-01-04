@@ -3,7 +3,8 @@ from django.db.models import Sum
 from apps.lab.models import *
 from apps.account.models import *
 from django.utils.timezone import is_aware
-
+from django.conf import settings
+import os
 
 def generate_excel_report():
     data = []
@@ -59,5 +60,5 @@ def generate_excel_report():
 
     # Save to Excel file
     file_path = 'parent_child_report.xlsx'
-    df.to_excel(file_path, index=False)
+    df.to_excel(os.path.join(settings.MEDIA_URL, file_path), index=False)
     return file_path
