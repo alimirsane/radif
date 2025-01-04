@@ -21,7 +21,7 @@ class Command(BaseCommand):
         for index, row in df.iterrows():
             try:
                 # Convert phone number to international format
-                telephone = str(row['تلفن']).strip()
+                telephone = str(row['موبایل']).strip()
                 if telephone.startswith('0'):
                     telephone = '+98' + telephone[1:]
 
@@ -60,6 +60,8 @@ class Command(BaseCommand):
                     user_type='customer',
                     account_type='business' if row.get('نوع شخصیت') == 'حقوقی' else 'personal',
                 )
+
+                user.set_password(row['کدملی'])
 
                 user.save()
 
