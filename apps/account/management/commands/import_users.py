@@ -20,17 +20,17 @@ class Command(BaseCommand):
 
         for index, row in df.iterrows():
             try:
-                # Convert phone number to international format
                 telephone = str(row['موبایل']).strip()
                 if telephone.startswith('0'):
                     telephone = '+98' + telephone[1:]
 
                 # Convert date format to YYYY-MM-DD
-                raw_date = row['تاریخ ایجاد']
-                try:
-                    formatted_date = datetime.strptime(raw_date, "%Y/%m/%d").strftime("%Y-%m-%d")
-                except ValueError:
-                    raise ValueError(f"Invalid date format for 'تاریخ ایجاد' in row {index + 1}. Expected format: YYYY/MM/DD.")
+                # raw_date = row['تاریخ ایجاد']
+                # try:
+                #     formatted_date = datetime.strptime(raw_date, "%Y/%m/%d").strftime("%Y-%m-%d")
+                # except ValueError:
+                #     formatted_date = None
+                    # raise ValueError(f"Invalid date format for 'تاریخ ایجاد' in row {index + 1}. Expected format: YYYY/MM/DD.")
 
                 company_economic_number = str(row.get('کد اقتصادی', '')).strip()
                 if pd.isna(company_economic_number) or not company_economic_number or company_economic_number == 'nan':
@@ -48,7 +48,7 @@ class Command(BaseCommand):
                     last_name=row['نام خانوادگی'],
                     address=row['آدرس'],
                     telephone=telephone,
-                    date_joined=formatted_date,
+                    date_joined=None,
                     email=row['ایمیل'],
                     national_id=row['کدملی'],
                     company_name=row.get('نام سازمان', None),
@@ -65,6 +65,6 @@ class Command(BaseCommand):
 
                 user.save()
 
-                self.stdout.write(self.style.SUCCESS(f"User {user.username} imported successfully."))
+                self.stdout.write(self.style.SUCCESS(f"{index}: User {user.username} imported successfully."))
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f"Error importing user at row {index + 1}: {e}"))
+                self.stdout.write(self.style.ERROR(f"{index}: Error importing user at row {index}: {e}"))
