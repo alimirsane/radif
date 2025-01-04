@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'apps.account',
     'apps.form',
     'apps.order',
+    'apps.report',
 ]
 
 AUTH_USER_MODEL = 'account.User'
