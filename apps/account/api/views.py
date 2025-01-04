@@ -34,7 +34,7 @@ class UserListAPIView(ListCreateAPIView):
     serializer_class = UserSerializer
     search_fields = ['username', 'email', 'first_name', 'last_name']
     filterset_class = UserFilter
-
+    pagination_class = DefaultPagination
 
     # permission and queryset
     permission_classes = [AccessLevelPermission]
