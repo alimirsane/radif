@@ -48,7 +48,6 @@ class Command(BaseCommand):
                     last_name=row['نام خانوادگی'],
                     address=row['آدرس'],
                     telephone=telephone,
-                    date_joined=None,
                     email=row['ایمیل'],
                     national_id=row['کدملی'],
                     company_name=row.get('نام سازمان', None),
