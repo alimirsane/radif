@@ -22,9 +22,11 @@ class ExcelReportAPIView(APIView):
             report_path = generate_excel_report()
 
             # Construct the full URL for the file
+            relative_file_path = os.path.relpath(report_path, settings.MEDIA_ROOT)
             file_url = request.build_absolute_uri(
-                os.path.join(settings.MEDIA_URL, os.path.basename(report_path))
+                os.path.join(settings.MEDIA_URL, relative_file_path).replace('\\', '/')
             )
+
 
             return Response(
                 {
