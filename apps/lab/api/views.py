@@ -1,4 +1,5 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView, RetrieveAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView, RetrieveAPIView, \
+    RetrieveUpdateAPIView
 
 from apps.account.permissions import AccessLevelPermission, query_set_filter_key
 from apps.core.functions import export_excel
@@ -368,9 +369,26 @@ class RequestResultDetailAPIView(RetrieveUpdateDestroyAPIView):
     #     return RequestResult.objects.filter(request__owner=self.request.user)
 
 
-class UpdateLaboratoryISOVisibilityAPIView(UpdateAPIView):
+class UpdateLaboratoryISOVisibilityAPIView(RetrieveUpdateAPIView):
     queryset = Laboratory.objects.all()
     serializer_class = UpdateLaboratoryISOSerializer
+
+
+    def get(self, request, *args, **kwargs):
+        laboratories = self.get_queryset()
+        total_count = laboratories.count()
+        true_count = laboratories.filter(is_visible_iso=True).count()
+        majority_status = "True" if true_count > total_count / 2 else "False"
+
+        return Response(
+            {
+                "majority_is_visible_iso": majority_status,
+                "total_laboratories": total_count,
+                "visible_iso_count": true_count,
+                "hidden_iso_count": total_count - true_count,
+            },
+            status=status.HTTP_200_OK
+        )
 
     def patch(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
