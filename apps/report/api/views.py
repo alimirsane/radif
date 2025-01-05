@@ -11,24 +11,8 @@ import os
 from .functions import generate_excel_report
 
 
-# class ExcelReportAPIView(APIView):
-#     """
-#     API endpoint to generate and provide a link to the Excel report.
-#     """
-#     def get(self, request, format=None):
-#         try:
-#             # Generate the report
-#             report_path = generate_excel_report()
-#
-#             # Construct the URL for the file
-#             file_url = os.path.join(settings.MEDIA_URL, os.path.basename(report_path))
-#
-#             return Response({"url": file_url}, status=status.HTTP_200_OK)
-#         except Exception as e:
-#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 class ExcelReportAPIView(APIView):
+
     """
     API endpoint to generate and provide a link to the Excel report.
     """
@@ -38,8 +22,24 @@ class ExcelReportAPIView(APIView):
             report_path = generate_excel_report()
 
             # Construct the full URL for the file
-            file_url = request.build_absolute_uri(os.path.join(settings.MEDIA_URL, os.path.basename(report_path)))
+            file_url = request.build_absolute_uri(
+                os.path.join(settings.MEDIA_URL, os.path.basename(report_path))
+            )
 
-            return Response({"status": "success", "data": {"url": file_url}, "message": "Request successful"}, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "status": "success",
+                    "data": {"url": file_url},
+                    "message": "Request successful"
+                },
+                status=status.HTTP_200_OK
+            )
         except Exception as e:
-            return Response({"status": "error", "errors": {"error": str(e)}, "message": "Request failed"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {
+                    "status": "error",
+                    "errors": {"error": str(e)},
+                    "message": "Request failed"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

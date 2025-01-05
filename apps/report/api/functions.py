@@ -5,6 +5,7 @@ from apps.account.models import *
 from django.utils.timezone import is_aware
 from django.conf import settings
 import os
+from datetime import datetime
 
 def generate_excel_report():
     data = []
@@ -58,7 +59,13 @@ def generate_excel_report():
     # Convert data to pandas DataFrame
     df = pd.DataFrame(data)
 
+    # Ensure the report is saved in the media folder
+    media_path = os.path.join(settings.MEDIA_ROOT, 'reports')
+    os.makedirs(media_path, exist_ok=True)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    file_path = os.path.join(media_path, f'parent_child_report_{timestamp}.xlsx')
+
     # Save to Excel file
-    file_path = 'parent_child_report.xlsx'
-    df.to_excel(os.path.join(settings.MEDIA_URL, file_path), index=False)
+    df.to_excel(file_path, index=False)
     return file_path
+
