@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken as ObtainAuthT
 from rest_framework.compat import coreapi, coreschema
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.schemas import ManualSchema
@@ -276,17 +277,19 @@ class GetCurrentUserView(RetrieveAPIView):
     def get_object(self):
         return self.request.user
 
-# class GetCurrentUserAccessLevelView(RetrieveAPIView):
-#     """
-#     Gives the basic info of the current user.
-#     """
-#     queryset = User.objects.all()
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = UserSerializer
-#
-#     def get_object(self):
-#         return self.request.user
 
+class LabsnetListView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        if not user.national_id:
+            raise PermissionDenied("User does not have a valid national ID.")
+
+        labsnet_result = user.labsnet_list()
+
+        return Response({"labsnet_result": labsnet_result})
 
 class EducationalFieldListAPIView(ListCreateAPIView):
     queryset = EducationalField.objects.all()

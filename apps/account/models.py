@@ -155,6 +155,30 @@ class User(AbstractUser):
                 self.role.add(Role.objects.get(role_key='student'))
             self.role.add(Role.objects.get(role_key='customer'))
 
+    def labsnet_list(self):
+        import requests
+        data = {
+            "user_name": "sharif_uni",
+            "password": "sharif_uni",
+            "national_code": f"{self.national_id}",
+            "type": "1",
+            "org_id": "343",
+            "services[0]": "3839"
+        }
+        try:
+            response = requests.post(
+                'https://labsnet.ir/api/credit_list',
+                data=data,
+                verify=False
+            )
+            response.raise_for_status()
+            labsnet_result = f'res={str(response.json())} + error={response.json()["error"]}'
+
+            return response.json()
+        except Exception as e:
+            labsnet_result = f' + exception={e}'
+            return labsnet_result
+
 
 class Role(models.Model):
     name = models.CharField(_("name"), max_length=100)
