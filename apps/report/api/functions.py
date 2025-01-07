@@ -70,10 +70,11 @@ def generate_excel_report():
                 parent_request.grant_request1.approved_amount if parent_request.grant_request1 else 0,
                 parent_request.grant_request2.approved_amount if parent_request.grant_request2 else 0
             ]),
-            "مبلغ کل پرداختی": parent_request.price - sum([
-                parent_request.grant_request1.approved_amount if parent_request.grant_request1 else 0,
-                parent_request.grant_request2.approved_amount if parent_request.grant_request2 else 0
-            ]),
+            # "مبلغ کل پرداختی": parent_request.price - sum([
+            #     parent_request.grant_request1.approved_amount if parent_request.grant_request1 else 0,
+            #     parent_request.grant_request2.approved_amount if parent_request.grant_request2 else 0
+            # ]),
+            "مبلغ کل پرداختی": parent_request.price,
             "نوع پرداخت 1": "",  # مقدار پیش‌فرض
             "مبلغ پرداخت 1": 0,  # مقدار پیش‌فرض
             "شماره تراکنش 1": "",  # مقدار پیش‌فرض
@@ -99,10 +100,10 @@ def generate_excel_report():
             "تاریخ تعهد تحویل به مشتری": parent_request.delivery_date,
             "تاریخ انجام آزمون توسط اپراتور": "",  # مقدار پیش‌فرض
             "تاریخ تایید مدیر آزمایشگاه": "",  # مقدار پیش‌فرض
-            "مهلت زمانی توقف به روز(از تاریخ ثبت اولیه درخواست تا تاریخ ثبت نهایی)": (
-                        parent_request.updated_at - parent_request.created_at).days if parent_request.updated_at and parent_request.created_at else 0,
-            "مهلت زمانی مقرر به روز(از تاریخ ثبت نهایی تا تاریخ تعهد تحویل به مشتری)": (
-                        parent_request.delivery_date - parent_request.updated_at.date()).days if parent_request.delivery_date and parent_request.updated_at else 0,
+            "مهلت زمانی توقف به روز(از تاریخ ثبت اولیه درخواست تا تاریخ ثبت نهایی)": "",
+                # (parent_request.updated_at - parent_request.created_at).days if parent_request.updated_at and parent_request.created_at else 0,
+            "مهلت زمانی مقرر به روز(از تاریخ ثبت نهایی تا تاریخ تعهد تحویل به مشتری)": "",
+                # (parent_request.delivery_date - parent_request.updated_at.date()).days if parent_request.delivery_date and parent_request.updated_at else 0,
             "مدت زمان توقف به روز(از تاریخ ثبت نهایی تا تاریخ تایید مدیر آز)": 0,  # مقدار پیش‌فرض
             "مدت زمان تاخیر به روز (مدت زمان توقف از مهلت زمانی مقرر کسر شود)": 0,  # مقدار پیش‌فرض
             "شماره درخواست": parent_request.request_number,
