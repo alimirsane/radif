@@ -165,19 +165,19 @@ class User(AbstractUser):
             "org_id": "343",
             "services[0]": "3839"
         }
-        try:
-            response = requests.post(
-                'https://labsnet.ir/api/credit_list',
-                data=data,
-                verify=False
-            )
-            response.raise_for_status()
-            labsnet_result = f'res={str(response.json())} + error={response.json()["error"]}'
+        # try:
+        response = requests.post(
+            'https://labsnet.ir/api/credit_list',
+            data=data,
+            verify=False
+        )
+        response.raise_for_status()
+            # labsnet_result = f'res={str(response.json())} + error={response.json()["error"]}'
 
-            return response.json()
-        except Exception as e:
-            labsnet_result = f' + exception={e}'
-            return labsnet_result
+        return response.json()
+        # except Exception as e:
+        #     labsnet_result = f' + exception={e}'
+        #     return labsnet_result
 
 
 class Role(models.Model):
