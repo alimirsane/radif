@@ -56,9 +56,9 @@ def generate_excel_report():
             "درصد تخفیف": parent_request.discount,
             "مبلغ تخفیف": parent_request.price_wod - parent_request.price if parent_request.price_wod and parent_request.price else 0,
             "هزینه کل آزمون بعد از کسر تخفیف": parent_request.price,
-            "نوع گرنت 1": parent_request.grant_request1.title if parent_request.grant_request1 else "",
+            "نوع گرنت 1": parent_request.grant_request1 if parent_request.grant_request1 else "",
             "مبلغ گرنت 1": parent_request.grant_request1.approved_amount if parent_request.grant_request1 else 0,
-            "نوع گرنت 2": parent_request.grant_request2.title if parent_request.grant_request2 else "",
+            "نوع گرنت 2": parent_request.grant_request2 if parent_request.grant_request2 else "",
             "مبلغ گرنت 2": parent_request.grant_request2.approved_amount if parent_request.grant_request2 else 0,
             "نوع گرنت 3": "",  # مقدار پیش‌فرض
             "مبلغ گرنت 3": 0,  # مقدار پیش‌فرض
