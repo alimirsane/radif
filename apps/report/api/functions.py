@@ -14,7 +14,7 @@ def generate_excel_report():
     data = []
 
     # Fetch all parent requests
-    parent_requests = Request.objects.filter(has_parent_request=False)
+    parent_requests = Request.objects.filter(has_parent_request=False, is_completed=True)
 
     for parent_request in parent_requests:
         # Gather parent request data
