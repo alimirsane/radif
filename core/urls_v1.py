@@ -3,6 +3,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 
 urlpatterns = [
     path('order/', include('apps.order.api.urls')),
+    path('appointment/', include('apps.appointment.api.urls')),
     path('labs/', include('apps.lab.api.urls')),
     path('reports/', include('apps.report.api.urls')),
     path('accounts/', include('apps.account.api.urls')),
