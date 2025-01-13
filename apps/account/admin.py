@@ -8,6 +8,25 @@ from django.contrib import messages
 import re
 
 
+@admin.action(description='Set role role_key=customer for users without any role')
+def set_default_role(modeladmin, request, queryset):
+    """
+    Admin action to assign role with role_key=customer to users who have no role.
+    """
+    default_role = Role.objects.filter(role_key='customer').first()
+    if not default_role:
+        modeladmin.message_user(request, "Role with role_key=customer does not exist.", level='error')
+        return
+
+    updated_users = 0
+    for user in queryset:
+        if user.role.count() == 0:
+            user.role.add(default_role)
+            updated_users += 1
+
+    modeladmin.message_user(request, f"{updated_users} users updated with role role_key=customer.")
+
+
 class UserAdmin(UAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password", "OTP")}),
@@ -47,6 +66,7 @@ class UserAdmin(UAdmin):
         "groups",
         "user_permissions",
     )
+    actions = [set_default_role]
     # readonly_fields = ('research_grant', 'labsnet_grant')
     model = User
 
