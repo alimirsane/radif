@@ -1,7 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from datetime import timedelta
+from datetime import datetime, timedelta, time
+
+from apps.lab.models import Experiment
 
 
 class Queue(models.Model):
@@ -11,53 +12,44 @@ class Queue(models.Model):
         ('suspended', 'Suspended'),
     ]
 
-    name = models.CharField(max_length=100)
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    time_interval = models.DurationField()
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')  # فیلد وضعیت صف
+    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE, related_name="queues", verbose_name='آزمون')
+    date = models.DateField(verbose_name="تاریخ")
+    start_time = models.TimeField(verbose_name="زمان شروع صف")
+    end_time = models.TimeField(verbose_name="زمان پایان صف")
+    break_start = models.TimeField(null=True, blank=True, verbose_name="زمان شروع استراحت")
+    break_end = models.TimeField(null=True, blank=True, verbose_name="زمان پایان استراحت")
+    time_unit = models.IntegerField(verbose_name="مدت زمان نوبت (دقیقه)")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active', verbose_name="وضعیت صف")
 
     def __str__(self):
-        return self.name
+        return f'{self.experiment}, {self.date}'
 
-    def get_appointments(self):
-        return Appointment.objects.filter(queue=self).order_by('start_time')
+    def is_time_valid(self, requested_start):
+        start_minutes = self.start_time.hour * 60 + self.start_time.minute
+        requested_minutes = requested_start.hour * 60 + requested_start.minute
+        return (requested_minutes - start_minutes) % self.time_unit == 0
+
+    def get_available_slots(self):
+        slots = []
+        current_time = datetime.combine(datetime.today(), self.start_time)
+        end_time = datetime.combine(datetime.today(), self.end_time)
+
+        appointments = self.appointments.order_by('start_time')
+        for appointment in appointments:
+            appointment_start = datetime.combine(datetime.today(), appointment.start_time)
+            if current_time < appointment_start:
+                slots.append((current_time.time(), appointment_start.time()))
+            current_time = appointment_start + timedelta(minutes=self.time_unit)
+
+        if current_time < end_time:
+            slots.append((current_time.time(), end_time.time()))
+
+        return slots
 
 
 class Appointment(models.Model):
-    queue = models.ForeignKey(Queue, on_delete=models.CASCADE, related_name='appointments')
-    start_time = models.DateTimeField()
-    duration = models.DurationField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('queue', 'start_time')
-
-    def __str__(self):
-        return f"{self.user.username} - {self.start_time} ({self.duration})"
-
-    def clean(self):
-        super().clean()
-
-        # بررسی وضعیت صف
-        if self.queue.status != 'active':
-            raise ValidationError("این صف فعال نیست و نمی‌توان نوبت رزرو کرد.")
-
-        # زمان پایان نوبت جدید را محاسبه می‌کنیم
-        new_end_time = self.start_time + self.duration
-
-        # بررسی تداخل زمانی با نوبت‌های دیگر
-        conflicting_appointments = Appointment.objects.filter(
-            queue=self.queue,
-            start_time__lt=new_end_time,
-            start_time__gte=self.start_time
-        ).exclude(pk=self.pk)
-
-        for appointment in conflicting_appointments:
-            appointment_end_time = appointment.start_time + appointment.duration
-            if appointment.start_time < new_end_time and self.start_time < appointment_end_time:
-                raise ValidationError("این بازه زمانی قبلاً رزرو شده است.")
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
+    queue = models.ForeignKey(Queue, related_name="appointments", on_delete=models.CASCADE, verbose_name="صف")
+    start_time = models.TimeField(verbose_name="زمان شروع نوبت")
+    status = models.CharField(max_length=50, default="free", verbose_name="وضعیت نوبت",
+                              choices=[("free", "آزاد"), ("reserved", "رزرو شده"), ("canceled", "لغو شده")])
+    reserved_by = models.CharField(max_length=255, null=True, blank=True, verbose_name="رزرو شده توسط")
