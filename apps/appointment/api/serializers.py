@@ -10,7 +10,7 @@ class AppointmentSerializerLite(serializers.ModelSerializer):
 
     class Meta:
         model = Appointment
-        fields = ['start_time', 'status', 'reserved_by']
+        fields = ['start_time', 'status', 'reserved_by', 'reserved_by_obj']
 
 
 class QueueSerializer(serializers.ModelSerializer):
