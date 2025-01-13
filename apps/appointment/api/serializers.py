@@ -15,15 +15,11 @@ class AppointmentSerializerLite(serializers.ModelSerializer):
 
 class QueueSerializer(serializers.ModelSerializer):
     appointments = AppointmentSerializerLite(many=True, read_only=True)
-    available_slots = serializers.SerializerMethodField()
 
     class Meta:
         model = Queue
         fields = '__all__'
 
-    # def get_available_slots(self, obj):
-    #     return obj.get_available_slots()
-    #
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
