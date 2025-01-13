@@ -191,6 +191,26 @@ class AccessLevel(models.Model):
         return self.name
 
 
+class LabsnetCredit(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="labsnet_credits", verbose_name="کاربر")
+    labsnet_id = models.CharField(max_length=255, unique=True, verbose_name="شناسه لبزنت")
+    amount = models.CharField(max_length=255, verbose_name="مبلغ کل")
+    start_date = models.DateField(verbose_name="تاریخ شروع")
+    end_date = models.DateField(verbose_name="تاریخ پایان")
+    remain = models.CharField(max_length=255, verbose_name="مبلغ باقی‌مانده")
+    percent = models.CharField(max_length=10, verbose_name="درصد استفاده‌شده")
+    title = models.TextField(verbose_name="عنوان اعتبار")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ بروزرسانی")
+
+    class Meta:
+        verbose_name = "اعتبار لبزنت"
+        verbose_name_plural = "اعتبارهای لبزنت"
+
+    def __str__(self):
+        return f"{self.title} ({self.labsnet_id})"
+
+
 class GrantTransaction(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_transactions', verbose_name="فرستنده")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_transactions', verbose_name="گیرنده")

@@ -1,6 +1,6 @@
 import datetime
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
-
+import jdatetime
 from rest_framework import parsers
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
@@ -23,11 +23,12 @@ from apps.account.api.serializers import UserSerializer, UserRegistrationSeriali
     LansnetGrantSerializer, UserPasswordSerializer, GrantRecordFileSerializer, GrantRequestRevokeSerializer, \
     DepartmentSerializer, UserPersonalSerializer, UserBusinessSerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
-    GrantRequest, OTPserver, Notification, GrantRecord, Department
+    GrantRequest, OTPserver, Notification, GrantRecord, Department, LabsnetCredit
 from .filters import UserFilter, GrantRecordFilter, GrantRequestFilter
 from ..permissions import AccessLevelPermission, query_set_filter_key
 from ...core.functions import export_excel, process_excel_and_create_grant_records
 from ...core.paginations import DefaultPagination
+
 
 
 class UserListAPIView(ListCreateAPIView):
@@ -78,6 +79,7 @@ class UserListAPIView(ListCreateAPIView):
             return self.handle_export_excel(queryset)
 
         return super().get(request, *args, **kwargs)
+
 
 class UserDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
@@ -288,6 +290,29 @@ class LabsnetListView(RetrieveAPIView):
             raise PermissionDenied("User does not have a valid national ID.")
 
         labsnet_result = user.labsnet_list()
+
+        if "credits" in labsnet_result:
+            credits = labsnet_result["credits"]
+
+            for credit in credits:
+                try:
+                    start_date = jdatetime.datetime.strptime(credit["start_date"], "%Y/%m/%d").togregorian()
+                    end_date = jdatetime.datetime.strptime(credit["end_date"], "%Y/%m/%d").togregorian()
+
+                    LabsnetCredit.objects.update_or_create(
+                        labsnet_id=credit["id"],
+                        defaults={
+                            "user": user,
+                            "amount": credit["amount"],
+                            "start_date": start_date,
+                            "end_date": end_date,
+                            "remain": credit["remain"],
+                            "percent": credit["percent"],
+                            "title": credit["title"],
+                        },
+                    )
+                except Exception as e:
+                    print(f"Error processing credit: {credit}. Error: {e}")
 
         return Response({"labsnet_result": labsnet_result})
 
