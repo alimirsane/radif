@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta, time
 
+from apps.account.models import User
 from apps.lab.models import Experiment
 
 
@@ -52,4 +53,6 @@ class Appointment(models.Model):
     start_time = models.TimeField(verbose_name="زمان شروع نوبت")
     status = models.CharField(max_length=50, default="free", verbose_name="وضعیت نوبت",
                               choices=[("free", "آزاد"), ("reserved", "رزرو شده"), ("canceled", "لغو شده")])
-    reserved_by = models.CharField(max_length=255, null=True, blank=True, verbose_name="رزرو شده توسط")
+    reserved_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="appointments", verbose_name="رزرو شده توسط"
+    )
