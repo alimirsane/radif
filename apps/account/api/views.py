@@ -293,14 +293,13 @@ class LabsnetListView(RetrieveAPIView):
 
         if "credits" in labsnet_result:
             credits = labsnet_result["credits"]
-            updated_credits = []
 
             for credit in credits:
                 try:
                     start_date = jdatetime.datetime.strptime(credit["start_date"], "%Y/%m/%d").togregorian()
                     end_date = jdatetime.datetime.strptime(credit["end_date"], "%Y/%m/%d").togregorian()
 
-                    labsnet_credit, created = LabsnetCredit.objects.update_or_create(
+                    LabsnetCredit.objects.update_or_create(
                         labsnet_id=credit["id"],
                         defaults={
                             "user": user,
@@ -312,17 +311,8 @@ class LabsnetListView(RetrieveAPIView):
                             "title": credit["title"],
                         },
                     )
-
-                    updated_credit = credit
-                    updated_credit["internal_id"] = labsnet_credit.id
-                    updated_credits.append(updated_credit)
-
                 except Exception as e:
-                    # Log or handle errors
                     print(f"Error processing credit: {credit}. Error: {e}")
-
-                    # Replace the original credits with updated credits containing internal IDs
-                labsnet_result["credits"] = updated_credits
 
         return Response({"labsnet_result": labsnet_result})
 
