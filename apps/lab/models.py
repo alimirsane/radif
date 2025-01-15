@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import models
 from django.db.models import Sum
 import jdatetime
-from apps.account.models import User, GrantRequest, Role
+from apps.account.models import User, GrantRequest, Role, LabsnetCredit
 from apps.form.models import Form
 import math
 from django.core.exceptions import ValidationError
@@ -257,6 +257,9 @@ class Request(models.Model):
 
     labsnet_code1 = models.CharField(max_length=100, blank=True, null=True, verbose_name='کد لبزنت ۱')
     labsnet_code2 = models.CharField(max_length=100, blank=True, null=True, verbose_name='کد لبزنت ۲')
+
+    labsnet1 = models.ForeignKey(LabsnetCredit, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='کد لبزنت ۱')
+    labsnet2 = models.ForeignKey(LabsnetCredit, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='کد لبزنت ۲')
 
     grant_request1 = models.ForeignKey(GrantRequest, on_delete=models.SET_NULL, related_name='gr_request1', blank=True, null=True)
     grant_request2 = models.ForeignKey(GrantRequest, on_delete=models.SET_NULL, related_name='gr_request2', blank=True, null=True)
