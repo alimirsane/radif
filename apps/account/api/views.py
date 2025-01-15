@@ -313,8 +313,7 @@ class LabsnetListView(RetrieveAPIView):
                         },
                     )
 
-                    # Append internal ID to the credit data
-                    updated_credit = credit.copy()
+                    updated_credit = credit
                     updated_credit["internal_id"] = labsnet_credit.id
                     updated_credits.append(updated_credit)
 
