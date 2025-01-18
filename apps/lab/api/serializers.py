@@ -1,10 +1,11 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 import ast
 import json
 
 from apps.account.api.serializers import UserSerializer, GrantRecordSerializer, GrantRequestSerializer
 from apps.account.api.views import UserDetailAPIView
-from apps.account.models import User
+from apps.account.models import User, LabsnetCredit
 from apps.form.api.serializers import FormSerializer, FormSummerySerializer
 from apps.lab.models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, \
     Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult, RequestCertificate, DiscountHistory
@@ -429,6 +430,30 @@ class RequestDetailSerializer(serializers.ModelSerializer):
         return RequestDetailMainFormResponseSerializer(
             FormResponse.objects.filter(request=obj, is_main=True), many=True
         ).data
+
+
+class RequestUpdateSerializer(serializers.ModelSerializer):
+    labsnet1_id = serializers.CharField(write_only=True, required=False)
+    labsnet2_id = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = Request
+        fields = ["labsnet1_id", "labsnet2_id"]
+
+    def update(self, instance, validated_data):
+        labsnet1_id = validated_data.get("labsnet1_id")
+        labsnet2_id = validated_data.get("labsnet2_id")
+
+        if labsnet1_id:
+            labsnet1 = get_object_or_404(LabsnetCredit, labsnet_id=labsnet1_id)
+            instance.labsnet1 = labsnet1
+
+        if labsnet2_id:
+            labsnet2 = get_object_or_404(LabsnetCredit, labsnet_id=labsnet2_id)
+            instance.labsnet2 = labsnet2
+
+        instance.save()
+        return instance
 
 
 class CertificateSerializer(serializers.ModelSerializer):

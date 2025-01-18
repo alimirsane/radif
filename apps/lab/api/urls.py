@@ -32,6 +32,7 @@ urlpatterns = [
 
     path('requests/<int:pk>/status/', RequestChangeStatusAPIView.as_view(), name='request-change-status'),
     path('requests/<int:pk>/result/', RequestResultAPIView.as_view(), name='request-result'),
+    path('requests/<int:pk>/labsnet/', UpdateRequestLabsnetView.as_view(), name='request-labsnet'),
 
     path('requests/', RequestListAPIView.as_view(), name='requests-list'),
     path('requests/<int:pk>/', RequestDetailAPIView.as_view(), name='request-detail'),

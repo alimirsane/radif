@@ -1,5 +1,6 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView, RetrieveAPIView, \
-    RetrieveUpdateAPIView
+    RetrieveUpdateAPIView, get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 
 from apps.account.permissions import AccessLevelPermission, query_set_filter_key
 from apps.core.functions import export_excel
@@ -12,7 +13,8 @@ from apps.lab.api.serializers import ExperimentSerializer, LaboratorySerializer,
     RequestListSerializer, RequestDetailSerializer, DepartmentSerializer, LaboratoryDetailSerializer, \
     ExperimentDetailSerializer, \
     FormResponseSerializer, LabTypeSerializer, RequestChangeStatusSerializer, WorkflowSerializer, \
-    RequestResultSerializer, RequestButtonActionSerializer, RequestCertificateSerializer, UpdateLaboratoryISOSerializer
+    RequestResultSerializer, RequestButtonActionSerializer, RequestCertificateSerializer, UpdateLaboratoryISOSerializer, \
+    RequestUpdateSerializer
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -247,6 +249,22 @@ class RequestDetailAPIView(RetrieveUpdateDestroyAPIView):
                               'delete_all_request', 'delete_owner_request']
          # 'update_receptor_request', 'view_receptor_request', 'update_operator_request', 'view_operator_request'
     view_key = 'request'
+
+
+class UpdateRequestLabsnetView(UpdateAPIView):
+    """
+    API endpoint to update labsnet1 and labsnet2 fields of a Request object.
+    """
+    permission_classes = [IsAuthenticated]
+    queryset = Request.objects.all()
+    serializer_class = RequestUpdateSerializer
+
+    def get_object(self):
+        """
+        Get the request object based on the provided pk in the URL.
+        """
+        request_obj = get_object_or_404(Request, pk=self.kwargs["pk"])
+        return request_obj
 
 
 class RequestCertificateAPIView(RetrieveAPIView):
