@@ -280,7 +280,7 @@ class ChildRequestListSerializer(serializers.ModelSerializer):
     experiment_obj = RequestExperimentSerializer(read_only=True, source='experiment')
     parameter_obj = ParameterSerializer(many=True, read_only=True, source='parameter')
 
-    status_objs = StatusSerializer(read_only=True, source='request_status',many=True)
+    status_objs = StatusSerializer(read_only=True, source='request_status', many=True)
     # latest_status_obj = serializers.SerializerMethodField(source='get_get_request_status_obj') #
     latest_status_obj = StatusSerializer(read_only=True, source='lastest_status')
 

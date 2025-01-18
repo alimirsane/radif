@@ -917,6 +917,7 @@ class Status(models.Model):
     class Meta:
         verbose_name = 'وضعیت درخواست'
         verbose_name_plural = 'وضعیت های درخواست'
+        ordering = ['created_at']
 
 
 def request_result_directory_path(instance, filename):
