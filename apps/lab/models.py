@@ -469,6 +469,7 @@ class Request(models.Model):
             self.price_sample_returned = Decimal(0)
             self.price_wod = Decimal(price)
             self.price = (price - (price * int(self.discount) / 100))
+            self.apply_labsnet_credits()
             self.save()
             self.parent_request.set_price()
             # except:
@@ -515,6 +516,39 @@ class Request(models.Model):
             else:
                 self.price_sample_returned = Decimal(0)
             self.save()
+
+
+    def apply_labsnet_credits(self):
+        """
+        اعمال تخفیف اعتبار لبزنت بر اساس مبلغ باقی‌مانده و سقف درصدی مجاز
+        """
+        today = datetime.date.today()
+        original_price = self.price
+
+        def apply_labsnet_credit(labsnet):
+            nonlocal original_price
+            if not labsnet:
+                return 0
+
+            if labsnet.end_date < today:
+                return 0
+
+            max_discount_amount = float(Decimal(labsnet.remain.replace(',', '')))
+            max_discount_percent = float(Decimal(labsnet.percent) / 100)
+            max_allowed_discount = original_price * max_discount_percent
+
+            applied_discount = min(max_allowed_discount, max_discount_amount, original_price)
+            original_price -= applied_discount
+
+            return applied_discount
+
+        labsnet1_discount = apply_labsnet_credit(self.labsnet1)
+        labsnet2_discount = apply_labsnet_credit(self.labsnet2)
+
+        self.labsnet_discount = labsnet1_discount + labsnet2_discount
+        self.price -= self.labsnet_discount
+        self.save()
+
 
     def apply_grant_requests(self):
         if self.grant_request1:
