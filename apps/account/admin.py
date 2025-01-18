@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as UAdmin
 from .models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantRequest, GrantTransaction, \
-    OTPserver, Notification, GrantRecord, Department
+    OTPserver, Notification, GrantRecord, Department, LabsnetCredit
 # from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
@@ -155,3 +155,8 @@ class OTPAdmin(admin.ModelAdmin):
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ['user', 'type', 'title', 'is_read', 'created_at']
+
+
+@admin.register(LabsnetCredit)
+class LabsnetCreditAdmin(admin.ModelAdmin):
+    list_display = ['user', 'title', 'remain', 'amount', 'end_date', 'labsnet_id', 'percent']
