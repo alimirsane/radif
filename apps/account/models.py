@@ -86,7 +86,7 @@ class User(AbstractUser):
     telephone = models.CharField(_("telephone"), max_length=255, null=True, blank=True, help_text=_("Enter your company telephone."))
 
     postal_code = models.CharField(_("postal code"), max_length=20, blank=True, null=True, help_text=_("Enter your postal code."))
-    company_national_id = models.CharField(_("company national ID"), max_length=11, unique=True, null=True, blank=True, help_text=_("Enter your company national ID."))
+    company_national_id = models.CharField(_("company national ID"), max_length=15, unique=True, null=True, blank=True, help_text=_("Enter your company national ID."))
     company_name = models.CharField(_("company name"), max_length=150, null=True, blank=True, help_text=_("Enter your company name."))
     company_economic_number = models.CharField(_("company economic number"), max_length=25, unique=True, null=True, blank=True, help_text=_("Enter your company economic number."))
     # research_grant = models.BigIntegerField(default=0, verbose_name="گرنت پژوهشی")
@@ -99,7 +99,7 @@ class User(AbstractUser):
     is_sharif_student = models.BooleanField(default=False, verbose_name='دانشجوی شریف')
     is_partner = models.BooleanField(default=False, verbose_name='شرکت همکار')
 
-    phone_validator = PhoneValidator()
+    # phone_validator = PhoneValidator()
 
     username = models.CharField(
         _("username"),
@@ -108,7 +108,7 @@ class User(AbstractUser):
         help_text=_(
             "Required. Enter a valid phone number. Example: +989123456789"
         ),
-        validators=[phone_validator],
+        # validators=[phone_validator],
         error_messages={
             'required': 'شماره اجباری است.',
             'blank': 'شماره نمی‌تواند خالی باشد.',
