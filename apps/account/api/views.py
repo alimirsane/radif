@@ -30,8 +30,34 @@ from ...core.functions import export_excel, process_excel_and_create_grant_recor
 from ...core.paginations import DefaultPagination
 from rest_framework.views import APIView
 
-SSO_CLIENT_ID = 'LabsClient'
-SSO_CLIENT_SECRET = 'Gkg/&h7n92Z0'
+
+TOKEN_ENDPOINT = "https://uac.meta.sharif.ir/connect/token"
+CLIENT_ID = 'LabsClient'
+CLIENT_SECRET = 'Gkg/&h7n92Z0'
+REDIRECT_URI = "https://lims.labs.sharif.ir/auth/sso/verify"
+
+
+def exchange_token(auth_code):
+    try:
+        payload = {
+            "grant_type": "authorization_code",
+            "code": auth_code,
+            "code_verifier": "51727650fc420d4e0674ed4f91f6df0b5ab6139b7caa3fe46f22825fa2e43bc4",
+            "redirect_uri": REDIRECT_URI,
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+        }
+
+        response = requests.post(TOKEN_ENDPOINT, data=payload)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"error": "Failed to exchange token", "status_code": response.status_code, "response": response.text}
+
+    except Exception as e:
+        return {"error": f"An error occurred: {str(e)}"}
+
 
 class SSOVerifyView(APIView):
 
@@ -39,8 +65,8 @@ class SSOVerifyView(APIView):
 
     def post(self, request, *args, **kwargs):
         code = request.data.get("code")
-        scope = request.data.get("scope")
-        session_state = request.data.get("session_state")
+        # scope = request.data.get("scope")
+        # session_state = request.data.get("session_state")
 
         if not code:
             return Response(
@@ -48,28 +74,9 @@ class SSOVerifyView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        payload = {
-            "code": code,
-            # "scope": scope,
-            # "session_state": session_state
-        }
+        token_response = exchange_token(code)
 
-        # destination_url = "https://uac.meta.sharif.ir/connect/token"
-
-        url = "https://uac.meta.sharif.ir/connect/token"
-        payload = {
-            "grant_type": "client_credentials",
-            "client_id": SSO_CLIENT_ID,
-            "client_secret": SSO_CLIENT_SECRET
-        }
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-        try:
-            response = requests.post(url, data=payload, headers=headers)
-            return Response(response.json(), status=response.status_code)
-        except requests.RequestException as e:
-            return Response({"error": "Failed to connect to SSO server", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        return Response(token_response, status=status.HTTP_200_OK if "access_token" in token_response else status.HTTP_400_BAD_REQUEST)
 
 class UserListAPIView(ListCreateAPIView):
     queryset = User.objects.all()
