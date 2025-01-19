@@ -17,6 +17,7 @@ class LabsnetCreditSerializer(serializers.ModelSerializer):
         model = LabsnetCredit
         exclude = []
 
+
 class UserSummerySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -340,8 +341,9 @@ class RequestListSerializer(serializers.ModelSerializer):
     order_obj = RequestOrderDetailSerializer(read_only=True, many=True, source='orders')
     grant_request1_obj = GrantRequestSerializer(source='grant_request1', read_only=True, required=False)
     grant_request2_obj = GrantRequestSerializer(source='grant_request2', read_only=True, required=False)
-    labsnet1_obj = LabsnetCreditSerializer(source='ln_request1', read_only=True, required=False)
-    labsnet2_obj = LabsnetCreditSerializer(source='ln_request2', read_only=True, required=False)
+    labsnet1_obj = serializers.SerializerMethodField()
+    labsnet_obj1 = LabsnetCreditSerializer(source='ln_request1', read_only=True, required=False)
+    labsnet_obj2 = LabsnetCreditSerializer(source='ln_request2', read_only=True, required=False)
     # def latest_status_obj_(self, obj):
     #     lastest_status = obj.lastest_status()
     #     return StatusSerializer(instance=lastest_status)
@@ -359,6 +361,10 @@ class RequestListSerializer(serializers.ModelSerializer):
         return RequestListMainFormResponseSerializer(
             FormResponse.objects.filter(request=obj, is_main=True), many=True
         ).data
+
+    def get_labsnet1_obj(self, obj):
+        return LabsnetCreditSerializer(
+            LabsnetCredit.objects.filter(request=obj)).data
 
 
 class DiscountHistorySerializer(serializers.ModelSerializer):
