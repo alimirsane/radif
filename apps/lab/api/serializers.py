@@ -463,6 +463,7 @@ class RequestUpdateSerializer(serializers.ModelSerializer):
             instance.labsnet2 = labsnet2
 
         instance.save()
+        instance.apply_labsnet_credits()
         return instance
 
 
