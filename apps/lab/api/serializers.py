@@ -448,7 +448,7 @@ class RequestDetailSerializer(serializers.ModelSerializer):
         ).data
 
     def get_labsnet1_obj(self, obj):
-        return LabsnetCreditSerializer(obj.ln_request1.all()).data
+        return LabsnetCreditSerializer(obj.labsnet1).data
 
 class RequestUpdateSerializer(serializers.ModelSerializer):
     labsnet1_id = serializers.CharField(write_only=True, required=False)
