@@ -64,9 +64,10 @@ class SSOVerifyView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        code = request.data.get("code")
-        scope = request.data.get("scope")
-        code_verifier = request.data.get("code_verifier")
+        code = request.data.get("code") or request.POST.get("code")
+        scope = request.data.get("scope") or request.POST.get("scope")
+        code_verifier = request.data.get("code_verifier") or request.POST.get("code_verifier")
+
         return Response({"code": code, "scope": scope, "code_verifier": code_verifier})
         if not code:
             return Response(
