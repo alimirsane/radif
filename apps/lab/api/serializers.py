@@ -340,6 +340,8 @@ class RequestListSerializer(serializers.ModelSerializer):
     order_obj = RequestOrderDetailSerializer(read_only=True, many=True, source='orders')
     grant_request1_obj = GrantRequestSerializer(source='grant_request1', read_only=True, required=False)
     grant_request2_obj = GrantRequestSerializer(source='grant_request2', read_only=True, required=False)
+    labsnet1_obj = LabsnetCreditSerializer(source='ln_request1', read_only=True, required=False)
+    labsnet2_obj = LabsnetCreditSerializer(source='ln_request2', read_only=True, required=False)
     # def latest_status_obj_(self, obj):
     #     lastest_status = obj.lastest_status()
     #     return StatusSerializer(instance=lastest_status)
