@@ -425,8 +425,9 @@ class RequestDetailSerializer(serializers.ModelSerializer):
     discount_history_objs = DiscountHistorySerializer(read_only=True, many=True, source='request_discounts')
     grant_request1_obj = GrantRequestSerializer(source='grant_request1', read_only=True, required=False)
     grant_request2_obj = GrantRequestSerializer(source='grant_request2', read_only=True, required=False)
-    labsnet1_obj = LabsnetCreditSerializer(source='ln_request1', read_only=True, required=False)
-    labsnet2_obj = LabsnetCreditSerializer(source='ln_request2', read_only=True, required=False)
+    labsnet_obj1 = LabsnetCreditSerializer(source='ln_request1', read_only=True, required=False)
+    labsnet_obj2 = LabsnetCreditSerializer(source='ln_request2', read_only=True, required=False)
+    labsnet1_obj = serializers.SerializerMethodField()
 
     class Meta:
         model = Request
@@ -446,6 +447,9 @@ class RequestDetailSerializer(serializers.ModelSerializer):
             FormResponse.objects.filter(request=obj, is_main=True), many=True
         ).data
 
+    def get_labsnet1_obj(self, obj):
+        return LabsnetCreditSerializer(
+            LabsnetCredit.objects.filter(request=obj)).data
 
 class RequestUpdateSerializer(serializers.ModelSerializer):
     labsnet1_id = serializers.CharField(write_only=True, required=False)
