@@ -138,6 +138,7 @@ def payment_record_row_list(payment_record):
     except:
         request_number = '-'
         price_wod = '-'
+        price = '-'
         grant_request_discount = '-'
         labsnet_discount = '-'
         created_at = '-'
