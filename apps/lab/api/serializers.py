@@ -341,9 +341,8 @@ class RequestListSerializer(serializers.ModelSerializer):
     order_obj = RequestOrderDetailSerializer(read_only=True, many=True, source='orders')
     grant_request1_obj = GrantRequestSerializer(source='grant_request1', read_only=True, required=False)
     grant_request2_obj = GrantRequestSerializer(source='grant_request2', read_only=True, required=False)
-    labsnet1_obj = serializers.SerializerMethodField()
-    labsnet_obj1 = LabsnetCreditSerializer(source='ln_request1', read_only=True, required=False)
-    labsnet_obj2 = LabsnetCreditSerializer(source='ln_request2', read_only=True, required=False)
+    labsnet1_obj = LabsnetCreditSerializer(source='labsnet1', read_only=True, required=False)
+    labsnet2_obj = LabsnetCreditSerializer(source='labsnet2', read_only=True, required=False)
     # def latest_status_obj_(self, obj):
     #     lastest_status = obj.lastest_status()
     #     return StatusSerializer(instance=lastest_status)
@@ -361,10 +360,6 @@ class RequestListSerializer(serializers.ModelSerializer):
         return RequestListMainFormResponseSerializer(
             FormResponse.objects.filter(request=obj, is_main=True), many=True
         ).data
-
-    def get_labsnet1_obj(self, obj):
-        return LabsnetCreditSerializer(
-            LabsnetCredit.objects.filter(request=obj)).data
 
 
 class DiscountHistorySerializer(serializers.ModelSerializer):
@@ -425,9 +420,8 @@ class RequestDetailSerializer(serializers.ModelSerializer):
     discount_history_objs = DiscountHistorySerializer(read_only=True, many=True, source='request_discounts')
     grant_request1_obj = GrantRequestSerializer(source='grant_request1', read_only=True, required=False)
     grant_request2_obj = GrantRequestSerializer(source='grant_request2', read_only=True, required=False)
-    labsnet_obj1 = LabsnetCreditSerializer(source='labsnet1', read_only=True, required=False)
-    labsnet_obj2 = LabsnetCreditSerializer(source='labsnet2', read_only=True, required=False)
-    labsnet1_obj = serializers.SerializerMethodField()
+    labsnet1_obj = LabsnetCreditSerializer(source='labsnet1', read_only=True, required=False)
+    labsnet2_obj = LabsnetCreditSerializer(source='labsnet2', read_only=True, required=False)
 
     class Meta:
         model = Request
@@ -447,8 +441,6 @@ class RequestDetailSerializer(serializers.ModelSerializer):
             FormResponse.objects.filter(request=obj, is_main=True), many=True
         ).data
 
-    def get_labsnet1_obj(self, obj):
-        return LabsnetCreditSerializer(obj.labsnet1).data
 
 class RequestUpdateSerializer(serializers.ModelSerializer):
     labsnet1_id = serializers.CharField(write_only=True, required=False)
