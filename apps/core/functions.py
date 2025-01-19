@@ -129,18 +129,29 @@ def payment_record2():
 def payment_record_row_list(payment_record):
     datetime_format = '%Y/%m/%d-%H:%M:%S'
 
+    try:
+        request_number = payment_record.order.request.request_number,
+        price_wod =  payment_record.order.request.price_wod,
+        price = payment_record.order.request.price,
+        grant_request_discount = payment_record.order.request.grant_request_discount,
+        labsnet_discount= payment_record.order.request.labsnet_discount,
+        created_at = payment_record.order.request.created_at.strftime(datetime_format),
+    except:
+        request_number = '-'
+        price_wod = '-'
+        grant_request_discount = '-'
+        labsnet_discount = '-'
+        created_at = '-'
     return [
-        payment_record.order.request.request_number,
-        payment_record.order.request.price_wod,
+        request_number,
+        price_wod,
         # 'درصد تخفیف',
-        payment_record.order.request.price,
-        payment_record.order.request.grant_request_discount,
-        payment_record.order.request.labsnet_discount,
-        payment_record.order.request.created_at.strftime(datetime_format),
+        price,
+        grant_request_discount,
+        labsnet_discount,
+        created_at ,
         # 'مبلغ پرداخت',
         # 'وضعیت',
-
-
         payment_record.payer.get_full_name(),
         # payment_record.order,
         # payment_record.payment_type,
