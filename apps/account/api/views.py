@@ -65,16 +65,16 @@ class SSOVerifyView(APIView):
 
     def post(self, request, *args, **kwargs):
         code = request.data.get("code")
-        # scope = request.data.get("scope")
-        # session_state = request.data.get("session_state")
-
+        scope = request.data.get("scope")
+        code_verifier = request.data.get("code_verifier")
+        return Response({"code": code, "scope": scope, "code_verifier": code_verifier})
         if not code:
             return Response(
                 {"error": "Missing required parameter. (code is required)"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        token_response = exchange_token(code)
+        token_response = exchange_token(code, code_verifier)
 
         return Response(token_response, status=status.HTTP_200_OK if "access_token" in token_response else status.HTTP_400_BAD_REQUEST)
 
