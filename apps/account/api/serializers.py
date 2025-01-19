@@ -165,7 +165,7 @@ class UserBusinessSerializer(serializers.ModelSerializer):
         # Creating business account
         validated_data['account_type'] = 'business'
         validated_data['username'] = validated_data['company_national_id']  # Add personal account to linked_users
-        validated_data['national_id'] = f'co{validated_data["company_national_id"]}' # Add personal account to linked_users
+        validated_data['national_id'] = f'{validated_data["company_national_id"]}' # Add personal account to linked_users
         validated_data['password'] = make_password(validated_data.get('password'))
         business_serializer = self.Meta.model.objects.create(**validated_data)
         business_serializer.linked_users.set([personal_account])
