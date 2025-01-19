@@ -30,6 +30,8 @@ from ...core.functions import export_excel, process_excel_and_create_grant_recor
 from ...core.paginations import DefaultPagination
 from rest_framework.views import APIView
 
+SSO_CLIENT_ID = 'LabsClient'
+SSO_CLIENT_SECRET = 'Gkg/&h7n92Z0'
 
 class SSOVerifyView(APIView):
 
@@ -40,31 +42,33 @@ class SSOVerifyView(APIView):
         scope = request.data.get("scope")
         session_state = request.data.get("session_state")
 
-        if not code or not scope or not session_state:
+        if not code:
             return Response(
-                {"error": "Missing required parameters. (code, scope, session_state are required)"},
+                {"error": "Missing required parameter. (code is required)"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         payload = {
             "code": code,
-            "scope": scope,
-            "session_state": session_state
+            # "scope": scope,
+            # "session_state": session_state
         }
 
-        destination_url = settings.SSO_VERIFY_URL  # مقدار `SSO_VERIFY_URL` را در `settings.py` تعریف کنید
+        # destination_url = "https://uac.meta.sharif.ir/connect/token"
+
+        url = "https://uac.meta.sharif.ir/connect/token"
+        payload = {
+            "grant_type": "client_credentials",
+            "client_id": SSO_CLIENT_ID,
+            "client_secret": SSO_CLIENT_SECRET
+        }
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
         try:
-            response = requests.post(destination_url, json=payload, headers={"Content-Type": "application/json"})
-            response_data = response.json()
-            status_code = response.status_code
-        except requests.exceptions.RequestException as e:
-            return Response(
-                {"error": "Failed to connect to SSO server", "details": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        return Response(response_data, status=status_code)
+            response = requests.post(url, data=payload, headers=headers)
+            return Response(response.json(), status=response.status_code)
+        except requests.RequestException as e:
+            return Response({"error": "Failed to connect to SSO server", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class UserListAPIView(ListCreateAPIView):
