@@ -197,8 +197,9 @@ class Order(models.Model):
             if pay:
                 # payment_record = self.get_payment_records()
                 # if not payment_record.exists():
+                user = (self.buyer if self.buyer.account_type == "personal" else self.request.owner.linked_users.all().first())
                 payment_record = PaymentRecord.objects.create(order=self, amount=self.remaining_amount(), payer=self.buyer)
-                success, response = SharifPayment().pay_request(user=self.buyer, payment_record=payment_record)
+                success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
                 if success:
                     pass
                 else:
