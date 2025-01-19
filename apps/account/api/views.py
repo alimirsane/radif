@@ -33,7 +33,7 @@ from rest_framework.views import APIView
 
 TOKEN_ENDPOINT = "https://uac.meta.sharif.ir/connect/token"
 CLIENT_ID = 'LabsClient'
-CLIENT_SECRET = 'Gkg/&h7n92Z0'
+CLIENT_SECRET = 'Gkg/&h7N92Z0'
 REDIRECT_URI = "https://lims.labs.sharif.ir/auth/sso/verify"
 
 
@@ -53,7 +53,7 @@ def exchange_token(auth_code, code_verifier):
         if response.status_code == 200:
             return response.json()
         else:
-            return {"error": "Failed to exchange token", "status_code": response.status_code, "response": response.text}
+            return {"error": f"Failed to exchange token code: {auth_code}, verifier: {code_verifier}", "status_code": response.status_code, "response": response.text}
 
     except Exception as e:
         return {"error": f"An error occurred: {str(e)}"}
