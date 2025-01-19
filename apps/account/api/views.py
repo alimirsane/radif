@@ -52,6 +52,19 @@ def exchange_token(auth_code, code_verifier):
 
         if response.status_code == 200:
             return response.json()
+
+            sample = {
+                "status": "success",
+                "data": {
+                    "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjhDRDlERTQ2QzEyRTVEQ0MyOTE1QkVBNDY2MzNENDE2IiwidHlwIjoiSldUIn0.eyJuYmYiOjE3MzczMTgyNjksImV4cCI6MTczNzMxODU2OSwiaXNzIjoiaHR0cHM6Ly91YWMubWV0YS5zaGFyaWYuaXIiLCJhdWQiOiJMYWJzQ2xpZW50IiwiaWF0IjoxNzM3MzE4MjY5LCJhdF9oYXNoIjoiaVUzRWJSQk1NRjNRdzU1R1ZjSXFEZyIsInNpZCI6IkMzMERBRTZGQzI3NjkwMDE5NzNCOUJDNTg0MEFCN0YzIiwic3ViIjoiMGE4MTg3MTUtZTgyNS00MjBlLThkMGYtYWU1OGI3Mjk1MzViIiwiYXV0aF90aW1lIjoxNzM3MzE4MjQ5LCJpZHAiOiJsb2NhbCIsIkNsaWVudHMiOiIiLCJVc2VyVHlwZSI6IlJlYWwiLCJVc2VybmFtZSI6IjQ3MjM2ODY1MDkiLCJGaXJzdE5hbWUiOiLYp9iz2K_Yp9mE2YciLCJSb2xlcyI6IiIsIk5hdGlvbmFsQ29kZSI6IjQ3MjM2ODY1MDkiLCJTaGFyaWZJZCI6ImthbGFudGFyaWFuIiwiTGFzdE5hbWUiOiLaqdmE2KfZhtiq2LHbjNin2YYiLCJhbXIiOlsicHdkIl19.MhQj_ivI9ATIoqNusDxP4pee8trYjjKQC18TY5nQPJQsLIsCmMt4TvMeu0x3Bm_mqMoDcQnkV6j7vuFRqCgwMESA0K_fhgjt5oSzZVIprWqKlonG4u1TRT0o_eoHyQJKk4rMIOKyIbD0BIp9fwZoUs9j02es4rDuOSMFzSjxWhDLmqo9RusV08BF_RED8yhP4IWKUJ33aPbYapVyPoEWexfoW56z5lcTylqDKHkNCscxA5kghA8FJiJHws9KpZqkaPoF0BnD7xtAp8a5y7eqcGVdU3w2E4t0PMg7SbX28H6zSbwfu-niydKElXTZDOBj_fOZKb0SatxFc3MjR6wsZg",
+                    "access_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjhDRDlERTQ2QzEyRTVEQ0MyOTE1QkVBNDY2MzNENDE2IiwidHlwIjoiYXQrand0In0.eyJuYmYiOjE3MzczMTgyNjksImV4cCI6MTczNzMyMTg2OSwiaXNzIjoiaHR0cHM6Ly91YWMubWV0YS5zaGFyaWYuaXIiLCJjbGllbnRfaWQiOiJMYWJzQ2xpZW50Iiwic3ViIjoiMGE4MTg3MTUtZTgyNS00MjBlLThkMGYtYWU1OGI3Mjk1MzViIiwiYXV0aF90aW1lIjoxNzM3MzE4MjQ5LCJpZHAiOiJsb2NhbCIsIkNsaWVudHMiOiIiLCJVc2VyVHlwZSI6IlJlYWwiLCJVc2VybmFtZSI6IjQ3MjM2ODY1MDkiLCJGaXJzdE5hbWUiOiLYp9iz2K_Yp9mE2YciLCJSb2xlcyI6IiIsIk5hdGlvbmFsQ29kZSI6IjQ3MjM2ODY1MDkiLCJTaGFyaWZJZCI6ImthbGFudGFyaWFuIiwiTGFzdE5hbWUiOiLaqdmE2KfZhtiq2LHbjNin2YYiLCJzaWQiOiJDMzBEQUU2RkMyNzY5MDAxOTczQjlCQzU4NDBBQjdGMyIsImlhdCI6MTczNzMxODI2OSwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSJdLCJhbXIiOlsicHdkIl19.k-_j8G7lfR2mfLVIhPHeqV_bBnO-HwIgV_TAer2hoSBnihLauXcdM7gg7URse-idVbV5nDv-gVcaYaZDyXM8GDcrwuqfu1Zz1b0JS0q9AK8USn7GqozE0e961530rR437aRuwsFhKF9ewYvHZObRl4X1SGDYauGrMATQr1fTMEVUyWDWB-JWFshUaW2EVqcavUCcuHeuj2nOEbfqi2McaB11boJiy0z2xQyL5DUClLZD-5s-Dbk6LQlrUrrVEBCWv87jKkl4U0r9bGvWwnBIGpykfYQctNYrtxBFISD1HmlyXalmrxhsyX2AQTaPa97oLsOSCkNO4z1jjPj0jMxQbw",
+                    "expires_in": 3600,
+                    "token_type": "Bearer",
+                    "scope": "openid profile"
+                },
+                "message": "Request successful"
+            }
+
         else:
             return {"error": f"Failed to exchange token code: {auth_code}, verifier: {code_verifier}", "status_code": response.status_code, "response": response.text}
 

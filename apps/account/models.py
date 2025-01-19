@@ -60,7 +60,7 @@ class User(AbstractUser):
 
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='customer')
     account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES, default='personal')
-    national_id = models.CharField(_("national ID"), max_length=10, unique=True, null=True, blank=True,
+    national_id = models.CharField(_("national ID"), max_length=15, unique=True, null=True, blank=True,
                                    help_text=_("Enter your national ID."),
                                    error_messages={
                                         'required': 'کد ملی اجباری است.',
