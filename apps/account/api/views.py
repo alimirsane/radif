@@ -35,13 +35,16 @@ class SSOVerifyView(APIView):
 
     permission_classes = [AllowAny]
 
-    def get(self, request, *args, **kwargs):
-        code = request.query_params.get("code")
-        scope = request.query_params.get("scope")
-        session_state = request.query_params.get("session_state")
+    def post(self, request, *args, **kwargs):
+        code = request.data.get("code")
+        scope = request.data.get("scope")
+        session_state = request.data.get("session_state")
 
         if not code or not scope or not session_state:
-            return Response({"error": "Missing required parameters"}, status=400)
+            return Response(
+                {"error": "Missing required parameters. (code, scope, session_state are required)"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         payload = {
             "code": code,
@@ -49,14 +52,17 @@ class SSOVerifyView(APIView):
             "session_state": session_state
         }
 
-        destination_url = settings.SSO_VERIFY_URL
+        destination_url = settings.SSO_VERIFY_URL  # مقدار `SSO_VERIFY_URL` را در `settings.py` تعریف کنید
 
         try:
             response = requests.post(destination_url, json=payload, headers={"Content-Type": "application/json"})
             response_data = response.json()
             status_code = response.status_code
         except requests.exceptions.RequestException as e:
-            return Response({"error": "Failed to connect to SSO server", "details": str(e)}, status=500)
+            return Response(
+                {"error": "Failed to connect to SSO server", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         return Response(response_data, status=status_code)
 
