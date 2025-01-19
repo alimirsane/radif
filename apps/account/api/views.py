@@ -37,12 +37,12 @@ CLIENT_SECRET = 'Gkg/&h7n92Z0'
 REDIRECT_URI = "https://lims.labs.sharif.ir/auth/sso/verify"
 
 
-def exchange_token(auth_code):
+def exchange_token(auth_code, code_verifier):
     try:
         payload = {
             "grant_type": "authorization_code",
             "code": auth_code,
-            "code_verifier": "51727650fc420d4e0674ed4f91f6df0b5ab6139b7caa3fe46f22825fa2e43bc4",
+            "code_verifier": code_verifier,
             "redirect_uri": REDIRECT_URI,
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
@@ -64,14 +64,10 @@ class SSOVerifyView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        # code = request.data.get("code") or request.POST.get("code")
-        # scope = request.data.get("scope") or request.POST.get("scope")
-        # code_verifier = request.data.get("code_verifier") or request.POST.get("code_verifier")
         code = request.GET.get("code")
-        scope = request.GET.get("scope")
+        # scope = request.GET.get("scope")
         code_verifier = request.GET.get("code_verifier")
-        return Response({"code": code, "scope": scope, "code_verifier": code_verifier})
-        if not code:
+        if not code or not code_verifier:
             return Response(
                 {"error": "Missing required parameter. (code is required)"},
                 status=status.HTTP_400_BAD_REQUEST
