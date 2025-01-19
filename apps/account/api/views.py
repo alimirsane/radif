@@ -7,7 +7,7 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken as ObtainAuthT
 from rest_framework.compat import coreapi, coreschema
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.schemas import ManualSchema
 from rest_framework.schemas import coreapi as coreapi_schema
@@ -28,7 +28,37 @@ from .filters import UserFilter, GrantRecordFilter, GrantRequestFilter
 from ..permissions import AccessLevelPermission, query_set_filter_key
 from ...core.functions import export_excel, process_excel_and_create_grant_records
 from ...core.paginations import DefaultPagination
+from rest_framework.views import APIView
 
+
+class SSOVerifyView(APIView):
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        code = request.query_params.get("code")
+        scope = request.query_params.get("scope")
+        session_state = request.query_params.get("session_state")
+
+        if not code or not scope or not session_state:
+            return Response({"error": "Missing required parameters"}, status=400)
+
+        payload = {
+            "code": code,
+            "scope": scope,
+            "session_state": session_state
+        }
+
+        destination_url = settings.SSO_VERIFY_URL
+
+        try:
+            response = requests.post(destination_url, json=payload, headers={"Content-Type": "application/json"})
+            response_data = response.json()
+            status_code = response.status_code
+        except requests.exceptions.RequestException as e:
+            return Response({"error": "Failed to connect to SSO server", "details": str(e)}, status=500)
+
+        return Response(response_data, status=status_code)
 
 
 class UserListAPIView(ListCreateAPIView):

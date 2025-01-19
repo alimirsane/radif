@@ -6,6 +6,7 @@ from apps.account.api.views import *
 urlpatterns = [
     path('', include('rest_framework.urls'), name='api_auth'),
     path('token-auth/', obtain_auth_token, name='api_auth'),
+    path('sso/verify/', SSOVerifyView.as_view(), name='sso_verify'),
     # path('register/', UserRegistrationAPIView.as_view(), name='register'),
     path('register/personal/', UserPersonalRegistrationAPIView.as_view(), name='register_personal'),
     path('register/business/', UserBusinessRegistrationAPIView.as_view(), name='register_business'),
