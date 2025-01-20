@@ -504,11 +504,13 @@ class Request(models.Model):
             # self.grant_request_discount = self.price_wod - self.price
             # except Exception as e:
             #     print(f"An error occurred: {e}")
-            self.revoke_grant_usage()
-            self.apply_grant_requests()
+
 
             if self.labsnet_discount:
                 self.price -= int(self.labsnet_discount)
+
+            self.revoke_grant_usage()
+            self.apply_grant_requests()
 
             if self.is_sample_returned:
                 self.price_sample_returned = Decimal(850000)
