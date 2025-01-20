@@ -405,8 +405,8 @@ class Request(models.Model):
                 if not self.parent_request and not self.labsnet:
                     self.labsnet_create()
                     self.save()
-            if new_step.name == 'در ‌انتظار پرداخت' and (self.labsnet1 or self.labsnet2):
-                if self.parent_request and self.labsnet:
+            if new_step.name == 'در انتظار پرداخت' and (self.labsnet):
+                if not self.parent_request:
                     self.labsnet_create_grant()
                     self.save()
         if new_step.name == 'در حال انجام':
