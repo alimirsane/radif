@@ -545,9 +545,9 @@ class Request(models.Model):
             max_allowed_discount = float(original_price) * max_discount_percent
 
             applied_discount = min(max_allowed_discount, max_discount_amount, float(original_price))
-            original_price -= applied_discount
+            original_price -= Decimal(applied_discount)
 
-            return applied_discount
+            return Decimal(applied_discount)
 
         labsnet1_discount = apply_labsnet_credit(self.labsnet1)
         labsnet2_discount = apply_labsnet_credit(self.labsnet2)
