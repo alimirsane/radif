@@ -29,7 +29,10 @@ from ..permissions import AccessLevelPermission, query_set_filter_key
 from ...core.functions import export_excel, process_excel_and_create_grant_records
 from ...core.paginations import DefaultPagination
 from rest_framework.views import APIView
-
+from django.contrib.auth import get_user_model
+import jwt
+User = get_user_model()
+from rest_framework.authtoken.models import Token
 
 TOKEN_ENDPOINT = "https://uac.meta.sharif.ir/connect/token"
 CLIENT_ID = 'LabsClient'
@@ -72,6 +75,21 @@ def exchange_token(auth_code, code_verifier):
         return {"error": f"An error occurred: {str(e)}"}
 
 
+def decode_jwt(token):
+    """
+    دیکد کردن `JWT Token` بدون نیاز به کلید عمومی
+    """
+    try:
+        decoded_token = jwt.decode(token, options={"verify_signature": False})
+        return decoded_token
+    except jwt.ExpiredSignatureError:
+        return {"error": "Token has expired"}
+    except jwt.DecodeError:
+        return {"error": "Failed to decode token"}
+    except Exception as e:
+        return {"error": f"An unexpected error occurred: {str(e)}"}
+
+
 class SSOVerifyView(APIView):
 
     permission_classes = [AllowAny]
@@ -88,7 +106,36 @@ class SSOVerifyView(APIView):
 
         token_response = exchange_token(code, code_verifier)
 
-        return Response(token_response, status=status.HTTP_200_OK if "access_token" in token_response else status.HTTP_400_BAD_REQUEST)
+        if "access_token" in token_response:
+            access_token = token_response["access_token"]
+            id_token = token_response.get("id_token")
+
+            decoded_access_token = decode_jwt(access_token)
+            decoded_id_token = decode_jwt(id_token) if id_token else None
+
+            national_code = decoded_id_token.get("nationalCode") if decoded_id_token else None
+
+            user_auth_token = None
+
+            if national_code:
+                user = User.objects.filter(national_id=national_code).first()
+                if user:
+                    token, _ = Token.objects.get_or_create(user=user)
+                    user_auth_token = token.key
+
+            response_data = {
+                # "sso_access_token": access_token,  # `access_token` از `SSO Server`
+                # "sso_id_token": id_token,  # `id_token` از `SSO Server`
+                # "decoded_access_token": decoded_access_token,  # دیکد شده
+                # "decoded_id_token": decoded_id_token,  # دیکد شده
+                "national_code": national_code,  # `کد ملی` استخراج شده
+                "user_auth_token": user_auth_token  # `توکن ورود` کاربر (در صورت وجود)
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(token_response, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserListAPIView(ListCreateAPIView):
     queryset = User.objects.all()
