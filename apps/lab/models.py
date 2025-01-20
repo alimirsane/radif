@@ -474,7 +474,7 @@ class Request(models.Model):
             self.price_sample_returned = Decimal(0)
             self.price_wod = Decimal(price)
             self.price = (price - (price * int(self.discount) / 100))
-            self.apply_labsnet_credits()
+            # self.apply_labsnet_credits()
             self.save()
             self.parent_request.set_price()
             # except:
@@ -513,7 +513,7 @@ class Request(models.Model):
 
             if self.labsnet:
                 self.apply_labsnet_credits()
-                self.price -= int(self.labsnet_discount)
+                # self.price -= int(self.labsnet_discount)
 
             self.revoke_grant_usage()
             self.apply_grant_requests()
@@ -521,6 +521,7 @@ class Request(models.Model):
             if self.is_sample_returned:
                 self.price_sample_returned = Decimal(850000)
                 self.price = self.price + self.price_sample_returned
+                self.price_wod = self.price_wod + self.price_sample_returned
             else:
                 self.price_sample_returned = Decimal(0)
             self.save()
