@@ -511,7 +511,8 @@ class Request(models.Model):
             #     print(f"An error occurred: {e}")
 
 
-            if self.labsnet_discount:
+            if self.labsnet:
+                self.apply_labsnet_credits()
                 self.price -= int(self.labsnet_discount)
 
             self.revoke_grant_usage()
