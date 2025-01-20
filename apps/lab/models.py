@@ -542,9 +542,9 @@ class Request(models.Model):
 
             max_discount_amount = float(Decimal(labsnet.remain.replace(',', '')))
             max_discount_percent = float(Decimal(labsnet.percent) / 100)
-            max_allowed_discount = original_price * max_discount_percent
+            max_allowed_discount = float(original_price) * max_discount_percent
 
-            applied_discount = min(max_allowed_discount, max_discount_amount, original_price)
+            applied_discount = min(max_allowed_discount, max_discount_amount, float(original_price))
             original_price -= applied_discount
 
             return applied_discount
