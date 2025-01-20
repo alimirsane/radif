@@ -559,11 +559,13 @@ class Request(models.Model):
 
 
     def apply_grant_requests(self):
+        start_price = self.price
         if self.grant_request1:
             self.apply_grant(self.grant_request1)
         if self.grant_request2:
             self.apply_grant(self.grant_request2)
-        self.grant_request_discount = self.price_wod - self.price
+        end_price = self.price
+        self.grant_request_discount = start_price - end_price
 
     def apply_grant(self, grant_request):
         used_amount = min(grant_request.remaining_amount, self.price)
