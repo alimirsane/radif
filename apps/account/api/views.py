@@ -113,7 +113,7 @@ class SSOVerifyView(APIView):
             decoded_access_token = decode_jwt(access_token)
             decoded_id_token = decode_jwt(id_token) if id_token else None
 
-            national_code = decoded_id_token.get("nationalCode") if decoded_id_token else None
+            national_code = decoded_id_token.get("NationalCode") if decoded_id_token else None
 
             user_auth_token = None
 
