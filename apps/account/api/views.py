@@ -124,12 +124,12 @@ class SSOVerifyView(APIView):
                     user_auth_token = token.key
 
             response_data = {
-                # "sso_access_token": access_token,  # `access_token` از `SSO Server`
-                # "sso_id_token": id_token,  # `id_token` از `SSO Server`
-                # "decoded_access_token": decoded_access_token,  # دیکد شده
-                # "decoded_id_token": decoded_id_token,  # دیکد شده
-                "national_code": national_code,  # `کد ملی` استخراج شده
-                "user_auth_token": user_auth_token  # `توکن ورود` کاربر (در صورت وجود)
+                "sso_access_token": access_token,
+                "sso_id_token": id_token,
+                "decoded_access_token": decoded_access_token,
+                "decoded_id_token": decoded_id_token,
+                "national_code": national_code,
+                "user_auth_token": user_auth_token
             }
 
             return Response(response_data, status=status.HTTP_200_OK)
