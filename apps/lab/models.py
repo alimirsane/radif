@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import Sum
 import jdatetime
 from apps.account.models import User, GrantRequest, Role, LabsnetCredit
+from apps.core.labsnet_func import LabsNetClient
 from apps.form.models import Form
 import math
 from django.core.exceptions import ValidationError
@@ -404,6 +405,10 @@ class Request(models.Model):
                 if not self.parent_request and not self.labsnet:
                     self.labsnet_create()
                     self.save()
+            if new_step.name == 'در ‌انتظار پرداخت' and (self.labsnet1 or self.labsnet2):
+                if self.parent_request and self.labsnet:
+                    self.labsnet_create_grant()
+                    self.save()
         if new_step.name == 'در حال انجام':
             self.delivery_date = datetime.datetime.now()
             self.save()
@@ -659,6 +664,58 @@ class Request(models.Model):
             self.labsnet_result += f' + exception={e}'
             self.labsnet_status = 3
             return self
+
+    def labsnet_create_grant(self):
+        client = LabsNetClient()
+
+        username = "labsnet343"
+        password = "Sharif@400"
+
+        if not (client.ensure_dashboard_access() or client.login(username, password)):
+            print("Failed to login to LabsNet. Aborting request submission.")
+            return None
+
+        # دریافت اطلاعات والد (درخواست اصلی)
+        national_id = self.owner.national_id
+        srv_id = self.experiment.labsnet_experiment_id
+
+        # ایجاد لیست درخواست‌ها برای ارسال به LabsNet
+        for child_request in self.child_requests.exclude(request_status__step__name__in=['رد شده']):
+            payload = {
+                "lab": "مجموعه آزمایشگاه ها - دانشگاه صنعتی شریف مرکز خدمات آزمایشگاهی",
+                "lab_id": "343",
+                "customer_type": "1",
+                "type_credit": "1",
+                "national_code": national_id,
+                "national_id": "",
+                "national_id_id": "",
+                "mobile": self.owner.username.replace('+98', '0'),
+                "checked[]": "280893",
+                "date": child_request.created_at.strftime('%Y/%m/%d'),
+                "type_tarefe": "2",
+                "count": "1",
+                "tarefe": str(child_request.price_wod),
+                "description": child_request.description or "Request submitted via system",
+                "sum_pay": str(child_request.price),
+                "credit_use": str(child_request.labsnet_discount) if child_request.labsnet_discount else "0",
+                "inst_submit": "",
+            }
+
+            conf_num = client.submit_with_credit_request(payload, national_id, srv_id)
+            if conf_num:
+                print(f"Request {child_request.id} successfully submitted with confirmation number: {conf_num}")
+                child_request.labsnet_status = 2  # ثبت موفق
+                child_request.labsnet_code1 = conf_num  # ذخیره شماره تأیید
+            else:
+                print(f"Failed to submit request {child_request.id} to LabsNet.")
+                child_request.labsnet_status = 3  # ثبت ناموفق
+
+            child_request.save()
+
+        # ذخیره وضعیت درخواست مادر
+        self.labsnet_status = 2 if all(c.labsnet_status == 2 for c in self.child_requests.all()) else 3
+        self.save()
+        return self
 
 
     def labsnet_list(self):
