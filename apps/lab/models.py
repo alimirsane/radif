@@ -702,7 +702,7 @@ class Request(models.Model):
                 "national_id": "",
                 "national_id_id": "",
                 "mobile": self.owner.username.replace('+98', '0'),
-                "checked[]": f"{str(self.labsnet1.labsnet_id)}, {str(self.labsnet2.labsnet_id)}",
+                "checked[]": f"{str(self.labsnet1.labsnet_id)}, {str(self.labsnet2.labsnet_id)}" if self.labsnet1 and self.labsnet2 else f"{str(self.labsnet1.labsnet_id)}",
                 "date": date_str,
                 "type_tarefe": type_tarefe,
                 "count": str(formresponses_count),
