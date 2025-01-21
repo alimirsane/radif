@@ -627,7 +627,7 @@ class Request(models.Model):
             "user_name": "sharif_uni",
             "password": "sharif_uni",
             "national_code": f"{self.owner.national_id}",
-            "type": "1",
+            "type": '1' if self.owner.account_type == 'personal' else '2',
             "org_id": "343",
             "name": self.owner.first_name if self.owner.account_type == 'personal' else self.owner.company_name,
             "family": self.owner.last_name if self.owner.account_type == 'personal' else "",
@@ -679,29 +679,37 @@ class Request(models.Model):
             print("Failed to login to LabsNet. Aborting request submission.")
             return None
 
-        # دریافت اطلاعات والد (درخواست اصلی)
         national_id = self.owner.national_id
         srv_id = self.experiment.labsnet_experiment_id
 
-        # ایجاد لیست درخواست‌ها برای ارسال به LabsNet
+
         for child_request in self.child_requests.exclude(request_status__step__name__in=['رد شده']):
+            gregorian_date = child_request.created_at.date()
+            jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
+            date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
+            if child_request.experiment.test_unit_type == 'time':
+                type_tarefe = 1
+            else:
+                type_tarefe = 2
+            formresponses_count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
+                'response_count__sum']
             payload = {
                 "lab": "مجموعه آزمایشگاه ها - دانشگاه صنعتی شریف مرکز خدمات آزمایشگاهی",
                 "lab_id": "343",
-                "customer_type": "1",
+                "customer_type": "1" if self.owner.account_type == 'personal' else "2",
                 "type_credit": "1",
                 "national_code": national_id,
                 "national_id": "",
                 "national_id_id": "",
                 "mobile": self.owner.username.replace('+98', '0'),
-                "checked[]": "280893",
-                "date": child_request.created_at.strftime('%Y/%m/%d'),
-                "type_tarefe": "2",
-                "count": "1",
-                "tarefe": str(child_request.price_wod),
+                "checked[]": f"{str(self.labsnet1.labsnet_id)}, {str(self.labsnet2.labsnet_id)}",
+                "date": date_str,
+                "type_tarefe": type_tarefe,
+                "count": str(formresponses_count),
+                "tarefe":  str(int(child_request.price)/int(formresponses_count)),
                 "description": child_request.description or "Request submitted via system",
                 "sum_pay": str(child_request.price),
-                "credit_use": str(child_request.labsnet_discount) if child_request.labsnet_discount else "0",
+                "credit_use": str(child_request.labsnet_discount) if child_request.labsnet else "0",
                 "inst_submit": "",
             }
 
