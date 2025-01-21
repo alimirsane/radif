@@ -670,65 +670,71 @@ class Request(models.Model):
             return self
 
     def labsnet_create_grant(self):
-        client = LabsNetClient()
+        try:
+            client = LabsNetClient()
 
-        username = "labsnet343"
-        password = "Sharif@400"
+            username = "labsnet343"
+            password = "Sharif@400"
 
-        if not (client.ensure_dashboard_access() or client.login(username, password)):
-            print("Failed to login to LabsNet. Aborting request submission.")
-            return None
+            if not (client.ensure_dashboard_access() or client.login(username, password)):
+                print("Failed to login to LabsNet. Aborting request submission.")
+                return None
 
-        national_id = self.owner.national_id
-        srv_id = self.experiment.labsnet_experiment_id
+            national_id = self.owner.national_id
+            srv_id = self.experiment.labsnet_experiment_id
 
 
-        for child_request in self.child_requests.exclude(request_status__step__name__in=['رد شده']):
-            gregorian_date = child_request.created_at.date()
-            jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
-            date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
-            if child_request.experiment.test_unit_type == 'time':
-                type_tarefe = 1
-            else:
-                type_tarefe = 2
-            formresponses_count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
-                'response_count__sum']
-            payload = {
-                "lab": "مجموعه آزمایشگاه ها - دانشگاه صنعتی شریف مرکز خدمات آزمایشگاهی",
-                "lab_id": "343",
-                "customer_type": "1" if self.owner.account_type == 'personal' else "2",
-                "type_credit": "1",
-                "national_code": national_id,
-                "national_id": "",
-                "national_id_id": "",
-                "mobile": self.owner.username.replace('+98', '0'),
-                "checked[]": f"{str(self.labsnet1.labsnet_id)}, {str(self.labsnet2.labsnet_id)}" if self.labsnet1 and self.labsnet2 else f"{str(self.labsnet1.labsnet_id)}",
-                "date": date_str,
-                "type_tarefe": type_tarefe,
-                "count": str(formresponses_count),
-                "tarefe":  str(int(child_request.price)/int(formresponses_count)),
-                "description": child_request.description or "Request submitted via system",
-                "sum_pay": str(child_request.price),
-                "credit_use": str(child_request.labsnet_discount) if child_request.labsnet else "0",
-                "inst_submit": "",
-            }
+            for child_request in self.child_requests.exclude(request_status__step__name__in=['رد شده']):
+                gregorian_date = child_request.created_at.date()
+                jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
+                date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
+                if child_request.experiment.test_unit_type == 'time':
+                    type_tarefe = 1
+                else:
+                    type_tarefe = 2
+                formresponses_count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
+                    'response_count__sum']
+                payload = {
+                    "lab": "مجموعه آزمایشگاه ها - دانشگاه صنعتی شریف مرکز خدمات آزمایشگاهی",
+                    "lab_id": "343",
+                    "customer_type": "1" if self.owner.account_type == 'personal' else "2",
+                    "type_credit": "1",
+                    "national_code": national_id,
+                    "national_id": "",
+                    "national_id_id": "",
+                    "mobile": self.owner.username.replace('+98', '0'),
+                    "checked[]": f"{str(self.labsnet1.labsnet_id)}, {str(self.labsnet2.labsnet_id)}" if self.labsnet1 and self.labsnet2 else f"{str(self.labsnet1.labsnet_id)}",
+                    "date": date_str,
+                    "type_tarefe": type_tarefe,
+                    "count": str(formresponses_count),
+                    "tarefe":  str(int(child_request.price)/int(formresponses_count)),
+                    "description": child_request.description or "Request submitted via system",
+                    "sum_pay": str(child_request.price),
+                    "credit_use": str(child_request.labsnet_discount) if child_request.labsnet else "0",
+                    "inst_submit": "",
+                }
+                self.labsnet_result = f'data={str(payload)}'
 
-            conf_num = client.submit_with_credit_request(payload, national_id, srv_id)
-            if conf_num:
-                print(f"Request {child_request.id} successfully submitted with confirmation number: {conf_num}")
-                child_request.labsnet_status = 2  # ثبت موفق
-                child_request.labsnet_code1 = conf_num  # ذخیره شماره تأیید
-            else:
-                print(f"Failed to submit request {child_request.id} to LabsNet.")
-                child_request.labsnet_status = 3  # ثبت ناموفق
+                conf_num = client.submit_with_credit_request(payload, national_id, srv_id)
+                self.labsnet_result += f' + conf_num={str(conf_num)}'
+                if conf_num:
+                    print(f"Request {child_request.id} successfully submitted with confirmation number: {conf_num}")
+                    child_request.labsnet_status = 2  # ثبت موفق
+                    child_request.labsnet_code1 = conf_num  # ذخیره شماره تأیید
 
-            child_request.save()
+                else:
+                    print(f"Failed to submit request {child_request.id} to LabsNet.")
+                    child_request.labsnet_status = 3  # ثبت ناموفق
 
-        # ذخیره وضعیت درخواست مادر
-        self.labsnet_status = 2 if all(c.labsnet_status == 2 for c in self.child_requests.all()) else 3
-        self.save()
-        return self
+                child_request.save()
 
+            # ذخیره وضعیت درخواست مادر
+            self.labsnet_status = 2 if all(c.labsnet_status == 2 for c in self.child_requests.all()) else 3
+            self.save()
+            return self
+        except Exception as e:
+            self.labsnet_result += f' + exception={e}'
+            self.save()
 
     def labsnet_list(self):
         import requests
