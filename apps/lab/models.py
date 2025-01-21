@@ -670,6 +670,7 @@ class Request(models.Model):
             return self
 
     def labsnet_create_grant(self):
+        self.labsnet_result = 'start'
         try:
             client = LabsNetClient()
 
@@ -713,7 +714,8 @@ class Request(models.Model):
                     "credit_use": str(child_request.labsnet_discount) if child_request.labsnet else "0",
                     "inst_submit": "",
                 }
-                self.labsnet_result = f'data={str(payload)}'
+                self.labsnet_result += f'data={str(payload)}'
+                self.save()
 
                 conf_num = client.submit_with_credit_request(payload, national_id, srv_id)
                 self.labsnet_result += f' + conf_num={str(conf_num)}'
