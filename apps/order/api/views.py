@@ -27,7 +27,8 @@ from rest_framework.response import Response
 # from apps.account.permissions import IsExpertOrAdminOrManager
 from apps.core.functions import export_excel
 from apps.core.paginations import DefaultPagination
-from apps.account.permissions import IsExpertOrAdminOrManager, AccessLevelPermission
+from apps.account.permissions import IsExpertOrAdminOrManager, AccessLevelPermission, query_set_filter_key
+from apps.lab.models import Experiment
 from apps.order.api.filters import PaymentRecordFilter
 from apps.order.models import Order, PaymentRecord, Transaction, PromotionCode, Ticket
 from apps.order.api.serializers import OrderSerializer, OrderDetailSerializer, OrderIssueSerializer, \
@@ -395,7 +396,9 @@ class PaymentRecordManagerListView(ListCreateAPIView):
     serializer_class = PaymentRecordListSerializer
     queryset = PaymentRecord.objects.all().order_by("-created_at")
     filterset_class = PaymentRecordFilter
-
+    permission_classes = [AccessLevelPermission]
+    required_access_levels = ['view_all_paymentrecord', 'view_owner_paymentrecord', 'create_all_paymentrecord']
+    view_key = 'paymentrecord'
     pagination_class = DefaultPagination
     # filterset_fields = {'event': ['exact', 'in'],
     #                     'buyer': ['exact', 'in'],
@@ -403,8 +406,18 @@ class PaymentRecordManagerListView(ListCreateAPIView):
     #                     'order_status': ['exact', 'in'],
     #                     }
     def get_queryset(self):
-        queryset = PaymentRecord.objects.all()
-        return queryset.order_by("-created_at")
+        # user_exps = Experiment.objects.filter(laboratory__technical_manager=self.request.user).values_list('id', flat=True)
+        # queryset = PaymentRecord.objects.all().filter(order__request__experiment_id__in=user_exps)
+        # return queryset.distinct().order_by("-created_at")
+
+        filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
+
+        if filter_key == 'all':
+            queryset = PaymentRecord.objects.all()
+        elif filter_key == 'owner':
+            user_exps = Experiment.objects.filter(laboratory__technical_manager=self.request.user).values_list('id', flat=True)
+            queryset = PaymentRecord.objects.all().filter(order__request__experiment_id__in=user_exps)
+        return queryset
 
     def get_serializer_class(self):
         if self.request.query_params.get('invoice_print', 'False').lower() == 'true':
