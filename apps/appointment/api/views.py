@@ -80,13 +80,20 @@ class AvailableAppointmentsView(APIView):
                 end_time = (datetime.combine(datetime.today(), current_time) +
                             timedelta(minutes=queue.time_unit)).time()
 
+                is_in_break_time = False
+                if queue.break_start and queue.break_end:
+                    if not (end_time <= queue.break_start or current_time >= queue.break_end):
+                        is_in_break_time = True
+
                 status = "reserved" if current_time in reserved_times else "free"
-                all_appointments.append({
-                    "date": queue.date,
-                    "start_time": current_time,
-                    "end_time": end_time,
-                    "status": status
-                })
+
+                if not is_in_break_time:
+                    all_appointments.append({
+                        "date": queue.date,
+                        "start_time": current_time,
+                        "end_time": end_time,
+                        "status": status
+                    })
 
                 current_time = end_time
 
