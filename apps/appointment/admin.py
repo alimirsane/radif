@@ -5,7 +5,7 @@ from apps.appointment.models import Queue, Appointment
 
 @admin.register(Queue)
 class QueueAdmin(admin.ModelAdmin):
-    list_display = ('start_time', 'end_time', 'status')
+    list_display = ('experiment', 'date', 'start_time', 'end_time', 'time_unit', 'status',)
     list_filter = ('status',)
 
 @admin.register(Appointment)
