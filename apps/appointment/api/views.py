@@ -59,6 +59,7 @@ class AvailableAppointmentsView(APIView):
     def get(self, request):
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
+        experiment_id = request.query_params.get('experiment_id')
 
         if not start_date or not end_date:
             return Response({"error": "start_date و end_date الزامی هستند."}, status=400)
@@ -67,6 +68,9 @@ class AvailableAppointmentsView(APIView):
         end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
 
         queues = Queue.objects.filter(date__range=[start_date, end_date])
+
+        if experiment_id:
+            queues = queues.filter(experiment_id=experiment_id)
 
         reserved_appointments = Appointment.objects.filter(queue__in=queues)
 
