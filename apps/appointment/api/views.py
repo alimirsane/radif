@@ -93,6 +93,7 @@ class AvailableAppointmentsView(APIView):
 
                 if not is_in_break_time:
                     all_appointments.append({
+                        "queue_id": queue.id,
                         "date": queue.date,
                         "start_time": current_time,
                         "end_time": end_time,
