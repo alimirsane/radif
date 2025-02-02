@@ -64,7 +64,7 @@ class LaboratoryListAPIView(ListCreateAPIView):
         if filter_key == 'all':
             queryset = Laboratory.objects.all()
         elif filter_key == 'owner':
-            queryset = Laboratory.objects.filter(technical_manager=self.request.user) & Laboratory.objects.filter(oprerators__in=[self.request.user])
+            queryset = Laboratory.objects.filter(technical_manager=self.request.user) | Laboratory.objects.filter(oprerators__in=[self.request.user])
         return queryset.distinct()
 
 
