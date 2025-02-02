@@ -60,12 +60,12 @@ class LaboratoryListAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
-
+        queryset = Laboratory.objects.none()
         if filter_key == 'all':
             queryset = Laboratory.objects.all()
         elif filter_key == 'owner':
-            queryset = Laboratory.objects.filter(technical_manager=self.request.user)
-        return queryset
+            queryset = Laboratory.objects.filter(technical_manager=self.request.user) & Laboratory.objects.filter(oprerators__in=[self.request.user])
+        return queryset.distinct()
 
 
 class LaboratoryDetailAPIView(RetrieveUpdateDestroyAPIView):
@@ -76,6 +76,17 @@ class LaboratoryDetailAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = [AccessLevelPermission]
     required_access_levels = ['view_all_laboratory', 'view_owner_laboratory', 'update_all_laboratory', 'update_owner_laboratory', 'delete_all_laboratory']
     view_key = 'laboratory'
+
+
+class LaboratoryPubListAPIView(ListCreateAPIView):
+    queryset = Laboratory.objects.all()
+    serializer_class = LaboratorySerializer
+    filterset_class = LaboratoryFilter
+
+
+class LaboratoryPubDetailAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Laboratory.objects.all()
+    serializer_class = LaboratoryDetailSerializer
 
 
 class DeviceListAPIView(ListCreateAPIView):
