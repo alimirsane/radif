@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 import datetime
 from datetime import datetime, timedelta
@@ -56,8 +57,14 @@ class AppointmentDetailView(RetrieveUpdateDestroyAPIView):
 
 class AvailableAppointmentsView(APIView):
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = AppointmentFilter
 
     def get(self, request):
+        filterset = AppointmentFilter(request.GET, queryset=Appointment.objects.all())
+        if not filterset.is_valid():
+            return Response(filterset.errors, status=400)
+
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
         experiment_id = request.query_params.get('experiment_id')
