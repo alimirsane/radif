@@ -30,12 +30,12 @@ class ExperimentListAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
-        queryset = []
+        queryset = Experiment.objects.none()
         if filter_key == 'all':
             queryset = Experiment.objects.all()
         elif filter_key == 'owner':
-            queryset = Experiment.objects.filter(laboratory__technical_manager=self.request.user)
-        return queryset
+            queryset = Experiment.objects.filter(laboratory__technical_manager=self.request.user) | Experiment.objects.filter(laboratory__operators=self.request.user)
+        return queryset.distinct()
 
 
 class ExperimentDetailAPIView(RetrieveUpdateDestroyAPIView):
@@ -101,12 +101,12 @@ class DeviceListAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
-
+        queryset = Device.objects.none()
         if filter_key == 'all':
             queryset = Device.objects.all()
         elif filter_key == 'owner':
-            queryset = Device.objects.filter(laboratory__technical_manager=self.request.user)
-        return queryset
+            queryset = Device.objects.filter(laboratory__technical_manager=self.request.user) | Device.objects.filter(laboratory__operators=self.request.user)
+        return queryset.distinct()
 
 
 class DeviceDetailAPIView(RetrieveUpdateDestroyAPIView):
@@ -131,12 +131,12 @@ class ParameterListAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
-
+        queryset = Parameter.objects.none()
         if filter_key == 'all':
             queryset = Parameter.objects.all()
         elif filter_key == 'owner':
-            queryset = Parameter.objects.filter(experiment__laboratory__technical_manager=self.request.user)
-        return queryset
+            queryset = Parameter.objects.filter(experiment__laboratory__technical_manager=self.request.user) | Parameter.objects.filter(experiment__laboratory__operators=self.request.user)
+        return queryset.distinct()
     
 
 class ParameterDetailAPIView(RetrieveUpdateDestroyAPIView):
