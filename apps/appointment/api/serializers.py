@@ -22,11 +22,13 @@ class QueueSerializer(serializers.ModelSerializer):
 
 
 class AppointmentListSerializer(serializers.Serializer):
+    queue_id = serializers.IntegerField()
     date = serializers.DateField()
     start_time = serializers.TimeField()
     end_time = serializers.TimeField()
     status = serializers.CharField()
-
+    reserved_by = serializers.IntegerField(allow_null=True)
+    reserved_by_obj = UserSummerySerializer(allow_null=True)
 
 class AppointmentSerializer(serializers.ModelSerializer):
     reserved_by_obj = UserSummerySerializer(read_only=True, source='reserved_by')

@@ -5,6 +5,7 @@ from django_filters import rest_framework as filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.account.api.serializers import UserSummerySerializer
 from apps.account.permissions import AccessLevelPermission, query_set_filter_key
 
 from rest_framework.permissions import IsAuthenticated
@@ -72,13 +73,15 @@ class AvailableAppointmentsView(APIView):
         if experiment_id:
             queues = queues.filter(experiment_id=experiment_id)
 
-        reserved_appointments = Appointment.objects.filter(queue__in=queues)
+        reserved_appointments = Appointment.objects.filter(queue__in=queues).select_related('reserved_by')
+
+        reserved_map = {
+            (appt.queue_id, appt.start_time): appt for appt in reserved_appointments
+        }
 
         all_appointments = []
 
         for queue in queues:
-            reserved_times = {appt.start_time for appt in reserved_appointments.filter(queue=queue)}
-
             current_time = queue.start_time
             while current_time < queue.end_time:
                 end_time = (datetime.combine(datetime.today(), current_time) +
@@ -89,7 +92,13 @@ class AvailableAppointmentsView(APIView):
                     if not (end_time <= queue.break_start or current_time >= queue.break_end):
                         is_in_break_time = True
 
-                status = "reserved" if current_time in reserved_times else "free"
+                appointment_key = (queue.id, current_time)
+                reserved_appt = reserved_map.get(appointment_key)
+
+                reserved_by = reserved_appt.reserved_by.id if reserved_appt and reserved_appt.reserved_by else None
+                reserved_by_obj = UserSummerySerializer(reserved_appt.reserved_by).data if reserved_appt and reserved_appt.reserved_by else None
+
+                status = "reserved" if reserved_appt else "free"
 
                 if not is_in_break_time:
                     all_appointments.append({
@@ -97,7 +106,9 @@ class AvailableAppointmentsView(APIView):
                         "date": queue.date,
                         "start_time": current_time,
                         "end_time": end_time,
-                        "status": status
+                        "status": status,
+                        "reserved_by": reserved_by,
+                        "reserved_by_obj": reserved_by_obj
                     })
 
                 current_time = end_time
