@@ -512,7 +512,9 @@ class Request(models.Model):
 
 
             if self.labsnet:
-                self.apply_labsnet_credits()
+                labsnet_discount = self.apply_labsnet_credits()
+                self.price -= labsnet_discount
+                self.save()
                 # self.price -= int(self.labsnet_discount)
 
             self.revoke_grant_usage()
@@ -554,9 +556,7 @@ class Request(models.Model):
         labsnet1_discount = apply_labsnet_credit(self.labsnet1)
         labsnet2_discount = apply_labsnet_credit(self.labsnet2)
 
-        self.labsnet_discount = labsnet1_discount + labsnet2_discount
-        self.price -= self.labsnet_discount
-        self.save()
+        return labsnet1_discount + labsnet2_discount
 
 
     def apply_grant_requests(self):
@@ -691,16 +691,17 @@ class Request(models.Model):
                 date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
                 if child_request.experiment.test_unit_type == 'time':
                     type_tarefe = 1
+                    formresponses_count = '30'
                 else:
                     type_tarefe = 2
-                formresponses_count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
-                    'response_count__sum']
+                    formresponses_count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
+                        'response_count__sum']
                 payload = {
                     "lab": "مجموعه آزمایشگاه ها - دانشگاه صنعتی شریف مرکز خدمات آزمایشگاهی",
                     "lab_id": "343",
                     "customer_type": "1" if self.owner.account_type == 'personal' else "2",
                     "type_credit": "1",
-                    "national_code": national_id,
+                    "national_code": self.owner.national_id if self.owner.account_type == 'personal' else self.owner.company_national_id,
                     # "national_id": "",
                     # "national_id_id": "",
                     "mobile": self.owner.username.replace('+98', '0'),
@@ -711,7 +712,7 @@ class Request(models.Model):
                     "tarefe":  str(int(int(child_request.price)/int(formresponses_count))),
                     "description": child_request.description or "Request submitted via system",
                     "sum_pay": str(child_request.price),
-                    "credit_use": str(self.labsnet_discount) if self.labsnet else "0",
+                    "credit_use": str(self.apply_labsnet_credits()),
                     "inst_submit": "",
                 }
                 self.labsnet_result += f'data={str(payload)}'
