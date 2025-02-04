@@ -170,17 +170,14 @@ class UserStaffListAPIView(ListAPIView):
 
     # permission and queryset
     permission_classes = [AccessLevelPermission]
-    required_access_levels = ['view_all_user', 'view_owner_user', 'create_all_user']
+    required_access_levels = ['view_all_user']
     view_key = 'user'
 
     def get_queryset(self):
         filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
         queryset = []
         if filter_key == 'all':
-            queryset = User.objects.all()
-        elif filter_key == 'owner':
-            # queryset = User.objects.filter(user_type='staff')
-            queryset = User.objects.filter(role__id__in=[10])
+            queryset = User.objects.filter(user_type='staff')
         return queryset
 
 
@@ -193,19 +190,15 @@ class UserCustomerListAPIView(ListAPIView):
 
     # permission and queryset
     permission_classes = [AccessLevelPermission]
-    required_access_levels = ['view_all_user', 'view_owner_user', 'create_all_user']
+    required_access_levels = ['view_all_user']
     view_key = 'user'
 
     def get_queryset(self):
         filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
         queryset = []
         if filter_key == 'all':
-            queryset = User.objects.all()
-        elif filter_key == 'owner':
-            # queryset = User.objects.filter(user_type='staff')
-            queryset = User.objects.filter(role__id__in=[10])
+            queryset = User.objects.filter(user_type='customer')
         return queryset
-
 
 
 
