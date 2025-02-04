@@ -30,6 +30,7 @@ class AppointmentListSerializer(serializers.Serializer):
     reserved_by = serializers.IntegerField(allow_null=True)
     reserved_by_obj = UserSummerySerializer(allow_null=True)
 
+
 class AppointmentSerializer(serializers.ModelSerializer):
     reserved_by_obj = UserSummerySerializer(read_only=True, source='reserved_by')
 

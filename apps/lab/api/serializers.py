@@ -6,6 +6,7 @@ import json
 from apps.account.api.serializers import UserSerializer, GrantRecordSerializer, GrantRequestSerializer
 from apps.account.api.views import UserDetailAPIView
 from apps.account.models import User, LabsnetCredit
+from apps.appointment.api.serializers import AppointmentListSerializer, AppointmentSerializer
 from apps.form.api.serializers import FormSerializer, FormSummerySerializer
 from apps.lab.models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, \
     Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult, RequestCertificate, DiscountHistory
@@ -343,6 +344,9 @@ class RequestListSerializer(serializers.ModelSerializer):
     grant_request2_obj = GrantRequestSerializer(source='grant_request2', read_only=True, required=False)
     labsnet1_obj = LabsnetCreditSerializer(source='labsnet1', read_only=True, required=False)
     labsnet2_obj = LabsnetCreditSerializer(source='labsnet2', read_only=True, required=False)
+
+    appointments_obj = AppointmentSerializer(source='appointments', many=True, read_only=True)
+
     # def latest_status_obj_(self, obj):
     #     lastest_status = obj.lastest_status()
     #     return StatusSerializer(instance=lastest_status)

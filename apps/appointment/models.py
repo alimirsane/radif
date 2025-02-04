@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta, time
 
 from apps.account.models import User
-from apps.lab.models import Experiment
+from apps.lab.models import Experiment, Request
 
 
 class Queue(models.Model):
@@ -50,6 +50,7 @@ class Queue(models.Model):
 
 class Appointment(models.Model):
     queue = models.ForeignKey(Queue, related_name="appointments", on_delete=models.CASCADE, verbose_name="صف")
+    request = models.ForeignKey(Request, related_name="appointments", on_delete=models.CASCADE, null=True, blank=True, verbose_name="درخواست")
     start_time = models.TimeField(verbose_name="زمان شروع نوبت")
     status = models.CharField(max_length=50, default="free", verbose_name="وضعیت نوبت",
                               choices=[("free", "آزاد"), ("reserved", "رزرو شده"), ("canceled", "لغو شده")])
