@@ -21,7 +21,7 @@ from apps.account.api.serializers import UserSerializer, UserRegistrationSeriali
     GrantRequestSerializer, GrantRequestApprovedSerializer, UserProfileSerializer, NotificationSerializer, \
     NotificationReadSerializer, GrantRecordSerializer, UPOAuthTokenSerializer, UserBusinessLinkedAccountsSerializer, \
     LansnetGrantSerializer, UserPasswordSerializer, GrantRecordFileSerializer, GrantRequestRevokeSerializer, \
-    DepartmentSerializer, UserPersonalSerializer, UserBusinessSerializer
+    DepartmentSerializer, UserPersonalSerializer, UserBusinessSerializer, SummaryUserSerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
     GrantRequest, OTPserver, Notification, GrantRecord, Department, LabsnetCredit
 from .filters import UserFilter, GrantRecordFilter, GrantRequestFilter
@@ -135,6 +135,78 @@ class SSOVerifyView(APIView):
             return Response(response_data, status=status.HTTP_200_OK)
         else:
             return Response(token_response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomerUserPubListAPIView(ListAPIView):
+    queryset = User.objects.filter(user_type='customer')
+    serializer_class = SummaryUserSerializer
+    search_fields = ['username', 'email', 'first_name', 'last_name']
+    filterset_class = UserFilter
+
+    # permission and queryset
+    permission_classes = [AccessLevelPermission]
+    required_access_levels = ['view_all_user']
+    view_key = 'user'
+
+
+class StaffUserPubListAPIView(ListAPIView):
+    queryset = User.objects.filter(user_type='staff')
+    serializer_class = SummaryUserSerializer
+    search_fields = ['username', 'email', 'first_name', 'last_name']
+    filterset_class = UserFilter
+
+    # permission and queryset
+    permission_classes = [AccessLevelPermission]
+    required_access_levels = ['view_all_user']
+    view_key = 'user'
+
+
+class UserStaffListAPIView(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    search_fields = ['username', 'email', 'first_name', 'last_name']
+    filterset_class = UserFilter
+    pagination_class = DefaultPagination
+
+    # permission and queryset
+    permission_classes = [AccessLevelPermission]
+    required_access_levels = ['view_all_user', 'view_owner_user', 'create_all_user']
+    view_key = 'user'
+
+    def get_queryset(self):
+        filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
+        queryset = []
+        if filter_key == 'all':
+            queryset = User.objects.all()
+        elif filter_key == 'owner':
+            # queryset = User.objects.filter(user_type='staff')
+            queryset = User.objects.filter(role__id__in=[10])
+        return queryset
+
+
+class UserCustomerListAPIView(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    search_fields = ['username', 'email', 'first_name', 'last_name']
+    filterset_class = UserFilter
+    pagination_class = DefaultPagination
+
+    # permission and queryset
+    permission_classes = [AccessLevelPermission]
+    required_access_levels = ['view_all_user', 'view_owner_user', 'create_all_user']
+    view_key = 'user'
+
+    def get_queryset(self):
+        filter_key = query_set_filter_key(self.view_key, self.request.user.get_access_levels(), self.required_access_levels, self.request.method)
+        queryset = []
+        if filter_key == 'all':
+            queryset = User.objects.all()
+        elif filter_key == 'owner':
+            # queryset = User.objects.filter(user_type='staff')
+            queryset = User.objects.filter(role__id__in=[10])
+        return queryset
+
+
 
 
 class UserListAPIView(ListCreateAPIView):

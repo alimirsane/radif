@@ -17,6 +17,12 @@ urlpatterns = [
     path('request-otp/', OTPRequestView.as_view(), name='request_otp'),
     path('verify-otp/', OTPVerificationView.as_view(), name='verify_otp'),
 
+    path('users/customer/pub/', CustomerUserPubListAPIView.as_view(), name='customer-users-pub-list'),
+    path('users/staff/pub/', StaffUserPubListAPIView.as_view(), name='staff-users-pub-list'),
+
+    path('users/staff/', UserStaffListAPIView.as_view(), name='staff-users-list'),
+    path('users/customer/', UserCustomerListAPIView.as_view(), name='customer-users-list'),
+
     path('users/', UserListAPIView.as_view(), name='users-list'),
     path('users/<int:pk>/', UserDetailAPIView.as_view(), name='user-detail'),
     path('users/<int:pk>/password/', UserDetailPasswordAPIView.as_view(), name='user-detail-password'),

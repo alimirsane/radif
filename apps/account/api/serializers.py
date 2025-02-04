@@ -58,6 +58,18 @@ class UserPersonalLinkedAccountsSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'national_id', 'first_name', 'last_name', 'email']
 
 
+class SummaryUserSerializer(serializers.ModelSerializer):
+    role_obj = RoleSerializer(source='role', read_only=True, many=True)
+
+    class Meta:
+        model = User
+        exclude = ['is_superuser', 'is_staff', 'is_active', 'date_joined', 'user_permissions', 'groups']
+
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False},  # Ensure password is write only
+        }
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     access_level_obj = AccessLevelSerializer(source='access_level', read_only=True, many=True)
