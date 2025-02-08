@@ -523,7 +523,7 @@ class Request(models.Model):
             if self.is_sample_returned:
                 self.price_sample_returned = Decimal(850000)
                 self.price = self.price + self.price_sample_returned
-                self.price_wod = self.price_wod + self.price_sample_returned
+                # self.price_wod = self.price_wod + self.price_sample_returned
             else:
                 self.price_sample_returned = Decimal(0)
             self.save()
