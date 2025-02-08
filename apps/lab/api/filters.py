@@ -36,7 +36,9 @@ class LaboratoryFilter(django_filters.FilterSet):
         fields = ['department', 'search_department', 'search']
 
     def lab_search(self, queryset, name, value):
-        return queryset.filter(Q(name__icontains=value) | Q(name_en__icontains=value) | Q(description__icontains=value) )
+        return queryset.filter(Q(name__icontains=value) | Q(name_en__icontains=value) |
+                               Q(description__icontains=value) | Q(experiments__name__icontains=value) |
+                               Q(experiments__name_en__icontains=value)).distinct()
 
 
 class RequestFilter(django_filters.FilterSet):
