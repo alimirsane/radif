@@ -23,7 +23,9 @@ class FormListAPIView(ListCreateAPIView):
         if filter_key == 'all':
             return Form.objects.all()
         elif filter_key == 'owner':
-            queryset = Form.objects.filter(experiments__laboratory__technical_manager=self.request.user) | Form.objects.filter(owner=self.request.user)
+            queryset = Form.objects.filter(experiments__laboratory__technical_manager=self.request.user) |\
+                                Form.objects.filter(experiments__laboratory__operators=self.request.user) |\
+                                Form.objects.filter(owner=self.request.user)
             return queryset
         return Form.objects.none()
 
