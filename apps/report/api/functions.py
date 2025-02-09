@@ -115,6 +115,15 @@ def generate_excel_report():
         child_requests = parent_request.child_requests.all()
 
         for child_request in child_requests:
+            if child_request.labsnet_status == 1:
+                labsnet_status = 'ثبت نشده'
+            elif child_request.labsnet_status == 2:
+                labsnet_status = 'ثبت موفق'
+            elif child_request.labsnet_status == 3:
+                labsnet_status = 'ثبت ناموفق'
+            else:
+                labsnet_status = 'نامشخص'
+
             # Gather child request data
             child_data = {
                 'Child Request Number': child_request.request_number,
@@ -124,8 +133,8 @@ def generate_excel_report():
                 'Child Discount': child_request.discount,
                 'Child Created At': child_request.created_at.replace(tzinfo=None) if is_aware(
                     child_request.created_at) else child_request.created_at,
+                "وضعیت لبزنت": labsnet_status,
             }
-
             # Combine parent and child data
             combined_data = {**parent_data, **child_data}
 
