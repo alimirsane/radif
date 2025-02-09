@@ -21,11 +21,14 @@ class FormListAPIView(ListCreateAPIView):
                                           self.required_access_levels, self.request.method)
 
         if filter_key == 'all':
-            queryset = Form.objects.all()
+            return Form.objects.all()
         elif filter_key == 'owner':
-            queryset = Form.objects.filter(experiments__laboratory__technical_manager=self.request.user)
-        return queryset
+            queryset = Form.objects.filter(experiments__laboratory__technical_manager=self.request.user) | Form.objects.filter(owner=self.request.user)
+            return queryset
+        return Form.objects.none()
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 class FormDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Form.objects.all()

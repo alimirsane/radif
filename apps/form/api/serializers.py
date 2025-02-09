@@ -17,6 +17,7 @@ class ExperimentSummerySerializer(serializers.ModelSerializer):
 
 
 class FormSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
 
     class Meta:
         model = Form
