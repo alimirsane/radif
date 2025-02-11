@@ -123,4 +123,4 @@ def create_request_number(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Status)
 def set_request_status_notification(sender, instance, created, **kwargs):
     if created and instance.request.is_completed and not instance.request.parent_request:
-        Notification.objects.create(user=instance.request.owner, type='info', title='تغییر وضعیت درخواست', content=f' وضعیت درخواست شماره {str(instance.request.request_number).split("-")[0]}-{str(instance.request.request_number).split("-")[1]} به {instance.step.name} تغییر کرد')
+        Notification.objects.create(user=instance.request.owner, type='info', title='تغییر وضعیت درخواست', content=f' وضعیت درخواست شماره {str(instance.request.request_number).split("-")[1]}-{str(instance.request.request_number).split("-")[0]} به {instance.step.name} تغییر کرد')
