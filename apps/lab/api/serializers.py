@@ -9,7 +9,8 @@ from apps.account.models import User, LabsnetCredit
 from apps.appointment.api.serializers import AppointmentListSerializer, AppointmentSerializer
 from apps.form.api.serializers import FormSerializer, FormSummerySerializer
 from apps.lab.models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, \
-    Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult, RequestCertificate, DiscountHistory
+    Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult, RequestCertificate, DiscountHistory, \
+    ISOVisibility
 from apps.order.models import PaymentRecord, Order
 
 
@@ -556,3 +557,9 @@ class RequestResultSerializer(serializers.ModelSerializer):
 
 class UpdateLaboratoryISOSerializer(serializers.Serializer):
     is_visible_iso = serializers.BooleanField(required=True)
+
+
+class ISOVisibilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ISOVisibility
+        fields = ['is_visible_iso']

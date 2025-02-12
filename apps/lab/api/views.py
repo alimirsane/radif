@@ -8,13 +8,13 @@ from apps.core.paginations import DefaultPagination
 from apps.lab.api.filters import ParameterFilter, FormResponseFilter, LaboratoryFilter, RequestFilter, DeviceFilter, \
     ExperimentFilter
 from apps.lab.models import Experiment, Laboratory, Device, Parameter, Request, Department, FormResponse, LabType, \
-    Status, Workflow, RequestResult
+    Status, Workflow, RequestResult, ISOVisibility
 from apps.lab.api.serializers import ExperimentSerializer, LaboratorySerializer, DeviceSerializer, ParameterSerializer, \
     RequestListSerializer, RequestDetailSerializer, DepartmentSerializer, LaboratoryDetailSerializer, \
     ExperimentDetailSerializer, \
     FormResponseSerializer, LabTypeSerializer, RequestChangeStatusSerializer, WorkflowSerializer, \
     RequestResultSerializer, RequestButtonActionSerializer, RequestCertificateSerializer, UpdateLaboratoryISOSerializer, \
-    RequestUpdateSerializer
+    RequestUpdateSerializer, ISOVisibilitySerializer
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -451,3 +451,22 @@ class UpdateLaboratoryISOVisibilityAPIView(RetrieveUpdateAPIView):
             {"message": f"is_visible_iso updated to {is_visible_iso} for all laboratories."},
             status=status.HTTP_200_OK
         )
+
+
+class ISOVisibilityAPIView(RetrieveUpdateAPIView):
+    serializer_class = ISOVisibilitySerializer
+
+    def get_object(self):
+        return ISOVisibility.get_instance()
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

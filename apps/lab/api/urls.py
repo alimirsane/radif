@@ -18,6 +18,8 @@ urlpatterns = [
     path('api/laboratories/update-iso-visibility/', UpdateLaboratoryISOVisibilityAPIView.as_view(),
          name='update-laboratory-iso-visibility'),
 
+    path('laboratories/iso-visibility/', ISOVisibilityAPIView.as_view(), name='iso-visibility'),
+
     path('experiments/', ExperimentListAPIView.as_view(), name='experiments-list'),
     path('experiments/<int:pk>/', ExperimentDetailAPIView.as_view(), name='experiment-detail'),
 

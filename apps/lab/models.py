@@ -1015,3 +1015,23 @@ class RequestResult(models.Model):
     class Meta:
         verbose_name = 'نتیجه درخواست'
         verbose_name_plural = 'نتایج درخواست‌ها'
+
+
+class ISOVisibility(models.Model):
+    is_visible_iso = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def get_instance(cls):
+        instance, created = cls.objects.get_or_create(pk=1)
+        return instance
+
+    class Meta:
+        verbose_name = "ISO Visibility"
+        verbose_name_plural = "ISO Visibility"
