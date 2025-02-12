@@ -81,8 +81,9 @@ class OrderPaymentRecordSerializer(serializers.ModelSerializer):
         fields = ['id', 'amount', 'settlement_type', 'transaction_code', 'tref', 'successful', 'payer', 'order', 'payment_order_guid', 'payment_order_id', 'is_lock', 'payment_link']
 
     def validate_tref(self, value):
-        if PaymentRecord.objects.filter(tref=value).exists():
-            raise serializers.ValidationError("The tref must be unique. A record with this tref already exists.")
+        if self.instance is None:
+            if PaymentRecord.objects.filter(tref=value).exists():
+                raise serializers.ValidationError({'کد تراکنش': "کد تراکنش تکراری است."})
         return value
 
 #used
