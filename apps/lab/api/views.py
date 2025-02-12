@@ -27,7 +27,7 @@ class ExperimentPubListAPIView(ListAPIView):
 
 class ExperimentPubDetailAPIView(RetrieveAPIView):
     queryset = Experiment.objects.all()
-    serializer_class = ExperimentSerializer
+    serializer_class = ExperimentDetailSerializer
 
 
 class ParameterPubListAPIView(ListCreateAPIView):
