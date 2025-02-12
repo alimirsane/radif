@@ -427,6 +427,8 @@ class RequestDetailSerializer(serializers.ModelSerializer):
     labsnet1_obj = LabsnetCreditSerializer(source='labsnet1', read_only=True, required=False)
     labsnet2_obj = LabsnetCreditSerializer(source='labsnet2', read_only=True, required=False)
 
+    appointments_obj = AppointmentSerializer(source='appointments', many=True, read_only=True)
+
     class Meta:
         model = Request
         exclude = []

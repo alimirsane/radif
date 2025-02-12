@@ -1,5 +1,5 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView, RetrieveAPIView, \
-    RetrieveUpdateAPIView, get_object_or_404
+    RetrieveUpdateAPIView, get_object_or_404, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from apps.account.permissions import AccessLevelPermission, query_set_filter_key
@@ -17,6 +17,29 @@ from apps.lab.api.serializers import ExperimentSerializer, LaboratorySerializer,
     RequestUpdateSerializer
 from rest_framework.response import Response
 from rest_framework import status
+
+
+class ExperimentPubListAPIView(ListAPIView):
+    queryset = Experiment.objects.all()
+    serializer_class = ExperimentSerializer
+    filterset_class = ExperimentFilter
+
+
+class ExperimentPubDetailAPIView(RetrieveAPIView):
+    queryset = Experiment.objects.all()
+    serializer_class = ExperimentSerializer
+
+
+class ParameterPubListAPIView(ListCreateAPIView):
+    queryset = Parameter.objects.all()
+    serializer_class = ParameterSerializer
+    filterset_class = ParameterFilter
+
+
+class ParameterPubDetailAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Parameter.objects.all()
+    serializer_class = ParameterSerializer
+
 
 class ExperimentListAPIView(ListCreateAPIView):
     queryset = Experiment.objects.all()
@@ -78,13 +101,13 @@ class LaboratoryDetailAPIView(RetrieveUpdateDestroyAPIView):
     view_key = 'laboratory'
 
 
-class LaboratoryPubListAPIView(ListCreateAPIView):
+class LaboratoryPubListAPIView(ListAPIView):
     queryset = Laboratory.objects.all()
     serializer_class = LaboratorySerializer
     filterset_class = LaboratoryFilter
 
 
-class LaboratoryPubDetailAPIView(RetrieveUpdateDestroyAPIView):
+class LaboratoryPubDetailAPIView(RetrieveAPIView):
     queryset = Laboratory.objects.all()
     serializer_class = LaboratoryDetailSerializer
 

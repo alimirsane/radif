@@ -21,6 +21,9 @@ urlpatterns = [
     path('experiments/', ExperimentListAPIView.as_view(), name='experiments-list'),
     path('experiments/<int:pk>/', ExperimentDetailAPIView.as_view(), name='experiment-detail'),
 
+    path('experiments/pub/', ExperimentPubListAPIView.as_view(), name='experiments-pub-list'),
+    path('experiments/<int:pk>/pub/', ExperimentPubDetailAPIView.as_view(), name='experiment-pub-detail'),
+
     path('form-responses/', FormResponseListAPIView.as_view(), name='form-responses-list'),
     path('form-responses/<int:pk>/', FormResponseDetailAPIView.as_view(), name='form-response-detail'),
 
@@ -29,6 +32,9 @@ urlpatterns = [
 
     path('parameters/', ParameterListAPIView.as_view(), name='parameters-list'),
     path('parameters/<int:pk>/', ParameterDetailAPIView.as_view(), name='parameter-detail'),
+
+    path('parameters/pub/', ParameterPubListAPIView.as_view(), name='parameters-pub-list'),
+    path('parameters/<int:pk>/pub/', ParameterPubDetailAPIView.as_view(), name='parameter-pub-detail'),
 
     path('requests/owned/', OwnedRequestListAPIView.as_view(), name='owned-requests-list'),
     path('requests/owned/<int:pk>/', OwnedRequestDetailAPIView.as_view(), name='owned-request-detail'),
