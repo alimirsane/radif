@@ -84,10 +84,14 @@ class LaboratorySerializer(serializers.ModelSerializer):
     department_obj = DepartmentSerializer(read_only=True, source='department')
     device_objs = DeviceSerializer(read_only=True, many=True, source='devices')
     operators = serializers.CharField(write_only=True)
+    is_visible_iso = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Laboratory
         exclude = ['device']
+
+    def get_is_visible_iso(self, obj):
+        return ISOVisibility.objects.get(pk=1).is_visible_iso
 
     def to_internal_value(self, data):
         internal_value = super(LaboratorySerializer, self).to_internal_value(data)

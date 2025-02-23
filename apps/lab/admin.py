@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, WorkflowStep, \
-    Status, Workflow, WorkflowStepButton, RequestResult
+    Status, Workflow, WorkflowStepButton, RequestResult, ISOVisibility
 
 
 @admin.register(Laboratory)
@@ -82,3 +82,9 @@ class WorkflowStepButtonAdmin(admin.ModelAdmin):
 @admin.register(RequestResult)
 class RequestResultAdmin(admin.ModelAdmin):
     list_display = ('request', 'created_at', 'description')
+
+
+@admin.register(ISOVisibility)
+class ISOVisibilityAdmin(admin.ModelAdmin):
+    # pass
+    list_display = ('id', 'is_visible_iso')
