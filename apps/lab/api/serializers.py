@@ -293,6 +293,7 @@ class ChildRequestListSerializer(serializers.ModelSerializer):
 
     # forms = RequestListFormResponseSerializer(many=True, read_only=True, source='formresponse')
     forms = serializers.SerializerMethodField()
+    appointments_obj = AppointmentSerializer(source='appointments', many=True, read_only=True)
 
     # def latest_status_obj_(self, obj):
     #     lastest_status = obj.lastest_status()
@@ -391,6 +392,7 @@ class ChildRequestDetailSerializer(serializers.ModelSerializer):
     latest_status_obj = StatusSerializer(read_only=True, source='lastest_status')
     payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order_payment_records')
     discount_history_objs = DiscountHistorySerializer(many=True, source='request_discounts')
+    appointments_obj = AppointmentSerializer(source='appointments', many=True, read_only=True)
 
     class Meta:
         model = Request
