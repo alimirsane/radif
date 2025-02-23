@@ -779,6 +779,7 @@ class RequestCertificate(models.Model):
     temperature = models.CharField(max_length=5, verbose_name='دما (درجه سانتی‌گراد)')
     humidity = models.CharField(max_length=5, verbose_name='رطوبت (%)')
     pressure = models.CharField(max_length=5, verbose_name='فشار (میلی‌بار)')
+    uncertainty = models.CharField(max_length=25, null=True, blank=True, verbose_name='عدم قطعیت')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روز رسانی')
 
