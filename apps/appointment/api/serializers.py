@@ -27,12 +27,17 @@ class AppointmentListSerializer(serializers.Serializer):
     start_time = serializers.TimeField()
     end_time = serializers.TimeField()
     status = serializers.CharField()
+    request_id = serializers.IntegerField(allow_null=True)
+    request_status = serializers.CharField()
     reserved_by = serializers.IntegerField(allow_null=True)
     reserved_by_obj = UserSummerySerializer(allow_null=True)
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
     reserved_by_obj = UserSummerySerializer(read_only=True, source='reserved_by')
+    extra_fields = serializers.SerializerMethodField(read_only=True)
+    end_time = serializers.SerializerMethodField(read_only=True)
+    date = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Appointment
@@ -62,4 +67,45 @@ class AppointmentSerializer(serializers.ModelSerializer):
                     {"time": f"این بازه زمانی قبلاً رزرو شده است: {appointment.start_time} تا {appointment_end_time}"}
                 )
 
+        return data
+
+    def get_end_time(self, obj):
+        return obj.end_time()
+
+    def get_date(self, obj):
+        return obj.date()
+
+    def get_extra_fields(self, obj):
+        if obj.request:
+            request_id = obj.request.id
+            request_number = obj.request.request_number
+            if obj.request.parent_request:
+                request_parent_number = obj.request.parent_request.request_number
+            else:
+                request_parent_number = None
+        else:
+            request_id = None
+            request_number = None
+            request_parent_number = None
+
+        if obj.request.experiment:
+            experiment_name = obj.request.experiment.name
+        elif obj.queue.experiment:
+            experiment_name = obj.queue.experiment.name
+        else:
+            experiment_name = None
+
+        # appointment_date = obj.queue.date
+        # end_time = obj.end_time()
+        queue_status = obj.queue.status
+
+        data = {
+            'request_id': request_id,
+            'request_number': request_number,
+            'request_parent_number': request_parent_number,
+            'experiment_name': experiment_name,
+            # 'appointment_date': appointment_date,
+            # 'end_time': end_time,
+            'queue_status': queue_status,
+        }
         return data

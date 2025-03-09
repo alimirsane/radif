@@ -15,6 +15,7 @@ from rest_framework.exceptions import ValidationError
 from apps.appointment.api.filters import QueueFilter, AppointmentFilter
 from apps.appointment.models import Queue, Appointment
 from apps.appointment.api.serializers import QueueSerializer, AppointmentSerializer, AppointmentListSerializer
+from apps.lab.api.serializers import StatusSerializer
 
 
 class QueueListCreateView(ListCreateAPIView):
@@ -101,7 +102,14 @@ class AvailableAppointmentsView(APIView):
 
                 appointment_key = (queue.id, current_time)
                 reserved_appt = reserved_map.get(appointment_key)
-
+                if reserved_appt:
+                    request_status = StatusSerializer(reserved_appt.request.lastest_status()).data if reserved_appt.request else None
+                    request_id = reserved_appt.request.id
+                    appointment_id = reserved_appt.id
+                else:
+                    request_status = None
+                    request_id = None
+                    appointment_id = None
                 reserved_by = reserved_appt.reserved_by.id if reserved_appt and reserved_appt.reserved_by else None
                 reserved_by_obj = UserSummerySerializer(reserved_appt.reserved_by).data if reserved_appt and reserved_appt.reserved_by else None
 
@@ -109,8 +117,11 @@ class AvailableAppointmentsView(APIView):
 
                 if not is_in_break_time:
                     all_appointments.append({
+                        "appointment_id": appointment_id,
                         "queue_id": queue.id,
                         "date": queue.date,
+                        "request_id": request_id,
+                        "request_status": request_status,
                         "start_time": current_time,
                         "end_time": end_time,
                         "status": status,
@@ -120,5 +131,7 @@ class AvailableAppointmentsView(APIView):
 
                 current_time = end_time
 
-        serializer = AppointmentListSerializer(all_appointments, many=True)
-        return Response(serializer.data)
+        # serializer = AppointmentListSerializer(all_appointments, many=True)
+        # return Response(serializer.data)
+        return Response(all_appointments)
+        return all_appointments

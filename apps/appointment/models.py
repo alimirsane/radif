@@ -57,3 +57,13 @@ class Appointment(models.Model):
     reserved_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name="appointments", verbose_name="رزرو شده توسط"
     )
+    reserved_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    def end_time(self):
+        total_minutes = self.start_time.hour * 60 + self.start_time.minute + self.queue.time_unit
+        hours, minutes = divmod(total_minutes, 60)
+        hours = hours % 24
+        return time(hour=hours, minute=minutes)
+
+    def date(self):
+        return self.queue.date
