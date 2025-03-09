@@ -87,10 +87,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             request_id = None
             request_number = None
             request_parent_number = None
-
-        if obj.request.experiment:
-            experiment_name = obj.request.experiment.name
-        elif obj.queue.experiment:
+        if obj.queue.experiment:
             experiment_name = obj.queue.experiment.name
         else:
             experiment_name = None
