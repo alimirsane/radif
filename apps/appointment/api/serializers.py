@@ -95,8 +95,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
         else:
             experiment_name = None
 
-        # appointment_date = obj.queue.date
-        # end_time = obj.end_time()
         queue_status = obj.queue.status
 
         data = {
@@ -104,8 +102,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
             'request_number': request_number,
             'request_parent_number': request_parent_number,
             'experiment_name': experiment_name,
-            # 'appointment_date': appointment_date,
-            # 'end_time': end_time,
             'queue_status': queue_status,
         }
         return data
