@@ -106,7 +106,7 @@ class AvailableAppointmentsView(APIView):
                     request_status = StatusSerializer(reserved_appt.request.lastest_status()).data if reserved_appt.request else None
                     request_id = reserved_appt.request.id
                     request_number = reserved_appt.request.request_number
-                    request_parent_number = reserved_appt.request.parent_request.request_number
+                    request_parent_number = reserved_appt.request.parent_request.request_number if reserved_appt.request.parent_request else None
                     appointment_id = reserved_appt.id
                 else:
                     request_status = None
