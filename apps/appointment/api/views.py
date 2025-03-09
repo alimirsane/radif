@@ -105,11 +105,15 @@ class AvailableAppointmentsView(APIView):
                 if reserved_appt:
                     request_status = StatusSerializer(reserved_appt.request.lastest_status()).data if reserved_appt.request else None
                     request_id = reserved_appt.request.id
+                    request_number = reserved_appt.request.request_number
+                    request_parent_number = reserved_appt.request.parent_request.request_number
                     appointment_id = reserved_appt.id
                 else:
                     request_status = None
                     request_id = None
                     appointment_id = None
+                    request_number = None
+                    request_parent_number = None
                 reserved_by = reserved_appt.reserved_by.id if reserved_appt and reserved_appt.reserved_by else None
                 reserved_by_obj = UserSummerySerializer(reserved_appt.reserved_by).data if reserved_appt and reserved_appt.reserved_by else None
 
@@ -121,6 +125,8 @@ class AvailableAppointmentsView(APIView):
                         "queue_id": queue.id,
                         "date": queue.date,
                         "request_id": request_id,
+                        'request_number': request_number,
+                        'request_parent_number': request_parent_number,
                         "request_status": request_status,
                         "start_time": current_time,
                         "end_time": end_time,
@@ -134,4 +140,4 @@ class AvailableAppointmentsView(APIView):
         # serializer = AppointmentListSerializer(all_appointments, many=True)
         # return Response(serializer.data)
         return Response(all_appointments)
-        return all_appointments
+        # return all_appointments
