@@ -21,7 +21,7 @@ from apps.account.api.serializers import UserSerializer, UserRegistrationSeriali
     GrantRequestSerializer, GrantRequestApprovedSerializer, UserProfileSerializer, NotificationSerializer, \
     NotificationReadSerializer, GrantRecordSerializer, UPOAuthTokenSerializer, UserBusinessLinkedAccountsSerializer, \
     LansnetGrantSerializer, UserPasswordSerializer, GrantRecordFileSerializer, GrantRequestRevokeSerializer, \
-    DepartmentSerializer, UserPersonalSerializer, UserBusinessSerializer, SummaryUserSerializer
+    DepartmentSerializer, UserPersonalSerializer, UserBusinessSerializer, SummaryUserSerializer, UserSummerySerializer
 from apps.account.models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantTransaction, \
     GrantRequest, OTPserver, Notification, GrantRecord, Department, LabsnetCredit
 from .filters import UserFilter, GrantRecordFilter, GrantRequestFilter
@@ -159,6 +159,19 @@ class StaffUserPubListAPIView(ListAPIView):
     permission_classes = [AccessLevelPermission]
     required_access_levels = ['view_all_user']
     view_key = 'user'
+
+
+class UserTeacherListAPIView(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSummerySerializer
+    search_fields = ['username', 'email', 'first_name', 'last_name', 'national_id']
+    filterset_class = UserFilter
+
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = User.objects.filter(role__role_key='teacher')
+        return queryset
 
 
 class UserStaffListAPIView(ListAPIView):

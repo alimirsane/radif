@@ -37,7 +37,7 @@ class UserFullSerializer(serializers.ModelSerializer):
 class UserSummerySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'username']
+        fields = ['id', 'first_name', 'last_name', 'username', 'national_id']
 
 
 class UserBusinessLinkedAccountsSerializer(serializers.ModelSerializer):

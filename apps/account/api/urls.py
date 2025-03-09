@@ -22,6 +22,7 @@ urlpatterns = [
 
     path('users/staff/', UserStaffListAPIView.as_view(), name='staff-users-list'),
     path('users/customer/', UserCustomerListAPIView.as_view(), name='customer-users-list'),
+    path('users/teacher/', UserTeacherListAPIView.as_view(), name='teacher-users-list'),
 
     path('users/', UserListAPIView.as_view(), name='users-list'),
     path('users/<int:pk>/', UserDetailAPIView.as_view(), name='user-detail'),
