@@ -120,14 +120,15 @@ class SSOVerifyView(APIView):
             user_auth_token = None
 
             if username or national_code:
-                user = User.objects.filter(national_id=national_code).first()
-                user2 = User.objects.filter(national_id=username).first()
+                user = User.objects.filter(national_id=username).first()
+                # user = User.objects.filter(national_id=national_code).first()
+                # user2 = User.objects.filter(national_id=username).first()
                 if user:
                     token, _ = Token.objects.get_or_create(user=user)
                     user_auth_token = token.key
-                elif user2:
-                    token, _ = Token.objects.get_or_create(user=user)
-                    user_auth_token = token.key
+                # elif user2:
+                #     token, _ = Token.objects.get_or_create(user=user)
+                #     user_auth_token = token.key
 
             response_data = {
                 "sso_access_token": access_token,
