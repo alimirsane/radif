@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken as ObtainAuthT
 from rest_framework.compat import coreapi, coreschema
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.schemas import ManualSchema
@@ -114,14 +114,21 @@ class SSOVerifyView(APIView):
             decoded_id_token = decode_jwt(id_token) if id_token else None
 
             national_code = decoded_id_token.get("NationalCode") if decoded_id_token else None
+            username = decoded_id_token.get("Username") if decoded_id_token else None
 
             user_auth_token = None
 
             if national_code:
                 user = User.objects.filter(national_id=national_code).first()
+                user2 = User.objects.filter(national_id=username).first()
                 if user:
                     token, _ = Token.objects.get_or_create(user=user)
                     user_auth_token = token.key
+                elif user2:
+                    token, _ = Token.objects.get_or_create(user=user)
+                    user_auth_token = token.key
+                else:
+                    raise NotFound('کاربر مورد نظر وجود ندارد')
 
             response_data = {
                 "sso_access_token": access_token,
