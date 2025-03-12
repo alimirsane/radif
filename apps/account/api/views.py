@@ -124,9 +124,9 @@ class SSOVerifyView(APIView):
                 if user:
                     token, _ = Token.objects.get_or_create(user=user)
                     user_auth_token = token.key
-                elif user2:
-                    token, _ = Token.objects.get_or_create(user=user)
-                    user_auth_token = token.key
+                # elif user2:
+                #     token, _ = Token.objects.get_or_create(user=user)
+                #     user_auth_token = token.key
                 else:
                     raise NotFound('کاربر مورد نظر وجود ندارد')
 
