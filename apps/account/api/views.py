@@ -1,6 +1,7 @@
 import datetime
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 import jdatetime
+from django.shortcuts import get_object_or_404
 from rest_framework import parsers
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
@@ -13,7 +14,7 @@ from rest_framework.schemas import ManualSchema
 from rest_framework.schemas import coreapi as coreapi_schema
 
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView, \
-    UpdateAPIView, RetrieveUpdateAPIView, ListAPIView
+    UpdateAPIView, RetrieveUpdateAPIView, ListAPIView, get_object_or_404
 
 from SLIMS import renderers
 from apps.account.api.serializers import UserSerializer, UserRegistrationSerializer, EducationalFieldSerializer, \
@@ -120,7 +121,8 @@ class SSOVerifyView(APIView):
 
             if national_code:
                 # user = User.objects.filter(national_id=national_code).first()
-                user = User.objects.filter(national_id=username).first()
+                # user = User.objects.filter(national_id=username).first()
+                user = get_object_or_404(User, national_id=username)
                 if user:
                     token, _ = Token.objects.get_or_create(user=user)
                     user_auth_token = token.key
