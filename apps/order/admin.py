@@ -101,7 +101,12 @@ def delete_duplicate_orders(modeladmin, request, queryset):
             orders_to_delete |= Order.objects.filter(id__in=[o.id for o in deletable_orders[1:]])
 
     deleted_count = orders_to_delete.count()
-    orders_to_delete.delete()
+    for order_del in orders_to_delete:
+        try:
+            order_del.delete()
+        except:
+            pass
+    # orders_to_delete.delete()
 
     if deleted_count > 0:
         modeladmin.message_user(request, f"{deleted_count} سفارش تکراری بدون پرداخت حذف شد.", messages.SUCCESS)
