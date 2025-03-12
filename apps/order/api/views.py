@@ -28,7 +28,7 @@ from rest_framework.response import Response
 from apps.core.functions import export_excel
 from apps.core.paginations import DefaultPagination
 from apps.account.permissions import IsExpertOrAdminOrManager, AccessLevelPermission, query_set_filter_key
-from apps.lab.models import Experiment
+from apps.lab.models import Experiment, Request
 from apps.order.api.filters import PaymentRecordFilter
 from apps.order.models import Order, PaymentRecord, Transaction, PromotionCode, Ticket
 from apps.order.api.serializers import OrderSerializer, OrderDetailSerializer, OrderIssueSerializer, \
@@ -55,6 +55,19 @@ class OrderIssueView(CreateAPIView):
     # permission_classes = [HasViewAccess, CanIssueOrder]
     # set_user = True
     # model_name = 'order'
+
+    def create(self, request, *args, **kwargs):
+        request_id = request.data.get('request')
+        if request_id:
+            req_instance = get_object_or_404(Request, id=request_id)
+
+            if Order.objects.filter(request=req_instance).exists():
+                return Response(
+                    {"error": "An order has already been created for this request."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        return super().create(request, *args, **kwargs)
 
 
 class OrderListView(ListAPIView):
