@@ -136,6 +136,7 @@ class SSOVerifyView(APIView):
                 "decoded_access_token": decoded_access_token,
                 "decoded_id_token": decoded_id_token,
                 "national_code": national_code,
+                "username": username,
                 "user_auth_token": user_auth_token
             }
 
