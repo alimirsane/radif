@@ -26,7 +26,7 @@ class FormListAPIView(ListCreateAPIView):
             queryset = Form.objects.filter(experiments__laboratory__technical_manager=self.request.user) |\
                        Form.objects.filter(experiments__laboratory__operators=self.request.user) |\
                        Form.objects.filter(owner=self.request.user)
-            return queryset
+            return queryset.distinct()
         return Form.objects.none()
 
     def perform_create(self, serializer):
