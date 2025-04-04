@@ -4,6 +4,8 @@ from apps.account.api.serializers import UserSummerySerializer
 from apps.appointment.models import Queue, Appointment
 from datetime import datetime, timedelta, time
 
+from apps.lab.models import WorkflowStep
+
 
 class AppointmentSerializerLite(serializers.ModelSerializer):
     reserved_by_obj = UserSummerySerializer(read_only=True, source='reserved_by')
@@ -31,6 +33,13 @@ class AppointmentListSerializer(serializers.Serializer):
     request_status = serializers.CharField()
     reserved_by = serializers.IntegerField(allow_null=True)
     reserved_by_obj = UserSummerySerializer(allow_null=True)
+
+
+class WorkflowStepSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = WorkflowStep
+        exclude = []
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
@@ -71,7 +80,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         return data
 
     def get_request_status(self, obj):
-        return obj.request.lastest_status()
+        return WorkflowStepSerializer(obj.request.lastest_status().step).data
 
     def get_end_time(self, obj):
         return obj.end_time()
