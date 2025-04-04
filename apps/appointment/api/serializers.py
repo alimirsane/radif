@@ -38,6 +38,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
     extra_fields = serializers.SerializerMethodField(read_only=True)
     end_time = serializers.SerializerMethodField(read_only=True)
     date = serializers.SerializerMethodField(read_only=True)
+    request_status = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Appointment
@@ -68,6 +69,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
                 )
 
         return data
+
+    def get_request_status(self, obj):
+        return obj.request.lastest_status()
 
     def get_end_time(self, obj):
         return obj.end_time()

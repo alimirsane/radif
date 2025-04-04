@@ -43,6 +43,7 @@ class OwnedAppointmentListView(ListAPIView):
         return appointments.distinct().order_by('-id')
         # return self.request.user.requests.filter(is_completed=True, has_parent_request=False)
 
+
 class AppointmentListCreateView(ListCreateAPIView):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
