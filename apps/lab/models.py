@@ -412,6 +412,11 @@ class Request(models.Model):
         if new_step.name == 'در حال انجام':
             self.delivery_date = datetime.datetime.now()
             self.save()
+            try:
+                RequestCertificate.objects.create(request=self, issue_date=datetime.datetime.now(),
+                                                  temperature=23, humidity=55, pressure=1, uncertainty=1)
+            except:
+                pass
         if action == 'reject':
             if self.parent_request:
                 self.parent_request.set_price()
