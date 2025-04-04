@@ -32,6 +32,16 @@ class QueueDetailView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
+class OwnedAppointmentListView(ListAPIView):
+    queryset = Appointment.objects.all()
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsAuthenticated]
+    # pagination_class = DefaultPagination
+
+    def get_queryset(self):
+        return Appointment.objects.filter(request__owner=self.request.user).order_by('-start_time')
+        # return self.request.user.requests.filter(is_completed=True, has_parent_request=False)
+
 class AppointmentListCreateView(ListCreateAPIView):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
