@@ -2,8 +2,10 @@ import jdatetime
 from django.db.models import Sum
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from rest_framework import status
+from rest_framework.response import Response
 
-from apps.account.models import Notification
+from apps.account.models import Notification, OTPserver
 from apps.lab.models import FormResponse, Request, Status
 
 processing_request_signal = False
@@ -123,4 +125,14 @@ def create_request_number(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Status)
 def set_request_status_notification(sender, instance, created, **kwargs):
     if created and instance.request.is_completed and not instance.request.parent_request:
-        Notification.objects.create(user=instance.request.owner, type='info', title='تغییر وضعیت درخواست', content=f' وضعیت درخواست شماره {str(instance.request.request_number).split("-")[1]}-{str(instance.request.request_number).split("-")[0]} به {instance.step.name} تغییر کرد')
+        content = f' وضعیت درخواست شماره {str(instance.request.request_number).split("-")[1]}-{str(instance.request.request_number).split("-")[0]} به {instance.step.name} تغییر کرد'
+        Notification.objects.create(user=instance.request.owner, type='info', title='تغییر وضعیت درخواست', content=content)
+        sms_server = OTPserver.objects.all().first()
+        phone_number = "09381029915"
+        # phone_number = str(instance.request.owner.username).replace("+98", "0")
+        sms = sms_server.send_quick_message([phone_number], content)
+        if 0 <= sms['statusCode'] <= 4:
+            return Response({"detail": f"کد ارسال شد.", "message": sms['message']}, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "خطا در ارسال کد یکبارمصرف.", "message": sms['message']},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
