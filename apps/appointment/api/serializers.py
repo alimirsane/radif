@@ -39,7 +39,7 @@ class WorkflowStepSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WorkflowStep
-        exclude = []
+        fields = ["id", "name", "description", "step_color"]
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
