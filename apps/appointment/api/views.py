@@ -39,7 +39,8 @@ class OwnedAppointmentListView(ListAPIView):
     # pagination_class = DefaultPagination
 
     def get_queryset(self):
-        return Appointment.objects.filter(request__owner=self.request.user).order_by('-start_time')
+        appointments = Appointment.objects.filter(request__owner=self.request.user) | Appointment.objects.filter(reserved_by=self.request.user)
+        return appointments.distinct().order_by('-id')
         # return self.request.user.requests.filter(is_completed=True, has_parent_request=False)
 
 class AppointmentListCreateView(ListCreateAPIView):
