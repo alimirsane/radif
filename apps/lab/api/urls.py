@@ -48,6 +48,7 @@ urlpatterns = [
     path('requests/', RequestListAPIView.as_view(), name='requests-list'),
     path('requests/<int:pk>/', RequestDetailAPIView.as_view(), name='request-detail'),
     path('requests/<int:pk>/certificate', RequestCertificateAPIView.as_view(), name='request-detail'),
+    path('requests/<int:pk>/request-certificate/', URequestCertificateAPIView.as_view(), name='certificate-request-detail'),
 
     path('department/', DepartmentListAPIView.as_view(), name='department-list'),
     path('department/<int:pk>/', DepartmentDetailAPIView.as_view(), name='department-detail'),

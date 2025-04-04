@@ -8,13 +8,13 @@ from apps.core.paginations import DefaultPagination
 from apps.lab.api.filters import ParameterFilter, FormResponseFilter, LaboratoryFilter, RequestFilter, DeviceFilter, \
     ExperimentFilter
 from apps.lab.models import Experiment, Laboratory, Device, Parameter, Request, Department, FormResponse, LabType, \
-    Status, Workflow, RequestResult, ISOVisibility
+    Status, Workflow, RequestResult, ISOVisibility, RequestCertificate
 from apps.lab.api.serializers import ExperimentSerializer, LaboratorySerializer, DeviceSerializer, ParameterSerializer, \
     RequestListSerializer, RequestDetailSerializer, DepartmentSerializer, LaboratoryDetailSerializer, \
     ExperimentDetailSerializer, \
     FormResponseSerializer, LabTypeSerializer, RequestChangeStatusSerializer, WorkflowSerializer, \
     RequestResultSerializer, RequestButtonActionSerializer, RequestCertificateSerializer, UpdateLaboratoryISOSerializer, \
-    RequestUpdateSerializer, ISOVisibilitySerializer
+    RequestUpdateSerializer, ISOVisibilitySerializer, CertificateSerializer
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -309,6 +309,15 @@ class RequestCertificateAPIView(RetrieveAPIView):
     permission_classes = [AccessLevelPermission]
     required_access_levels = ['view_all_request', 'view_owner_request']
     view_key = 'request'
+
+
+class URequestCertificateAPIView(UpdateAPIView):
+    queryset = RequestCertificate.objects.all()
+    serializer_class = CertificateSerializer
+
+    def get_object(self):
+        request_obj = get_object_or_404(Request, pk=self.kwargs["pk"])
+        return request_obj.certificate
 
 
 class RequestChangeStatusAPIView(UpdateAPIView):
