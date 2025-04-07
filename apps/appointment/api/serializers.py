@@ -56,9 +56,33 @@ class AppointmentSerializer(serializers.ModelSerializer):
     def validate(self, data):
         queue = data['queue']
         start_time = data['start_time']
+        reserved_by = data['reserved_by']
+        experiment = queue.experiment
 
         if queue.status != 'active':
             raise serializers.ValidationError({"queue": "این صف فعال نیست و نمی‌توان نوبت رزرو کرد."})
+
+
+        if experiment.appointment_limit_hours > 0:
+            limit_date = datetime.now().date() - timedelta(days=30)
+
+            previous_appointments = Appointment.objects.filter(
+                queue__experiment=experiment,
+                reserved_by=reserved_by,
+                queue__date__gte=limit_date,
+                status='reserved'
+            )
+
+            total_reserved_minutes = 0
+            for appointment in previous_appointments:
+                total_reserved_minutes += queue.time_unit
+
+            total_reserved_hours = total_reserved_minutes / 60
+
+            if total_reserved_hours >= experiment.appointment_limit_hours:
+                raise serializers.ValidationError({
+                    "error": f"شما نمی‌توانید بیشتر از {experiment.appointment_limit_hours} ساعت نوبت برای این آزمایش در ۳۰ روز گذشته داشته باشید."
+                })
 
         total_minutes = start_time.hour * 60 + start_time.minute + queue.time_unit
         hours, minutes = divmod(total_minutes, 60)

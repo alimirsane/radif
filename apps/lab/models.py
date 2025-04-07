@@ -96,6 +96,7 @@ class Experiment(models.Model):
     labsnet_experiment_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='شناسه آزمون شبکه راهبردی')
     labsnet_test_type_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='شناسه نوع آزمون شبکه راهبردی')
     control_code = models.CharField(max_length=255, blank=True, null=True, verbose_name='کد کنترلی آزمون')
+    appointment_limit_hours = models.IntegerField(default=0, verbose_name="محدودیت اخذ نوبت برای هر نفر (ساعت)")
     description = models.TextField(blank=True, null=True, verbose_name='توضیحات')
 
     class Meta:
