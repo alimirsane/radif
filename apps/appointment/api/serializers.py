@@ -58,6 +58,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         start_time = data['start_time']
         reserved_by = data['reserved_by']
         experiment = queue.experiment
+        request = self.context.get('request')
 
         if queue.status != 'active':
             raise serializers.ValidationError({"queue": "این صف فعال نیست و نمی‌توان نوبت رزرو کرد."})
@@ -100,6 +101,13 @@ class AppointmentSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"time": f"این بازه زمانی قبلاً رزرو شده است: {appointment.start_time} تا {appointment_end_time}"}
                 )
+
+        if experiment.need_turn and experiment.prepayment_amount > 0:
+            data['status'] = 'pending'
+            request.has_prepayment = True
+            request.save()
+        else:
+            data['status'] = 'reserved'
 
         return data
 

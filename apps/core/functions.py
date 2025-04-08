@@ -4,10 +4,12 @@ from time import time
 import requests
 import json
 from django.conf import settings
+from jdatetime import timedelta
 from openpyxl import Workbook
 from django.http import JsonResponse
 from django.db.models import QuerySet
 from apps.account.models import GrantRequest, User, GrantRecord
+from apps.appointment.models import Appointment
 from apps.lab.models import Request
 from apps.order.models import PaymentRecord
 import pandas as pd
@@ -16,6 +18,21 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
+
+def cancel_expired_appointments():
+    now = datetime.now()
+    expiration_time = now - timedelta(minutes=30)
+
+    expired_appointments = Appointment.objects.filter(
+        status='pending',
+        created_at__lt=expiration_time
+    )
+
+    for appointment in expired_appointments:
+        appointment.status = 'canceled'
+        appointment.save()
+
 
 def process_excel_and_create_grant_records(file):
     df = pd.read_excel(file)

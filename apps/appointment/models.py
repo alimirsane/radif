@@ -53,11 +53,14 @@ class Appointment(models.Model):
     request = models.ForeignKey(Request, related_name="appointments", on_delete=models.CASCADE, null=True, blank=True, verbose_name="درخواست")
     start_time = models.TimeField(verbose_name="زمان شروع نوبت")
     status = models.CharField(max_length=50, default="free", verbose_name="وضعیت نوبت",
-                              choices=[("free", "آزاد"), ("reserved", "رزرو شده"), ("canceled", "لغو شده")])
+                              choices=[("free", "آزاد"), ("reserved", "رزرو شده"), ("pending", "در انتظار پرداخت"), ("canceled", "لغو شده")])
     reserved_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name="appointments", verbose_name="رزرو شده توسط"
     )
     reserved_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True, verbose_name="زمان ایجاد")
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True,  verbose_name="زمان به‌روزرسانی")
+
 
     def end_time(self):
         total_minutes = self.start_time.hour * 60 + self.start_time.minute + self.queue.time_unit

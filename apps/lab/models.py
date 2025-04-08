@@ -99,6 +99,7 @@ class Experiment(models.Model):
     description_appointment = models.TextField(blank=True, null=True, verbose_name='توضیحات محدودیت اخذ')
     appointment_limit_hours = models.IntegerField(default=0, verbose_name="محدودیت اخذ نوبت برای هر نفر (ساعت)")
     description = models.TextField(blank=True, null=True, verbose_name='توضیحات')
+    prepayment_amount = models.DecimalField(max_digits=10, decimal_places=0, default=0, verbose_name="مبلغ پیش‌پرداخت (ریال)")
 
     class Meta:
         verbose_name = 'آزمایش'
@@ -275,6 +276,7 @@ class Request(models.Model):
     labsnet_status = models.PositiveSmallIntegerField(choices=LABSNET_RES, default=1, null=True, verbose_name='وضعیت ثبت لبزنت')
 
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
+    has_prepayment = models.BooleanField(default=False, verbose_name='نیاز به پیش پرداخت')
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روز رسانی')
