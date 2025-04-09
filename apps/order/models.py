@@ -362,10 +362,15 @@ class PaymentRecord(models.Model):
 
         try:
             if self.order and self.order.order_status == 'pending':
-                self.order.set_completed(self)
-                self.charged = True
-                profile = self.order.buyer
+                if self.order.request.has_prepayment:
+                    self.order.request.has_prepayment = False
+                    self.order.request.save()
+                    self.charged = True
 
+                else:
+                    self.order.set_completed(self)
+                    self.charged = True
+                profile = self.order.buyer
             else:
                 profile = self.payer
                 if profile:
