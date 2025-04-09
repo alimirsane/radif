@@ -462,8 +462,8 @@ class Request(models.Model):
             formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
             price = 0
             for param in params:
-                if self.experiment.need_turn:
-                # if self.test_duration > 0:
+                # if self.experiment.need_turn:
+                if self.test_duration > 0:
                     temp = self.test_duration
                 else:
                     temp = formresponses['response_count__sum'] / int(param.unit_value)
