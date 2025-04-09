@@ -454,40 +454,41 @@ class Request(models.Model):
 
     def set_price(self):
         if self.parent_request:
-            # try:
-            params = self.parameter.all()
-            formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
-            price = 0
-            for param in params:
-                if self.test_duration > 0:
-                    temp = self.test_duration
-                else:
-                    temp = formresponses['response_count__sum'] / int(param.unit_value)
-                    temp = math.ceil(temp)
-                if self.owner.is_partner:
-                    if self.is_urgent:
-                        if param.partner_urgent_price:
-                            price += int(param.partner_urgent_price) * int(temp)
-                        else:
-                            price += int(param.urgent_price) * int(temp)
+            try:
+                params = self.parameter.all()
+                formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
+                price = 0
+                for param in params:
+                    if self.experiment.need_turn:
+                    # if self.test_duration > 0:
+                        temp = self.test_duration
                     else:
-                        if param.partner_price:
-                            price += int(param.partner_price) * int(temp)
+                        temp = formresponses['response_count__sum'] / int(param.unit_value)
+                        temp = math.ceil(temp)
+                    if self.owner.is_partner:
+                        if self.is_urgent:
+                            if param.partner_urgent_price:
+                                price += int(param.partner_urgent_price) * int(temp)
+                            else:
+                                price += int(param.urgent_price) * int(temp)
+                        else:
+                            if param.partner_price:
+                                price += int(param.partner_price) * int(temp)
+                            else:
+                                price += int(param.price) * int(temp)
+                    else:
+                        if self.is_urgent:
+                            price += int(param.urgent_price) * int(temp)
                         else:
                             price += int(param.price) * int(temp)
-                else:
-                    if self.is_urgent:
-                        price += int(param.urgent_price) * int(temp)
-                    else:
-                        price += int(param.price) * int(temp)
-            self.price_sample_returned = Decimal(0)
-            self.price_wod = Decimal(price)
-            self.price = (price - (price * int(self.discount) / 100))
-            # self.apply_labsnet_credits()
-            self.save()
-            self.parent_request.set_price()
-            # except:
-            #     pass
+                self.price_sample_returned = Decimal(0)
+                self.price_wod = Decimal(price)
+                self.price = (price - (price * int(self.discount) / 100))
+                # self.apply_labsnet_credits()
+                self.save()
+                self.parent_request.set_price()
+            except:
+                pass
         else:
             price = 0
             children = self.child_requests.exclude(request_status__step__name__in=['رد شده'])
