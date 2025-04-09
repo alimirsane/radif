@@ -106,6 +106,8 @@ class AppointmentSerializer(serializers.ModelSerializer):
             data['status'] = 'pending'
             request.has_prepayment = True
             request.save()
+            request.parent_request.has_prepayment = True
+            request.parent_request.save()
         else:
             data['status'] = 'reserved'
 
