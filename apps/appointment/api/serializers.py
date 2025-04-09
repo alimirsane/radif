@@ -58,7 +58,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         start_time = data['start_time']
         reserved_by = data['reserved_by']
         experiment = queue.experiment
-        request = self.context.get('request')
+        request = data['request']
 
         if queue.status != 'active':
             raise serializers.ValidationError({"queue": "این صف فعال نیست و نمی‌توان نوبت رزرو کرد."})
