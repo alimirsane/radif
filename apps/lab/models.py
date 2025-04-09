@@ -457,45 +457,45 @@ class Request(models.Model):
         if self.parent_request:
             if self.experiment.need_turn:
                 self.total_prepayment_amount = self.experiment.prepayment_amount if self.experiment.prepayment_amount else Decimal(0)
-            try:
-                params = self.parameter.all()
-                formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
-                price = 0
-                for param in params:
-                    if self.experiment.need_turn:
-                    # if self.test_duration > 0:
-                        temp = self.test_duration
-                    else:
-                        temp = formresponses['response_count__sum'] / int(param.unit_value)
-                        temp = math.ceil(temp)
-                    if self.owner.is_partner:
-                        if self.is_urgent:
-                            if param.partner_urgent_price:
-                                price += int(param.partner_urgent_price) * int(temp)
-                            else:
-                                price += int(param.urgent_price) * int(temp)
+            # try:
+            params = self.parameter.all()
+            formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
+            price = 0
+            for param in params:
+                if self.experiment.need_turn:
+                # if self.test_duration > 0:
+                    temp = self.test_duration
+                else:
+                    temp = formresponses['response_count__sum'] / int(param.unit_value)
+                    temp = math.ceil(temp)
+                if self.owner.is_partner:
+                    if self.is_urgent:
+                        if param.partner_urgent_price:
+                            price += int(param.partner_urgent_price) * int(temp)
                         else:
-                            if param.partner_price:
-                                price += int(param.partner_price) * int(temp)
-                            else:
-                                price += int(param.price) * int(temp)
-                    else:
-                        if self.is_urgent:
                             price += int(param.urgent_price) * int(temp)
+                    else:
+                        if param.partner_price:
+                            price += int(param.partner_price) * int(temp)
                         else:
                             price += int(param.price) * int(temp)
-                self.price_sample_returned = Decimal(0)
-                self.price_wod = Decimal(price)
-                self.price = (price - (price * int(self.discount) / 100))
-                # self.apply_labsnet_credits()
-                self.save()
-                self.parent_request.set_price()
-            except:
-                self.price_wod = Decimal(0)
-                self.price = Decimal(0)
-                self.save()
-                self.parent_request.set_price()
-                self.price_sample_returned = Decimal(0)
+                else:
+                    if self.is_urgent:
+                        price += int(param.urgent_price) * int(temp)
+                    else:
+                        price += int(param.price) * int(temp)
+            self.price_sample_returned = Decimal(0)
+            self.price_wod = Decimal(price)
+            self.price = (price - (price * int(self.discount) / 100))
+            # self.apply_labsnet_credits()
+            self.save()
+            self.parent_request.set_price()
+            # except:
+            #     self.price_wod = Decimal(0)
+            #     self.price = Decimal(0)
+            #     self.save()
+            #     self.parent_request.set_price()
+            #     self.price_sample_returned = Decimal(0)
         else:
             price = 0
             total_prepayment_amount = 0
@@ -503,8 +503,9 @@ class Request(models.Model):
             for child in children:
                 price += child.price
                 if self.has_prepayment:
-                    total_prepayment_amount += child.experiment.prepayment_amount if child.experiment.prepayment_amount else Decimal(
-                        0)
+                    total_prepayment_amount += child.experiment.prepayment_amount
+                    # total_prepayment_amount += child.experiment.prepayment_amount if child.experiment.prepayment_amount else Decimal(
+                    #     0)
 
             self.price_wod = price
             self.price = price
