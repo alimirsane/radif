@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 import datetime
 from datetime import datetime, timedelta
@@ -153,3 +154,21 @@ class AvailableAppointmentsView(APIView):
         # return Response(serializer.data)
         return Response(all_appointments)
         # return all_appointments
+
+
+class CancelAppointmentView(APIView):
+    def post(self, request, appointment_id):
+        try:
+            appointment = Appointment.objects.get(id=appointment_id)
+
+            if appointment.status in ['reserved', 'canceled']:
+                return Response({"error": "این نوبت قابل لغو نیست یا قبلاً لغو شده است."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            appointment.status = 'canceled'
+            appointment.save()
+
+            return Response({"success": "نوبت شما با موفقیت لغو شد."}, status=status.HTTP_200_OK)
+
+        except Appointment.DoesNotExist:
+            return Response({"error": "نوبت مورد نظر یافت نشد."}, status=status.HTTP_404_NOT_FOUND)

@@ -1,7 +1,7 @@
 from django.urls import path
 
 from apps.appointment.api.views import QueueListCreateView, QueueDetailView, AppointmentListCreateView, \
-    AppointmentDetailView, AvailableAppointmentsView, OwnedAppointmentListView
+    AppointmentDetailView, AvailableAppointmentsView, OwnedAppointmentListView, CancelAppointmentView
 from apps.form.api.views import FormListAPIView, FormDetailAPIView
 
 urlpatterns = [
@@ -11,5 +11,6 @@ urlpatterns = [
     path('appointments/owned/', OwnedAppointmentListView.as_view(), name='owned_appointment-list'),
     path('appointments/<int:pk>/', AppointmentDetailView.as_view(), name='appointment-detail'),
     path('appointments/available/', AvailableAppointmentsView.as_view(), name='available-appointments'),
+    path('appointments/<int:appointment_id>/cancel/', CancelAppointmentView.as_view(), name='cancel-appointment'),
 
 ]
