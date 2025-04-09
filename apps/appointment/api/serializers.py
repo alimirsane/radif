@@ -71,7 +71,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
                 queue__experiment=experiment,
                 reserved_by=reserved_by,
                 queue__date__gte=limit_date,
-                status='reserved'
+                status__in=['reserved', 'pending']
             )
 
             total_reserved_minutes = 0
