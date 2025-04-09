@@ -239,6 +239,7 @@ class Request(models.Model):
     price_sample_returned = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت ارسال نمونه')
     price_wod = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت بدون تخفیف')
     price = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='قیمت')
+    total_prepayment_amount = models.DecimalField(max_digits=10, decimal_places=0, blank=True, null=True, verbose_name='مقدار پیش پرداخت')
 
     parent_request = models.ForeignKey('self', null=True, blank=True, related_name='child_requests', on_delete=models.SET_NULL, verbose_name='درخواست مادر')
     has_parent_request = models.BooleanField(default=False, verbose_name='درخواست مادر دارد')
@@ -454,6 +455,8 @@ class Request(models.Model):
 
     def set_price(self):
         if self.parent_request:
+            if self.experiment.need_turn:
+                self.total_prepayment_amount = self.experiment.prepayment_amount if self.experiment.prepayment_amount else Decimal(0)
             try:
                 params = self.parameter.all()
                 formresponses = self.formresponse.filter(is_main=True).aggregate(Sum('response_count'))
@@ -488,14 +491,24 @@ class Request(models.Model):
                 self.save()
                 self.parent_request.set_price()
             except:
-                pass
+                self.price_wod = Decimal(0)
+                self.price = Decimal(0)
+                self.save()
+                self.parent_request.set_price()
+                self.price_sample_returned = Decimal(0)
         else:
             price = 0
+            total_prepayment_amount = 0
             children = self.child_requests.exclude(request_status__step__name__in=['رد شده'])
             for child in children:
                 price += child.price
+                if self.has_prepayment:
+                    total_prepayment_amount += child.experiment.prepayment_amount if child.experiment.prepayment_amount else Decimal(
+                        0)
+
             self.price_wod = price
             self.price = price
+            self.total_prepayment_amount = total_prepayment_amount
 
             # try:
             # if self.grant_request1 or self.grant_request2:
