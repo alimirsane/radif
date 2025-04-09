@@ -25,7 +25,6 @@ class RoleSerializer(serializers.ModelSerializer):
 
 
 class UserFullSerializer(serializers.ModelSerializer):
-
     access_level_obj = AccessLevelSerializer(source='access_level', read_only=True)
     role_obj = RoleSerializer(source='role', read_only=True)
 
@@ -49,7 +48,8 @@ class UserBusinessLinkedAccountsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'national_id', 'first_name', 'last_name', 'company_national_id', 'company_name', 'token']
+        fields = ['id', 'username', 'national_id', 'first_name', 'last_name', 'company_national_id', 'company_name',
+                  'token']
 
 
 class UserPersonalLinkedAccountsSerializer(serializers.ModelSerializer):
@@ -71,7 +71,6 @@ class SummaryUserSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     access_level_obj = AccessLevelSerializer(source='access_level', read_only=True, many=True)
     access_levels_dict = serializers.SerializerMethodField(read_only=True)
     role_obj = RoleSerializer(source='role', read_only=True, many=True)
@@ -96,6 +95,72 @@ class UserSerializer(serializers.ModelSerializer):
         else:
             validated_data['password'] = make_password(validated_data.get('national_id'))
         return super().create(validated_data)
+
+    # 🔒 Username must be unique per account_type
+    def validate_username(self, value):
+        account_type = self.instance.account_type if self.instance else self.initial_data.get('account_type')
+        qs = User.objects.filter(username=value, account_type=account_type)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("کاربری با این شماره در همین نوع حساب وجود دارد.")
+        return value
+
+    # 🔒 National ID must be unique per account_type
+    def validate_national_id(self, value):
+        account_type = self.instance.account_type if self.instance else self.initial_data.get('account_type')
+        qs = User.objects.filter(national_id=value, account_type=account_type)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("کد ملی برای این نوع حساب قبلاً ثبت شده است.")
+        return value
+
+    # 🔒 Globally unique for business accounts only
+    def validate_company_national_id(self, value):
+        if not value:
+            return value
+        qs = User.objects.filter(company_national_id=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("کد ملی شرکت تکراری است.")
+        return value
+
+    def validate_company_economic_number(self, value):
+        if not value:
+            return value
+        qs = User.objects.filter(company_economic_number=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("شماره اقتصادی شرکت تکراری است.")
+        return value
+
+    # 🔒 Field-level locking on edit
+    def validate(self, attrs):
+        if self.instance:
+            acct_type = self.instance.account_type
+
+            if acct_type == 'personal':
+                if 'national_id' in attrs and attrs['national_id'] != self.instance.national_id:
+                    raise serializers.ValidationError({
+                        'national_id': 'ویرایش کد ملی برای حساب شخصی مجاز نیست.'
+                    })
+
+            elif acct_type == 'business':
+                if 'company_national_id' in attrs and attrs['company_national_id'] != self.instance.company_national_id:
+                    raise serializers.ValidationError({
+                        'company_national_id': 'ویرایش کد ملی شرکت مجاز نیست.'
+                    })
+                if 'company_economic_number' in attrs and attrs[
+                    'company_economic_number'] != self.instance.company_economic_number:
+                    raise serializers.ValidationError({
+                        'company_economic_number': 'ویرایش شماره اقتصادی شرکت مجاز نیست.'
+                    })
+
+        return super().validate(attrs)
+
 
 class UserPasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
@@ -130,7 +195,8 @@ class UserPersonalSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'username', 'password', 'first_name', 'last_name', 'national_id', 'email', 'department',
-            'student_id', 'educational_level', 'educational_field', 'postal_code', 'is_sharif_student', 'telephone', 'address'
+            'student_id', 'educational_level', 'educational_field', 'postal_code', 'is_sharif_student', 'telephone',
+            'address'
         )
         extra_kwargs = {
             'password': {'write_only': True},
@@ -177,7 +243,8 @@ class UserBusinessSerializer(serializers.ModelSerializer):
         # Creating business account
         validated_data['account_type'] = 'business'
         validated_data['username'] = validated_data['company_national_id']  # Add personal account to linked_users
-        validated_data['national_id'] = f'{validated_data["company_national_id"]}' # Add personal account to linked_users
+        validated_data[
+            'national_id'] = f'{validated_data["company_national_id"]}'  # Add personal account to linked_users
         validated_data['password'] = make_password(validated_data.get('password'))
         business_serializer = self.Meta.model.objects.create(**validated_data)
         business_serializer.linked_users.set([personal_account])
@@ -190,6 +257,7 @@ class UserBusinessSerializer(serializers.ModelSerializer):
         if User.objects.filter(national_id=f"co{attrs.get('company_national_id')}").exists():
             raise serializers.ValidationError({'national_id': 'این شرکت قبلاً ثبت شده است.'})
         return attrs
+
 
 #
 # class UserPersonalSerializer(serializers.ModelSerializer):
@@ -236,6 +304,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         if validated_data.get('password'):
             validated_data['password'] = make_password(validated_data.get('password'))
         return super().update(instance, validated_data)
+
 
 #
 # class UserBusinessSerializer(serializers.ModelSerializer):
@@ -370,6 +439,7 @@ class GrantRecordSerializer(serializers.ModelSerializer):
             for field_name, field in self.fields.items():
                 if field_name not in ['file']:
                     field.required = False
+
     #
     # def create(self, validated_data):
     #     excel_file = self.context['request'].FILES.get('file', None)
@@ -389,6 +459,7 @@ class GrantRecordSerializer(serializers.ModelSerializer):
 
     def get_remaining_grant(self, obj):
         return obj.remaining_grant()
+
 
 class GrantRequestSerializer(serializers.ModelSerializer):
     transaction_obj = GrantTransactionSerializer(source='transaction', read_only=True)
@@ -425,6 +496,7 @@ class GrantRequestApprovedSerializer(serializers.ModelSerializer):
         instance.approve(approved_amount, expiration_date, approved_grant_record)
         return instance
 
+
 class GrantRequestRevokeSerializer(serializers.ModelSerializer):
     class Meta:
         model = GrantRequest
@@ -433,6 +505,7 @@ class GrantRequestRevokeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.revoke()
         return instance
+
 
 class LansnetGrantSerializer(serializers.Serializer):
     national_id = serializers.CharField(max_length=20, write_only=True)
