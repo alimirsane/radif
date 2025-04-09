@@ -82,7 +82,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
             if total_reserved_hours >= experiment.appointment_limit_hours:
                 raise serializers.ValidationError({
-                    "error": f"شما نمی‌توانید بیشتر از {experiment.appointment_limit_hours} ساعت نوبت برای این آزمایش در ۳۰ روز گذشته داشته باشید. (مجموع نوبت شما {total_reserved_hours})"
+                    "error": f"شما نمی‌توانید بیشتر از {experiment.appointment_limit_hours} ساعت نوبت برای این آزمایش در ۳۰ روز گذشته داشته باشید. (مجموع نوبت شما {total_reserved_hours} ساعت)"
                 })
 
         total_minutes = start_time.hour * 60 + start_time.minute + queue.time_unit
