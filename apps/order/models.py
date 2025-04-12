@@ -196,7 +196,7 @@ class Order(models.Model):
         else:
             if self.request.has_prepayment:
                 user = (self.buyer if self.buyer.account_type == "personal" else self.request.owner.linked_users.all().first())
-                payment_record = PaymentRecord.objects.create(order=self, amount=int(self.request.total_prepayment_amount),
+                payment_record = PaymentRecord.objects.get_or_create(order=self, amount=int(self.request.total_prepayment_amount),
                                                               payer=self.buyer)
                 success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
                 if success:
