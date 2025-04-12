@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+import jdatetime
 from apps.account.api.serializers import UserSummerySerializer
 from apps.appointment.models import Queue, Appointment
 from datetime import datetime, timedelta, time
@@ -65,19 +65,25 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
 
         if experiment.appointment_limit_hours > 0:
-            limit_date = datetime.now().date() - timedelta(days=30)
+            today_jalali = jdatetime.date.today()
+            start_jalali = jdatetime.date(today_jalali.year, today_jalali.month, 1)
+            if today_jalali.month == 12:
+                end_jalali = jdatetime.date(today_jalali.year + 1, 1, 1) - jdatetime.timedelta(days=1)
+            else:
+                end_jalali = jdatetime.date(today_jalali.year, today_jalali.month + 1, 1) - jdatetime.timedelta(days=1)
+
+            start_gregorian = start_jalali.togregorian()
+            end_gregorian = end_jalali.togregorian()
 
             previous_appointments = Appointment.objects.filter(
                 queue__experiment=experiment,
                 reserved_by=reserved_by,
-                queue__date__gte=limit_date,
-                status__in=['reserved', 'pending']
+                queue__date__gte=start_gregorian,
+                queue__date__lte=end_gregorian,
+                status='reserved'
             )
 
-            total_reserved_minutes = 0
-            for appointment in previous_appointments:
-                total_reserved_minutes += queue.time_unit
-
+            total_reserved_minutes = sum(app.queue.time_unit for app in previous_appointments)
             total_reserved_hours = total_reserved_minutes / 60
 
             if total_reserved_hours >= experiment.appointment_limit_hours:
