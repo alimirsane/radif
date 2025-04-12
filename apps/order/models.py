@@ -196,7 +196,7 @@ class Order(models.Model):
         else:
             if self.request.has_prepayment:
                 user = (self.buyer if self.buyer.account_type == "personal" else self.request.owner.linked_users.all().first())
-                payment_record = PaymentRecord.objects.get_or_create(order=self, amount=int(self.request.total_prepayment_amount),
+                payment_record = PaymentRecord.objects.get_or_create(payment_type='prepayment', order=self, amount=int(self.request.total_prepayment_amount),
                                                               payer=self.buyer)
                 success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
                 if success:
@@ -296,14 +296,14 @@ class Order(models.Model):
 
 
 class PaymentRecord(models.Model):
-    TYPES = (('order', 'پرداخت سفارش'), ('account', 'شارژ اکانت'))
+    TYPES = (('order', 'پرداخت سفارش'), ('account', 'شارژ اکانت'), ('prepayment', 'پیش پرداخت'))
     SETTLEMENT_TYPES = (('pos', 'کارتخوان'), ('iopay', 'درگاه داخلی'), ('eopay', 'درگاه خارجی'), ('cash', 'نقدی'))
 
     payer = models.ForeignKey(User, on_delete=models.PROTECT, related_name='payment_records', verbose_name='پرداخت کننده', blank=True, null=True)
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='payment_records', verbose_name="سفارش",
                                       help_text="The order we want to pay for.", blank=True, null=True)
     payment_type = models.CharField(max_length=31, choices=TYPES, default='order', verbose_name='نوع پرداخت',
-                                    help_text="Choices: ['شارژ اکانت', 'پرداخت سفارش']")
+                                    help_text="Choices: ['شارژ اکانت', 'پرداخت سفارش', 'پیش پرداخت']")
     settlement_type = models.CharField(max_length=31, choices=SETTLEMENT_TYPES, default='iopay', verbose_name='نوع تسویه',
                                     help_text="Choices: ['درگاه', 'کارتخوان']")
     amount = models.BigIntegerField(default=0, verbose_name='مقدار')
