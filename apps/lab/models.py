@@ -656,6 +656,15 @@ class Request(models.Model):
                     app.status = 'reserved'
                     app.save()
 
+    def prepayment_canceled(self):
+        self.is_completed = False
+        for c in self.child_requests.all():
+            for app in c.appointments.all():
+                if app.status == 'pending':
+                    app.status = 'canceled'
+                    app.save()
+
+
     def labsnet_create(self):
         import requests
         if self.labsnet_status == 2:

@@ -29,6 +29,7 @@ from apps.core.functions import export_excel
 from apps.core.paginations import DefaultPagination
 from apps.account.permissions import IsExpertOrAdminOrManager, AccessLevelPermission, query_set_filter_key
 from apps.lab.models import Experiment, Request
+from apps.lab.tasks import check_and_process_pending_appointment
 from apps.order.api.filters import PaymentRecordFilter
 from apps.order.models import Order, PaymentRecord, Transaction, PromotionCode, Ticket
 from apps.order.api.serializers import OrderSerializer, OrderDetailSerializer, OrderIssueSerializer, \
@@ -60,6 +61,7 @@ class OrderIssueView(CreateAPIView):
         request_id = request.data.get('request')
         if request_id:
             req_instance = get_object_or_404(Request, id=request_id)
+            check_and_process_pending_appointment.apply_async((req_instance.id,), countdown=30 * 60)
 
             if Order.objects.filter(request=req_instance).exists():
                 return Response(
