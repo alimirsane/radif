@@ -94,7 +94,7 @@ class AvailableAppointmentsView(APIView):
         if experiment_id:
             queues = queues.filter(experiment_id=experiment_id)
 
-        reserved_appointments = Appointment.objects.filter(queue__in=queues).select_related('reserved_by')
+        reserved_appointments = Appointment.objects.filter(queue__in=queues).select_related('reserved_by', 'request')
 
         reserved_map = {
             (appt.queue_id, appt.start_time): appt for appt in reserved_appointments
@@ -115,10 +115,11 @@ class AvailableAppointmentsView(APIView):
 
                 appointment_key = (queue.id, current_time)
                 reserved_appt = reserved_map.get(appointment_key)
+
                 if reserved_appt:
                     request_status = StatusSerializer(reserved_appt.request.lastest_status()).data if reserved_appt.request else None
-                    request_id = reserved_appt.request.id
-                    request_number = reserved_appt.request.request_number
+                    request_id = reserved_appt.request.id if reserved_appt.request else None
+                    request_number = reserved_appt.request.request_number if reserved_appt.request else None
                     request_parent_number = reserved_appt.request.parent_request.request_number if reserved_appt.request.parent_request else None
                     appointment_id = reserved_appt.id
                 else:
@@ -127,10 +128,11 @@ class AvailableAppointmentsView(APIView):
                     appointment_id = None
                     request_number = None
                     request_parent_number = None
+
                 reserved_by = reserved_appt.reserved_by.id if reserved_appt and reserved_appt.reserved_by else None
                 reserved_by_obj = UserSummerySerializer(reserved_appt.reserved_by).data if reserved_appt and reserved_appt.reserved_by else None
 
-                status = "reserved" if reserved_appt else "free"
+                status = reserved_appt.status if reserved_appt else "free"
 
                 if not is_in_break_time:
                     all_appointments.append({
@@ -150,10 +152,7 @@ class AvailableAppointmentsView(APIView):
 
                 current_time = end_time
 
-        # serializer = AppointmentListSerializer(all_appointments, many=True)
-        # return Response(serializer.data)
         return Response(all_appointments)
-        # return all_appointments
 
 
 class CancelAppointmentView(APIView):
