@@ -685,13 +685,19 @@ class Request(models.Model):
             formresponses_count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
                 'response_count__sum']
             data[f"services[{index}][test_code]"] = child_request.experiment.labsnet_experiment_id
-            data[f"services[{index}][test_count]"] = formresponses_count
             data[f"services[{index}][type_credit]"] = 2
+
             if child_request.experiment.test_unit_type == 'time':
                 data[f"services[{index}][tariffs_basis]"] = 1
+                data[f"services[{index}][test_count]"] = 1
+                duration = child_request.test_duration or 1
+                data[f"services[{index}][time_execute]"] = duration
+                data[f"services[{index}][price]"] = str(int(child_request.price_wod) / int(duration))
             else:
                 data[f"services[{index}][tariffs_basis]"] = 2
-            data[f"services[{index}][price]"] = str(int(child_request.price_wod)/int(formresponses_count))
+                data[f"services[{index}][test_count]"] = formresponses_count
+                data[f"services[{index}][price]"] = str(int(child_request.price_wod) / int(formresponses_count))
+
             gregorian_date = child_request.created_at.date()
             jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
             date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
@@ -732,16 +738,21 @@ class Request(models.Model):
 
 
             for child_request in self.child_requests.exclude(request_status__step__name__in=['رد شده']):
+                duration, duration_unit_price, unit_price = 0, 0, 0
                 gregorian_date = child_request.created_at.date()
                 jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
                 date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
                 if child_request.experiment.test_unit_type == 'time':
                     type_tarefe = 1
-                    formresponses_count = '30'
+                    duration = child_request.test_duration or 1
+                    formresponses_count = str(duration)
+                    duration_unit_price = int(child_request.price) / duration  # duration
                 else:
                     type_tarefe = 2
-                    formresponses_count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
-                        'response_count__sum']
+                    count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
+                                'response_count__sum'] or 1
+                    formresponses_count = str(count)
+                    unit_price = int(child_request.price) / count  # count
                 payload = {
                     "lab": "مجموعه آزمایشگاه ها - دانشگاه صنعتی شریف مرکز خدمات آزمایشگاهی",
                     "lab_id": "343",
@@ -754,8 +765,10 @@ class Request(models.Model):
                     "checked[]": f"{str(self.labsnet1.labsnet_id)}, {str(self.labsnet2.labsnet_id)}" if self.labsnet1 and self.labsnet2 else f"{str(self.labsnet1.labsnet_id)}",
                     "date": date_str,
                     "type_tarefe": type_tarefe,
+                    "duration": duration,
+                    "duration_tarefe": duration_unit_price,
                     "count": str(formresponses_count),
-                    "tarefe":  str(int(int(child_request.price)/int(formresponses_count))),
+                    "tarefe": str(unit_price),
                     "description": child_request.description or "Request submitted via system",
                     "sum_pay": str(child_request.price),
                     "credit_use": str(self.apply_labsnet_credits()),
