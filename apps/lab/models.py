@@ -645,6 +645,17 @@ class Request(models.Model):
         except:
             return []
 
+    def prepayment_payed(self):
+        self.has_prepayment = False
+        self.save()
+        for c in self.child_requests.all():
+            c.has_prepayment = False
+            c.save()
+            for app in c.appointments.all():
+                if app.status == 'pending':
+                    app.status = 'reserved'
+                    app.save()
+
     def labsnet_create(self):
         import requests
         if self.labsnet_status == 2:
