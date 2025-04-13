@@ -466,7 +466,9 @@ class Request(models.Model):
                 if self.test_duration > 0:
                     temp = self.test_duration
                 else:
-                    temp = formresponses['response_count__sum'] / int(param.unit_value)
+                    response_sum = formresponses['response_count__sum'] or 0
+                    temp = response_sum / int(param.unit_value)
+                    # temp = formresponses['response_count__sum'] / int(param.unit_value)
                     temp = math.ceil(temp)
                 if self.owner.is_partner:
                     if self.is_urgent:

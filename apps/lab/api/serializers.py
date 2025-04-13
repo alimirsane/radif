@@ -318,7 +318,7 @@ class OrderPaymentRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentRecord
-        fields = ['id', 'settlement_type', 'is_lock', 'amount', 'transaction_code', 'tref', 'successful', 'payment_type', 'created_at']
+        fields = ['id', 'settlement_type', 'is_lock', 'amount', 'transaction_code', 'tref', 'successful', 'payment_link', 'payment_type', 'created_at']
 
 
 class RequestOrderDetailSerializer(serializers.ModelSerializer):
