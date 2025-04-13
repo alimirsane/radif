@@ -503,7 +503,10 @@ class Request(models.Model):
             total_prepayment_amount = 0
             children = self.child_requests.exclude(request_status__step__name__in=['رد شده'])
             for child in children:
-                price += child.price
+                try:
+                    price += child.price
+                except:
+                    pass
                 if self.has_prepayment:
                     total_prepayment_amount += child.experiment.prepayment_amount
                     # total_prepayment_amount += child.experiment.prepayment_amount if child.experiment.prepayment_amount else Decimal(
