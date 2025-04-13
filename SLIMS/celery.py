@@ -8,7 +8,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SLIMS.envs.common')
 app = Celery('celery')
 
 # بارگذاری تنظیمات از فایل تنظیمات دجانگو
-app.config_from_object('django.conf:SLIMS.envs.common', namespace='CELERY')
+app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # خودکار کشف کردن تسک‌ها در برنامه‌های Django
 app.autodiscover_tasks()
