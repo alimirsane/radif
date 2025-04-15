@@ -128,8 +128,7 @@ def set_request_status_notification(sender, instance, created, **kwargs):
         content = f' وضعیت درخواست شماره {str(instance.request.request_number).split("-")[1]}-{str(instance.request.request_number).split("-")[0]} به {instance.step.name} تغییر کرد'
         Notification.objects.create(user=instance.request.owner, type='info', title='تغییر وضعیت درخواست', content=content)
         sms_server = OTPserver.objects.all().first()
-        phone_number = "09381029915"
-        # phone_number = str(instance.request.owner.username).replace("+98", "0")
+        phone_number = str(instance.request.owner.username).replace("+98", "0")
         sms = sms_server.send_quick_message([phone_number], content)
         if 0 <= sms['statusCode'] <= 4:
             return Response({"detail": f"کد ارسال شد.", "message": sms['message']}, status=status.HTTP_200_OK)
