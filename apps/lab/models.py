@@ -661,11 +661,15 @@ class Request(models.Model):
 
     def prepayment_canceled(self):
         self.is_completed = False
-        for c in self.child_requests.all():
-            for app in c.appointments.all():
-                if app.status == 'pending':
-                    app.status = 'canceled'
-                    app.save()
+        try:
+            for c in self.child_requests.all():
+                for app in c.appointments.all():
+                    if app.status == 'pending':
+                        app.status = 'canceled'
+                        app.save()
+        except Exception as e:
+            print(str(e))
+        self.save()
 
 
     def labsnet_create(self):

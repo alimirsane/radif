@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, WorkflowStep, \
     Status, Workflow, WorkflowStepButton, RequestResult, ISOVisibility
+from apps.lab.tasks import check_and_process_pending_appointment
 
 
 @admin.register(Laboratory)
@@ -31,11 +32,18 @@ class ParameterAdmin(admin.ModelAdmin):
     list_filter = ('experiment',)
 
 
+@admin.action(description="pending_appointment")
+def pending_appointment(modeladmin, request, queryset):
+    for req in queryset:
+        check_and_process_pending_appointment.apply_async((req.id,), countdown=10)
+
+
 @admin.register(Request)
 class RequestAdmin(admin.ModelAdmin):
     list_display = ('experiment', 'owner', 'experiment', 'price', 'is_completed', 'created_at', 'updated_at')
     search_fields = ('experiment',)
     list_filter = ('created_at', 'updated_at')
+    actions = [pending_appointment]
 
 
 @admin.register(Department)
