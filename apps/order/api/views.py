@@ -61,7 +61,7 @@ class OrderIssueView(CreateAPIView):
         request_id = request.data.get('request')
         if request_id:
             req_instance = get_object_or_404(Request, id=request_id)
-            check_and_process_pending_appointment.apply_async((req_instance.id,), countdown=30 * 60)
+            check_and_process_pending_appointment.apply_async((req_instance.id,), countdown=20 * 60)
 
             if Order.objects.filter(request=req_instance).exists():
                 return Response(

@@ -665,8 +665,9 @@ class Request(models.Model):
             for c in self.child_requests.all():
                 for app in c.appointments.all():
                     if app.status == 'pending':
-                        app.status = 'canceled'
-                        app.save()
+                        app.delete()
+                        # app.status = 'canceled'
+                        # app.save()
         except Exception as e:
             print(str(e))
         self.save()
