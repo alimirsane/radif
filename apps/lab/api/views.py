@@ -17,7 +17,8 @@ from apps.lab.api.serializers import ExperimentSerializer, LaboratorySerializer,
     RequestUpdateSerializer, ISOVisibilitySerializer, CertificateSerializer
 from rest_framework.response import Response
 from rest_framework import status
-
+from datetime import timedelta
+from django.utils import timezone
 
 class ExperimentPubListAPIView(ListAPIView):
     queryset = Experiment.objects.all()
@@ -329,20 +330,24 @@ class RequestChangeStatusAPIView(UpdateAPIView):
     #     return self.request.user.requests.all()
 
 class OwnedRequestListAPIView(ListCreateAPIView):
-    queryset = Request.objects.filter(is_completed=True, has_parent_request=False).order_by('-created_at')
+    queryset = Request.objects.all()
     serializer_class = RequestListSerializer
     pagination_class = DefaultPagination
 
 
     def get_queryset(self):
-        return self.request.user.requests.filter(is_completed=True, has_parent_request=False).order_by('-created_at')
+        limited = timezone.now() - timedelta(days=2)
+        user_requests = self.request.user.requests.filter(is_completed=True, has_parent_request=False) | self.request.user.requests.filter(is_completed=False, has_parent_request=False, created_at__gte=limited)
+        return user_requests.distinct().order_by('-created_at')
 
 class OwnedRequestDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Request.objects.all()
     serializer_class = RequestDetailSerializer
 
     def get_queryset(self):
-        return self.request.user.requests.filter(is_completed=True, has_parent_request=False).order_by('-created_at')
+        limited = timezone.now() - timedelta(days=2)
+        user_requests = self.request.user.requests.filter(is_completed=True, has_parent_request=False) | self.request.user.requests.filter(is_completed=False, has_parent_request=False, created_at__gte=limited)
+        return user_requests.distinct().order_by('-created_at')
 
 
 class DepartmentListAPIView(ListCreateAPIView):
