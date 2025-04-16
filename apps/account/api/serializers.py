@@ -92,7 +92,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_token(self, obj):
         token, _ = Token.objects.get_or_create(user=obj)
-        return token
+        return str(token.key)
 
     def create(self, validated_data):
         if validated_data.get('password'):
