@@ -73,6 +73,7 @@ class SummaryUserSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     access_level_obj = AccessLevelSerializer(source='access_level', read_only=True, many=True)
     access_levels_dict = serializers.SerializerMethodField(read_only=True)
+    token = serializers.SerializerMethodField(read_only=True)
     role_obj = RoleSerializer(source='role', read_only=True, many=True)
     # business_accounts = UserBusinessLinkedAccountsSerializer(source='linked_to_users', read_only=True, many=True)
     linked_users_objs = UserBusinessLinkedAccountsSerializer(source='linked_users', read_only=True, many=True)
@@ -88,6 +89,10 @@ class UserSerializer(serializers.ModelSerializer):
     def get_access_levels_dict(self, obj):
         access_levels_dict = obj.get_dict_access_level()
         return access_levels_dict
+
+    def get_token(self, obj):
+        token, _ = Token.objects.get_or_create(user=obj)
+        return token
 
     def create(self, validated_data):
         if validated_data.get('password'):
