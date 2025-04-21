@@ -337,7 +337,7 @@ class OwnedRequestListAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         limited = timezone.now() - timedelta(days=2)
-        user_requests = self.request.user.requests.filter(is_completed=True, has_parent_request=False) | self.request.user.requests.filter(is_completed=False, has_parent_request=False, created_at__gte=limited)
+        user_requests = self.request.user.requests.filter(is_completed=True, has_parent_request=False) | self.request.user.requests.filter(is_completed=False, has_parent_request=False, child_requests__isnull=False, created_at__gte=limited)
         return user_requests.distinct().order_by('-created_at')
 
 class OwnedRequestDetailAPIView(RetrieveUpdateDestroyAPIView):
@@ -346,7 +346,7 @@ class OwnedRequestDetailAPIView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         limited = timezone.now() - timedelta(days=2)
-        user_requests = self.request.user.requests.filter(is_completed=True, has_parent_request=False) | self.request.user.requests.filter(is_completed=False, has_parent_request=False, created_at__gte=limited)
+        user_requests = self.request.user.requests.filter(is_completed=True, has_parent_request=False) | self.request.user.requests.filter(is_completed=False, has_parent_request=False, child_requests__isnull=False, created_at__gte=limited)
         return user_requests.distinct().order_by('-created_at')
 
 
