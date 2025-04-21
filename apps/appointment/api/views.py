@@ -17,6 +17,7 @@ from apps.appointment.api.filters import QueueFilter, AppointmentFilter
 from apps.appointment.models import Queue, Appointment
 from apps.appointment.api.serializers import QueueSerializer, AppointmentSerializer, AppointmentListSerializer
 from apps.lab.api.serializers import StatusSerializer
+from apps.lab.tasks import check_pending_appointment
 
 
 class QueueListCreateView(ListCreateAPIView):
@@ -60,7 +61,8 @@ class AppointmentListCreateView(ListCreateAPIView):
         if not queue.is_time_valid(start_time):
             raise ValidationError("زمان درخواست شده با بازه زمانی صف هماهنگ نیست.")
 
-        serializer.save()
+        serializer = serializer.save()
+        check_pending_appointment.apply_async((serializer.id,), countdown=30 * 60)
 
 
 class AppointmentDetailView(RetrieveUpdateDestroyAPIView):

@@ -26,3 +26,21 @@ def check_and_process_pending_appointment(request_id):
     except Exception as e:
         logger.error(f"Request Error: {e}.")
         return f"Request Error: {e}."
+
+@shared_task
+def check_pending_appointment(appointment_id):
+    try:
+        appointment = Appointment.objects.get(pk=appointment_id)
+        request = appointment.request
+
+        if request.has_prepayment or (not request.has_prepayment and not request.is_completed):
+            appointment.delete()
+            logger.warning(f"Appointment {appointment.id} canceled due to no payment.")
+            return f"Appointment {appointment.id} canceled."
+
+        logger.info(f"Appointment {appointment.id} already paid.")
+        return f"Appointment {appointment.id} already paid."
+
+    except Exception as e:
+        logger.error(f"Appointment Error: {e}.")
+        return f"Appointment Error: {e}."
