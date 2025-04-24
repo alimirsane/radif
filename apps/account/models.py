@@ -7,6 +7,12 @@ import requests
 import json
 from django.db import transaction
 
+import logging
+from django.conf import settings
+from requests.adapters import HTTPAdapter, Retry
+
+logger = logging.getLogger(__name__)
+
 
 class EducationalField(models.Model):
     name = models.CharField(max_length=100)
@@ -155,7 +161,7 @@ class User(AbstractUser):
                 self.role.add(Role.objects.get(role_key='student'))
             self.role.add(Role.objects.get(role_key='customer'))
 
-    def labsnet_list(self):
+        """ def labsnet_list(self):
         import requests
         data = {
             "user_name": "sharif_uni",
@@ -171,7 +177,73 @@ class User(AbstractUser):
             verify=False
         )
         response.raise_for_status()
-        return response.json()
+        return response.json() """
+
+    # Retry logic is added for expectional cases of failed API request.
+    def labsnet_list(self):
+        """
+        Fetch remaining credits from Labsnet.
+        Retries transient errors, logs unexpected responses,
+        and dynamically includes every child’s test code.
+        """
+        # 1) Build credentials & identity
+        # username = settings.LABSNET_USERNAME
+        # password = settings.LABSNET_PASSWORD
+        username = "sharif_uni"
+        password = "sharif_uni"
+        is_personal = (self.account_type == 'personal')
+        customer_type = '1' if is_personal else '2'
+        national_code = (
+            self.national_id
+            if is_personal
+            else self.company_national_id
+        )
+
+        data = {
+            'user_name': username,
+            'password': password,
+            'type': customer_type,
+            'org_id': "343",  # settings.LABSNET_ORG_ID,
+            'national_code': national_code,
+            'services[0]': "3839"  # Just to pull the credit list
+        }
+
+        # 2) Include every active child’s Labsnet experiment ID
+        """ children = self.child_requests.exclude(request_status__step__name__in=['رد شده'])
+        for idx, child in enumerate(children):
+            data[f'services[{idx}]'] = child.experiment.labsnet_experiment_id """
+
+        # 3) Set up a session with retry logic
+        session = requests.Session()
+        retries = Retry(
+            total=3,
+            backoff_factor=0.5,
+            status_forcelist=[500, 502, 503, 504],
+            allowed_methods=['POST']
+        )
+        session.mount('https://', HTTPAdapter(max_retries=retries))
+
+        try:
+            resp = session.post(
+                'https://labsnet.ir/api/credit_list',
+                data=data,
+                timeout=(5, 15),  # (connect timeout, read timeout)
+                verify=False
+            )
+            resp.raise_for_status()
+            result = resp.json()
+        except Exception as e:
+            logger.error(f"Failed to call Labsnet credit_list: {e}")
+            return {}
+
+        # 4) Check Labsnet
+        # only bail out if there really are no credits key
+        if "credits" not in result:
+            logger.warning(f"Labsnet returned unexpected payload: {result!r}")
+            return {}
+
+        # 5) Return just the credit data dictionary
+        return result
 
 
 class Role(models.Model):
@@ -229,8 +301,8 @@ class GrantTransaction(models.Model):
         return str(self.sender) + " -> " + str(self.receiver) + " : " + str(self.amount) + " : " + str(self.datetime) + " : " + str(self.expiration_date)
 
     def pay(self):
-            self.status = 'success'
-            self.save()
+        self.status = 'success'
+        self.save()
 
     def owners(self):
         return [self.sender, self.receiver]
@@ -384,7 +456,6 @@ class OTPserver(models.Model):
             # if response.status_code == 200:
             return json.loads(response.text)
 
-
     def get_new_token(self):
         headers = {"Content-Type": "application/json"}
         data = {"Username": self.username, "Password": self.password}
@@ -399,7 +470,7 @@ class OTPserver(models.Model):
 
     def check_token(self):
         if self.token_expiration:
-            if self.token_expiration < timezone.now(): # datetime.datetime.now()
+            if self.token_expiration < timezone.now():  # datetime.datetime.now()
                 self.get_new_token()
                 return True
             else:
