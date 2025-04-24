@@ -1,5 +1,7 @@
 from rest_framework import serializers
 import jdatetime
+from django.db.models import Prefetch
+
 from apps.account.api.serializers import UserSummerySerializer
 from apps.appointment.models import Queue, Appointment
 from datetime import datetime, timedelta, time
@@ -16,7 +18,7 @@ class AppointmentSerializerLite(serializers.ModelSerializer):
 
 
 class QueueSerializer(serializers.ModelSerializer):
-    appointments = AppointmentSerializerLite(many=True, read_only=True)
+    appointments = AppointmentSerializerLite(many=True, read_only=True, source='prefetched_appointments')
 
     class Meta:
         model = Queue
@@ -36,7 +38,6 @@ class AppointmentListSerializer(serializers.Serializer):
 
 
 class WorkflowStepSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = WorkflowStep
         fields = ["id", "name", "description", "step_color"]
@@ -62,7 +63,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
         if queue.status != 'active':
             raise serializers.ValidationError({"queue": "این صف فعال نیست و نمی‌توان نوبت رزرو کرد."})
-
 
         if experiment.appointment_limit_hours > 0:
             today_jalali = jdatetime.date.today()
@@ -120,7 +120,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
         return data
 
     def get_request_status(self, obj):
-        return WorkflowStepSerializer(obj.request.lastest_status().step).data
+        last = getattr(obj, 'all_statuses', [])
+        if last:
+            return WorkflowStepSerializer(last[-1].step).data
+        return None
 
     def get_end_time(self, obj):
         return obj.end_time()
@@ -129,29 +132,19 @@ class AppointmentSerializer(serializers.ModelSerializer):
         return obj.date()
 
     def get_extra_fields(self, obj):
-        if obj.request:
-            request_id = obj.request.id
-            request_number = obj.request.request_number
-            if obj.request.parent_request:
-                request_parent_number = obj.request.parent_request.request_number
-            else:
-                request_parent_number = None
+        req = obj.request
+        if req:
+            req_id = req.id
+            req_num = req.request_number
+            parent = req.parent_request
+            parent_num = parent.request_number if parent else None
         else:
-            request_id = None
-            request_number = None
-            request_parent_number = None
-        if obj.queue.experiment:
-            experiment_name = obj.queue.experiment.name
-        else:
-            experiment_name = None
-
-        queue_status = obj.queue.status
-
-        data = {
-            'request_id': request_id,
-            'request_number': request_number,
-            'request_parent_number': request_parent_number,
-            'experiment_name': experiment_name,
-            'queue_status': queue_status,
+            req_id = req_num = parent_num = None
+        exp_name = obj.queue.experiment.name if obj.queue.experiment else None
+        return {
+            'request_id': req_id,
+            'request_number': req_num,
+            'request_parent_number': parent_num,
+            'experiment_name': exp_name,
+            'queue_status': obj.queue.status,
         }
-        return data
