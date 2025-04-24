@@ -1,55 +1,92 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import rest_framework as filters
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 import datetime
-from datetime import datetime, timedelta
 from django_filters import rest_framework as filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.account.api.serializers import UserSummerySerializer
-from apps.account.permissions import AccessLevelPermission, query_set_filter_key
-
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 
+from django.db.models import Prefetch
+from datetime import datetime, timedelta
+
+from apps.account.api.serializers import UserSummerySerializer
 from apps.appointment.api.filters import QueueFilter, AppointmentFilter
 from apps.appointment.models import Queue, Appointment
 from apps.appointment.api.serializers import QueueSerializer, AppointmentSerializer, AppointmentListSerializer
 from apps.lab.api.serializers import StatusSerializer
 from apps.lab.tasks import check_pending_appointment
-
+from apps.lab.models import Status as LabStatus
 
 class QueueListCreateView(ListCreateAPIView):
-    queryset = Queue.objects.all()
+    # queryset = Queue.objects.all()
     serializer_class = QueueSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = QueueFilter
 
+    def get_queryset(self):
+        return Queue.objects.select_related('experiment').prefetch_related(
+            Prefetch('appointments',
+                queryset=Appointment.objects.select_related('reserved_by'),
+                to_attr='prefetched_appointments'
+            )
+        )
 
 class QueueDetailView(RetrieveUpdateDestroyAPIView):
-    queryset = Queue.objects.all()
+    # queryset = Queue.objects.all()
     serializer_class = QueueSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Queue.objects.select_related('experiment').prefetch_related(
+            Prefetch(
+                'appointments',
+                queryset=Appointment.objects.select_related('reserved_by'),
+                to_attr='prefetched_appointments'
+            )
+        )
 
 class OwnedAppointmentListView(ListAPIView):
-    queryset = Appointment.objects.all()
+    # queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
     # pagination_class = DefaultPagination
 
     def get_queryset(self):
-        appointments = Appointment.objects.filter(request__owner=self.request.user) | Appointment.objects.filter(reserved_by=self.request.user)
-        return appointments.distinct().order_by('-id')
-        # return self.request.user.requests.filter(is_completed=True, has_parent_request=False)
+        qs = (
+            Appointment.objects.filter(request__owner=self.request.user)
+            | Appointment.objects.filter(reserved_by=self.request.user)
+        )
+        return qs.distinct().select_related(
+                  'reserved_by',
+                  'queue',
+                  'queue__experiment',
+                  'request',
+                  'request__parent_request',
+              ).prefetch_related(
+                  'request__request_status__step',
+              ).order_by('-id')
 
 
 class AppointmentListCreateView(ListCreateAPIView):
-    queryset = Appointment.objects.all()
+    #queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Appointment.objects.select_related(
+                    'reserved_by',
+                    'queue',
+                    'queue__experiment',
+                    'request',
+                    'request__parent_request',
+                ).prefetch_related(
+                    'request__request_status__step',
+                )
 
     def perform_create(self, serializer):
         queue = serializer.validated_data['queue']
@@ -66,10 +103,20 @@ class AppointmentListCreateView(ListCreateAPIView):
 
 
 class AppointmentDetailView(RetrieveUpdateDestroyAPIView):
-    queryset = Appointment.objects.all()
+    # queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Appointment.objects.select_related(
+                    'reserved_by',
+                    'queue',
+                    'queue__experiment',
+                    'request',
+                    'request__parent_request',
+                ).prefetch_related(
+                    'request__request_status__step',
+                )
 
 class AvailableAppointmentsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -91,17 +138,31 @@ class AvailableAppointmentsView(APIView):
         start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
         end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
 
-        queues = Queue.objects.filter(date__range=[start_date, end_date])
+        # queues = Queue.objects.filter(date__range=[start_date, end_date])
+        queues = Queue.objects.filter(date__range=[start_date, end_date]).select_related('experiment')
 
         if experiment_id:
             queues = queues.filter(experiment_id=experiment_id)
 
-        reserved_appointments = Appointment.objects.filter(queue__in=queues).select_related('reserved_by', 'request')
+        # reserved_appointments = Appointment.objects.filter(queue__in=queues).select_related('reserved_by', 'request')
+        reserved_appointments = (
+            Appointment.objects.filter(queue__in=queues)
+              .select_related(
+                  'reserved_by',
+                  'request',
+                  'queue__experiment',
+                  'request__parent_request',
+              )
+              .prefetch_related(
+                  Prefetch(
+                    'request__request_status',
+                    queryset=LabStatus.objects.select_related('step').order_by('created_at'),
+                    to_attr='all_statuses'
+                  )
+              )
+        )
 
-        reserved_map = {
-            (appt.queue_id, appt.start_time): appt for appt in reserved_appointments
-        }
-
+        reserved_map = {(appt.queue_id, appt.start_time): appt for appt in reserved_appointments}
         all_appointments = []
 
         for queue in queues:
@@ -115,26 +176,28 @@ class AvailableAppointmentsView(APIView):
                     if not (end_time <= queue.break_start or current_time >= queue.break_end):
                         is_in_break_time = True
 
-                appointment_key = (queue.id, current_time)
-                reserved_appt = reserved_map.get(appointment_key)
-
-                if reserved_appt:
-                    request_status = StatusSerializer(reserved_appt.request.lastest_status()).data if reserved_appt.request else None
-                    request_id = reserved_appt.request.id if reserved_appt.request else None
-                    request_number = reserved_appt.request.request_number if reserved_appt.request else None
-                    request_parent_number = reserved_appt.request.parent_request.request_number if reserved_appt.request.parent_request else None
-                    appointment_id = reserved_appt.id
+                appt = reserved_map.get((queue.id, current_time))
+                if appt:
+                    last_status = appt.all_statuses[-1] if appt.all_statuses else None
+                    request_status = StatusSerializer(last_status).data if last_status else None
+                    request = appt.request
+                    request_id = request.id
+                    request_number = request.request_number
+                    parent = request.parent_request
+                    request_parent_number = parent.request_number if parent else None
+                    appointment_id = appt.id
+                    reserved_by = appt.reserved_by.id if appt.reserved_by else None
+                    reserved_by_obj = UserSummerySerializer(appt.reserved_by).data if appt.reserved_by else None
+                    status = appt.status
                 else:
                     request_status = None
                     request_id = None
-                    appointment_id = None
                     request_number = None
                     request_parent_number = None
-
-                reserved_by = reserved_appt.reserved_by.id if reserved_appt and reserved_appt.reserved_by else None
-                reserved_by_obj = UserSummerySerializer(reserved_appt.reserved_by).data if reserved_appt and reserved_appt.reserved_by else None
-
-                status = reserved_appt.status if reserved_appt else "free"
+                    appointment_id = None
+                    reserved_by = None
+                    reserved_by_obj = None
+                    status = "free"
 
                 if not is_in_break_time:
                     all_appointments.append({
@@ -145,6 +208,7 @@ class AvailableAppointmentsView(APIView):
                         'request_number': request_number,
                         'request_parent_number': request_parent_number,
                         "request_status": request_status,
+                        "experiment_name": queue.experiment.name,
                         "start_time": current_time,
                         "end_time": end_time,
                         "status": status,
