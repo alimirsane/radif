@@ -387,7 +387,6 @@ class Request(models.Model):
                     # raise ValidationError(
                     #     'نمی‌توانید وضعیت مادر را تغییر دهید تا زمانی که تمام فرزندان در وضعیت مناسب قرار نگرفته باشند.')
 
-
     def update_parent_status(self):
         if self.child_requests.exists():
             if any(child.is_returned for child in self.child_requests.all()):
@@ -441,7 +440,7 @@ class Request(models.Model):
                     pr = self.get_latest_order_payment_records().first()
                     self.get_latest_order_payment_records().create(payer=pr.payer, order=pr.order, charged=pr.charged,
                                                                    settlement_type=pr.settlement_type,
-                                                                   amount=-1*self.price,  payment_type=pr.payment_type,
+                                                                   amount=-1 * self.price, payment_type=pr.payment_type,
                                                                    successful=pr.successful, is_returned=pr.is_returned)
                     payment_records = self.get_latest_order_payment_records().filter(successful=True)
                     payment_records.update(is_returned=True)
@@ -539,7 +538,6 @@ class Request(models.Model):
             # except Exception as e:
             #     print(f"An error occurred: {e}")
 
-
             if self.labsnet:
                 labsnet_discount = self.apply_labsnet_credits()
                 self.price -= labsnet_discount
@@ -556,7 +554,6 @@ class Request(models.Model):
             else:
                 self.price_sample_returned = Decimal(0)
             self.save()
-
 
     def apply_labsnet_credits(self):
         """
@@ -586,7 +583,6 @@ class Request(models.Model):
         labsnet2_discount = apply_labsnet_credit(self.labsnet2)
 
         return labsnet1_discount + labsnet2_discount
-
 
     def apply_grant_requests(self):
         start_price = self.price
@@ -672,7 +668,6 @@ class Request(models.Model):
             print(str(e))
         self.save()
 
-
     def labsnet_create(self):
         import requests
         if self.labsnet_status == 2:
@@ -685,7 +680,7 @@ class Request(models.Model):
             "org_id": "343",
             "name": self.owner.first_name if self.owner.account_type == 'personal' else self.owner.company_name,
             "family": self.owner.last_name if self.owner.account_type == 'personal' else "",
-            "mobile": self.owner.username.replace('+98','0'),
+            "mobile": self.owner.username.replace('+98', '0'),
             "name_rabet_company": "",
             "family_rabet_company": "",
         }
@@ -744,44 +739,71 @@ class Request(models.Model):
             national_id = self.owner.national_id
             srv_id = self.experiment.labsnet_experiment_id
 
-
             for child_request in self.child_requests.exclude(request_status__step__name__in=['رد شده']):
+
+                is_personal = (self.owner.account_type == 'personal')
+                national_code = self.owner.national_id if is_personal else self.owner.company_national_id
+
                 duration, duration_unit_price, unit_price = 0, 0, 0
                 gregorian_date = child_request.created_at.date()
                 jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
                 date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
+
                 if child_request.experiment.test_unit_type == 'time':
                     type_tarefe = 1
-                    duration = child_request.test_duration or 1
+                    duration = int(child_request.test_duration) or 1
                     formresponses_count = str(duration)
-                    duration_unit_price = int(child_request.price) / duration  # duration
+                    duration_unit_price = int(int(child_request.price) / duration)  # duration
                 else:
                     type_tarefe = 2
                     count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
                                 'response_count__sum'] or 1
                     formresponses_count = str(count)
-                    unit_price = int(child_request.price) / count  # count
+                    unit_price = int(int(child_request.price) / count)  # count
+
                 payload = {
                     "lab": "مجموعه آزمایشگاه ها - دانشگاه صنعتی شریف مرکز خدمات آزمایشگاهی",
                     "lab_id": "343",
-                    "customer_type": "1" if self.owner.account_type == 'personal' else "2",
-                    "type_credit": "1",
-                    "national_code": self.owner.national_id if self.owner.account_type == 'personal' else self.owner.company_national_id,
-                    # "national_id": "",
-                    # "national_id_id": "",
+                    "customer_type": "1" if is_personal else "2",
+                    "national_code": national_code,
+                    # "national_code":    "",
+                    "national_id": "" if is_personal else national_code,
+                    "national_id_id": "",
+                    "name_rabet": "",
+                    "family_rabet": "",
+                    # "name": "",
+                    # "family": "",
+                    "grade": "",
+                    "center": "دانشگاه صنعتی شریف ",  # need to update!
+                    "center_id": "",
                     "mobile": self.owner.username.replace('+98', '0'),
+                    "tell": "",
+                    "email": "info@sharif.ir",  # need to update!
+                    "inst_srv": "خدمت: شناسایی و تعیین میزان عناصر به روش طیف سنجی نشری پلاسما کوپل شده القایی ICP - شناسه آزمون: 41402",
                     "checked[]": f"{str(self.labsnet1.labsnet_id)}, {str(self.labsnet2.labsnet_id)}" if self.labsnet1 and self.labsnet2 else f"{str(self.labsnet1.labsnet_id)}",
+                    "type_credit": "1",
+                    "rel_pro": "",
+                    "rel_standard": "",
+                    "co_lab": "",
+                    "service_provider": "",  # need to update!
                     "date": date_str,
-                    "type_tarefe": type_tarefe,
-                    "duration": duration,
-                    "duration_tarefe": duration_unit_price,
-                    "count": str(formresponses_count),
-                    "tarefe": str(unit_price),
+                    "offer_date": "",
+                    "type_tarefe": str(type_tarefe),
+                    "count": str(formresponses_count) if type_tarefe == 2 else 1,
+                    "duration": str(duration) if type_tarefe == 1 else "",
+                    "duration_tarefe": str(duration_unit_price) if type_tarefe == 1 else "",
+                    "tarefe": str(unit_price) if type_tarefe == 2 else "",
                     "description": child_request.description or "Request submitted via system",
+                    "discount": "",
                     "sum_pay": str(child_request.price),
+                    "credit_ceil": "",  # Adjust based on your pricing logic
                     "credit_use": str(self.apply_labsnet_credits()),
+                    "extra": "",
+                    "customer_pay": "",  # Adjust based on logic
+                    "co_lab_amount": "",
                     "inst_submit": "",
                 }
+
                 self.labsnet_result += f'data={str(payload)}'
                 self.save()
 
@@ -803,6 +825,7 @@ class Request(models.Model):
             self.save()
             return self
         except Exception as e:
+            print(f"[LabsNetGrant ERROR] {e}", flush=True)
             self.labsnet_result += f' + exception={e}'
             self.save()
 
@@ -838,6 +861,7 @@ class Request(models.Model):
             self.labsnet_result += f' + exception={e}'
             self.labsnet_status = 3
             return self
+
 
 class RequestCertificate(models.Model):
     request = models.OneToOneField('Request', on_delete=models.CASCADE, related_name='certificate',
@@ -913,7 +937,7 @@ class FormResponse(models.Model):
         request_formresponses = self.request.formresponse.all().order_by('id')
         counter = 1
         for request_formresponse in request_formresponses:
-            request_formresponse.form_number = f'{self.request.request_number.replace("-","")}{counter:03d}'
+            request_formresponse.form_number = f'{self.request.request_number.replace("-", "")}{counter:03d}'
             request_formresponse.save()
             counter += 1
 
@@ -948,7 +972,6 @@ class Workflow(models.Model):
             if step not in ordered_steps:
                 ordered_steps.append(step)
             step = step.next_step
-
 
         for step in ordered_steps:
             reject_step = step.reject_step
@@ -1078,7 +1101,6 @@ class RequestResult(models.Model):
     file = models.FileField(upload_to=request_result_directory_path, verbose_name='فایل')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     description = models.TextField(blank=True, verbose_name='توضیحات')
-
 
     class Meta:
         verbose_name = 'نتیجه درخواست'
