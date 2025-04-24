@@ -154,6 +154,18 @@ class OrderPaymentSerializer(serializers.ModelSerializer):
         return instance
 
 
+class OrderPrePaymentSerializer(serializers.ModelSerializer):
+    payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
+
+    class Meta:
+        model = Order
+        fields = ['order_status', 'payment_record']
+
+    def update(self, instance, validated_data):
+        instance.set_prepayment()
+        return instance
+
+
 class OrderCancelSerializer(serializers.ModelSerializer):
     order_status = serializers.ReadOnlyField()
 

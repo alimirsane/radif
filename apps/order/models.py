@@ -215,6 +215,18 @@ class Order(models.Model):
                     return response
 
 
+    def set_prepayment(self):
+        if self.request.has_prepayment and self.order_status == 'pending' and self.request.is_completed:
+            user = (self.buyer if self.buyer.account_type == "personal" else self.request.owner.linked_users.all().first())
+            payment_record, created = PaymentRecord.objects.get_or_create(payment_type='prepayment', order=self,
+                                                                          amount=int(
+                                                                              self.request.total_prepayment_amount),
+                                                                          payer=self.buyer)
+            success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
+            if success:
+                pass
+            else:
+                return response
 
     def set_ticket(self):
         if not Ticket.objects.filter(profile_id=self.buyer.id, order=self).exists():

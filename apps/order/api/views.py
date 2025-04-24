@@ -36,7 +36,7 @@ from apps.order.api.serializers import OrderSerializer, OrderDetailSerializer, O
     OrderCancelSerializer, OrderPaymentSerializer, PaymentRecordSerializer, OrderBoughtSerializer, \
     PromotionCodeSerializer, PaymentSummarySerializer, \
     PaymentRecordListSerializer, PaymentRecordConfirmSerializer, PaymentRecordInvoiceSerializer, \
-    OrderPaymentRecordSerializer, FileUploadSerializer
+    OrderPaymentRecordSerializer, FileUploadSerializer, OrderPrePaymentSerializer
 # PromotionCodeStrSerializer,TransactionSerializer
 # TicketSerializer, SubscriptionSerializer
 # from apps.order.zarrinpal import ZarrinPalConfirmSerializer, ZarrinPalSerializer
@@ -162,6 +162,14 @@ class OrderPaymentView(UpdateAPIView):
 
         queryset = queryset.filter(buyer=self.request.user)
 
+        return queryset
+
+
+class OrderPrePaymentView(UpdateAPIView):
+    serializer_class = OrderPrePaymentSerializer
+
+    def get_queryset(self):
+        queryset = Order.objects.filter(order_status='pending', buyer=self.request.user)
         return queryset
 
 
