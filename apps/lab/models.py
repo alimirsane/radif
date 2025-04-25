@@ -539,10 +539,7 @@ class Request(models.Model):
             #     print(f"An error occurred: {e}")
 
             if self.labsnet:
-                labsnet_discount = self.apply_labsnet_credits()
-                self.labsnet_discount = labsnet_discount
-                self.price -= labsnet_discount
-                self.save()
+                self.set_labsnet_credits()
                 # self.price -= int(self.labsnet_discount)
 
             self.revoke_grant_usage()
@@ -555,6 +552,14 @@ class Request(models.Model):
             else:
                 self.price_sample_returned = Decimal(0)
             self.save()
+
+    def set_labsnet_credits(self):
+        if self.labsnet:
+            labsnet_discount = self.apply_labsnet_credits()
+            self.labsnet_discount = labsnet_discount
+            self.price -= labsnet_discount
+            self.save()
+
 
     def apply_labsnet_credits(self):
         """

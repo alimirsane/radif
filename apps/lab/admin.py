@@ -38,12 +38,31 @@ def pending_appointment(modeladmin, request, queryset):
         check_and_process_pending_appointment.apply_async((req.id,), countdown=10)
 
 
+@admin.action(description="set_labsnet_create")
+def set_labsnet_create(modeladmin, request, queryset):
+    for req in queryset:
+        if req.lastest_status().name == 'در ‌انتظار نمونه':
+            if not req.parent_request and not req.labsnet:
+                req.labsnet_create()
+                req.save()
+        if req.lastest_status().name == 'در انتظار پرداخت' and (req.labsnet):
+            if not req.parent_request:
+                req.labsnet_create_grant()
+                req.save()
+
+
+@admin.action(description="set_price")
+def set_price(modeladmin, request, queryset):
+    for req in queryset:
+        req.set_price()
+
+
 @admin.register(Request)
 class RequestAdmin(admin.ModelAdmin):
     list_display = ('experiment', 'owner', 'experiment', 'price', 'is_completed', 'created_at', 'updated_at')
     search_fields = ('experiment',)
     list_filter = ('created_at', 'updated_at')
-    actions = [pending_appointment]
+    actions = [pending_appointment, set_labsnet_create, set_price]
 
 
 @admin.register(Department)
