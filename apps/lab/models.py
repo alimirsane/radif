@@ -540,6 +540,7 @@ class Request(models.Model):
 
             if self.labsnet:
                 labsnet_discount = self.apply_labsnet_credits()
+                self.labsnet_discount = labsnet_discount
                 self.price -= labsnet_discount
                 self.save()
                 # self.price -= int(self.labsnet_discount)
