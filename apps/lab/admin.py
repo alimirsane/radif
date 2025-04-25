@@ -41,11 +41,11 @@ def pending_appointment(modeladmin, request, queryset):
 @admin.action(description="set_labsnet_create")
 def set_labsnet_create(modeladmin, request, queryset):
     for req in queryset:
-        if req.lastest_status().name == 'در ‌انتظار نمونه':
+        if req.lastest_status().step.name == 'در ‌انتظار نمونه':
             if not req.parent_request and not req.labsnet:
                 req.labsnet_create()
                 req.save()
-        if req.lastest_status().name == 'در انتظار پرداخت' and (req.labsnet):
+        if req.lastest_status().step.name == 'در انتظار پرداخت' and (req.labsnet):
             if not req.parent_request:
                 req.labsnet_create_grant()
                 req.save()
