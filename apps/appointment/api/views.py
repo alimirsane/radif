@@ -178,7 +178,7 @@ class AvailableAppointmentsView(APIView):
 
                 appt = reserved_map.get((queue.id, current_time))
                 if appt:
-                    last_status = appt.all_statuses[-1] if appt.all_statuses else None
+                    last_status = appt.request.all_statuses[-1] if appt.request and hasattr(appt.request, 'all_statuses') and appt.request.all_statuses else None
                     request_status = StatusSerializer(last_status).data if last_status else None
                     request = appt.request
                     request_id = request.id
