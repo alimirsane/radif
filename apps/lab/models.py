@@ -767,6 +767,14 @@ class Request(models.Model):
                     formresponses_count = str(count)
                     unit_price = int(int(child_request.price) / count)  # count
 
+                checked = []
+                if self.labsnet1:
+                    checked.append(str(self.labsnet1.labsnet_id))
+                if self.labsnet2:
+                    checked.append(str(self.labsnet2.labsnet_id))
+
+                # payload["checked[]"] = checked
+
                 payload = {
                     "lab": "مجموعه آزمایشگاه ها - دانشگاه صنعتی شریف مرکز خدمات آزمایشگاهی",
                     "lab_id": "343",
@@ -786,7 +794,8 @@ class Request(models.Model):
                     "tell": "",
                     "email": "info@sharif.ir",  # need to update!
                     "inst_srv": "خدمت: شناسایی و تعیین میزان عناصر به روش طیف سنجی نشری پلاسما کوپل شده القایی ICP - شناسه آزمون: 41402",
-                    "checked[]": f"{str(self.labsnet1.labsnet_id)}, {str(self.labsnet2.labsnet_id)}" if self.labsnet1 and self.labsnet2 else f"{str(self.labsnet1.labsnet_id)}",
+                    "checked[]": checked,
+                    # f"{str(self.labsnet1.labsnet_id)}, {str(self.labsnet2.labsnet_id)}" if self.labsnet1 and self.labsnet2 else f"{str(self.labsnet1.labsnet_id)}",
                     "type_credit": "1",
                     "rel_pro": "",
                     "rel_standard": "",
@@ -803,7 +812,7 @@ class Request(models.Model):
                     "discount": "",
                     "sum_pay": str(child_request.price),
                     "credit_ceil": "",  # Adjust based on your pricing logic
-                    "credit_use": str(self.apply_labsnet_credits()),
+                    "credit_use": str(child_request.labsnet_discount or child_request.apply_labsnet_credits()),
                     "extra": "",
                     "customer_pay": "",  # Adjust based on logic
                     "co_lab_amount": "",
