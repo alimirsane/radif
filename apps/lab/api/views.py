@@ -1,6 +1,7 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView, RetrieveAPIView, \
     RetrieveUpdateAPIView, get_object_or_404, ListAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
 from apps.account.permissions import AccessLevelPermission, query_set_filter_key
 from apps.core.functions import export_excel
@@ -300,6 +301,40 @@ class UpdateRequestLabsnetView(UpdateAPIView):
         """
         request_obj = get_object_or_404(Request, pk=self.kwargs["pk"])
         return request_obj
+
+
+class UpdateRequestRecalculateView(APIView):
+
+    def patch(self, request, *args, **kwargs):
+        request_id = kwargs.get('pk')
+        req_obj = get_object_or_404(Request, id=request_id)
+
+        try:
+            req_obj.set_price()
+            return Response({"message": "محاسبه مجدد قیمت با موفقیت انجام شد."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": f"خطا در محاسبه قیمت: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateRequestResendLabsnetView(APIView):
+
+    def patch(self, request, *args, **kwargs):
+        request_id = kwargs.get('pk')
+        req_obj = get_object_or_404(Request, id=request_id)
+
+        try:
+            if req_obj.lastest_status().step.name == 'در ‌انتظار نمونه':
+                if not req_obj.parent_request and not req_obj.labsnet:
+                    req_obj.labsnet_create()
+                    req_obj.save()
+            if req_obj.lastest_status().step.name == 'در انتظار پرداخت' and (req_obj.labsnet):
+                if not req_obj.parent_request:
+                    req_obj.labsnet_create_grant()
+                    req_obj.save()
+            return Response({"message": "ارسال مجدد انجام شد."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": f"خطا در ارسال: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class RequestCertificateAPIView(RetrieveAPIView):

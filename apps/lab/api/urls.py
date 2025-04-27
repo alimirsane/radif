@@ -45,6 +45,9 @@ urlpatterns = [
     path('requests/<int:pk>/result/', RequestResultAPIView.as_view(), name='request-result'),
     path('requests/<int:pk>/labsnet/', UpdateRequestLabsnetView.as_view(), name='request-labsnet'),
 
+    path('requests/<int:pk>/recalculate/', UpdateRequestRecalculateView.as_view(), name='request-recalculate'),
+    path('requests/<int:pk>/resend-labsnet/', UpdateRequestResendLabsnetView.as_view(), name='request-resend-labsnet'),
+
     path('requests/', RequestListAPIView.as_view(), name='requests-list'),
     path('requests/<int:pk>/', RequestDetailAPIView.as_view(), name='request-detail'),
     path('requests/<int:pk>/certificate', RequestCertificateAPIView.as_view(), name='request-detail'),
