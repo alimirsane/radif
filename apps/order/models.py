@@ -374,7 +374,7 @@ class PaymentRecord(models.Model):
 
         try:
             if self.order and self.order.order_status == 'pending':
-                if self.order.request.has_prepayment:
+                if self.payment_type == "prepayment":
                     self.order.request.prepayment_payed()
                     self.charged = True
 
