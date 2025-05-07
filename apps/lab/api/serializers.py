@@ -7,7 +7,6 @@ from apps.account.api.serializers import UserSerializer, GrantRecordSerializer, 
 from apps.account.api.views import UserDetailAPIView
 from apps.account.models import User, LabsnetCredit
 from apps.appointment.api.serializers import AppointmentListSerializer, AppointmentSerializer
-from apps.appointment.models import Appointment
 from apps.form.api.serializers import FormSerializer, FormSummerySerializer
 from apps.lab.models import Laboratory, Experiment, Device, Parameter, Request, Department, LabType, FormResponse, \
     Status, Workflow, WorkflowStep, WorkflowStepButton, RequestResult, RequestCertificate, DiscountHistory, \
@@ -353,7 +352,6 @@ class RequestListSerializer(serializers.ModelSerializer):
     labsnet2_obj = LabsnetCreditSerializer(source='labsnet2', read_only=True, required=False)
 
     appointments_obj = AppointmentSerializer(source='appointments', many=True, read_only=True)
-    appointments_obj_ = serializers.SerializerMethodField(read_only=True)
 
 
     # def latest_status_obj_(self, obj):
@@ -373,9 +371,6 @@ class RequestListSerializer(serializers.ModelSerializer):
         return RequestListMainFormResponseSerializer(
             FormResponse.objects.filter(request=obj, is_main=True), many=True
         ).data
-
-    def get_appointments_obj_(self, obj):
-        return AppointmentSerializer(Appointment.objects.filter(request=obj), many=True).data
 
 
 class DiscountHistorySerializer(serializers.ModelSerializer):
@@ -399,7 +394,6 @@ class ChildRequestDetailSerializer(serializers.ModelSerializer):
     payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order_payment_records')
     discount_history_objs = DiscountHistorySerializer(many=True, source='request_discounts')
     appointments_obj = AppointmentSerializer(source='appointments', many=True, read_only=True)
-    appointments_obj_ = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Request
@@ -418,10 +412,6 @@ class ChildRequestDetailSerializer(serializers.ModelSerializer):
         return RequestDetailMainFormResponseSerializer(
             FormResponse.objects.filter(request=obj, is_main=True), many=True
         ).data
-
-    def get_appointments_obj_(self, obj):
-        return AppointmentSerializer(Appointment.objects.filter(request=obj), many=True).data
-
 
 class RequestDetailSerializer(serializers.ModelSerializer):
     result_objs = RequestDetailResultSerializer(read_only=True, source='request_results', many=True)
