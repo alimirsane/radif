@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 from io import BytesIO
 import json
+import time
 
 
 class LabsNetClient:
@@ -64,6 +65,9 @@ class LabsNetClient:
 
     def login(self, username, password):
         """Log in to the LabsNet system."""
+        self.username = username
+        self.password = password
+
         get_login_url = f"https://login.labsnet.ir"
         post_login_url = f"https://account.labsnet.ir/index.php?ctrl=index&actn=login"
 
@@ -116,12 +120,39 @@ class LabsNetClient:
         if captcha_text:
             login_payload["captcha_code"] = captcha_text
 
+        try:
+            login_response = self.session.post(post_login_url, headers=self.headers, data=login_payload)
+            login_response.raise_for_status()
+            if login_response.status_code == 200 and "dashboard" in login_response.text:
+                print("✅ Login successful.")
+                return True
+            else:
+                print("⚠️ Login failed.")
+                return False
+        except Exception as e:
+            print(f"❌ Login Exception: {e}")
+            return False
+
         # Perform login
-        login_response = self.session.post(post_login_url, headers=self.headers, data=login_payload)
-        login_response.raise_for_status()
 
         self.session.cookies.update(login_response.cookies)
         return self.ensure_login(login_response)
+
+    def safe_post(self, url, data, retries=3):
+        for attempt in range(retries):
+            try:
+                response = self.session.post(url, data=data, headers=self.headers,
+                                             cookies=self.session.cookies.get_dict(), timeout=30)
+                response.raise_for_status()
+                return response
+            except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
+                print(f"❗ Request error on attempt {attempt + 1}: {e}")
+                if attempt == retries - 1:
+                    raise
+                time.sleep(2)
+                # Try re-login if session seems broken
+                if self.username and self.password:
+                    self.login(self.username, self.password)
 
     def ensure_login(self, login_response):
         # Check login response
@@ -130,7 +161,7 @@ class LabsNetClient:
 
         if login_response.status_code in [200, 302] and 'PHPSESSID' in self.session.cookies:
             response_text = login_response.text.strip()
-            #print(response_text)
+            # print(response_text)
 
             # Handle known login errors
             if re.search(r"عبارت\s*امنیتی\s*اجباریست", response_text):
@@ -148,7 +179,6 @@ class LabsNetClient:
         else:
             print(f"Login failed. Status code: {login_response.status_code}")
             return False
-
 
     def ensure_dashboard_access(self):
         """Ensure the session is active by checking dashboard data."""
@@ -174,45 +204,49 @@ class LabsNetClient:
         """Submit a service request."""
 
         request_url = f"https://labsnet.ir/lab_admin/service_request"
+
         # Fetch the page to retrieve a new _token
         response = self.session.get(request_url, headers=self.headers)
         response.raise_for_status()
 
-        # Extract _token New JavaScript version
+        # Extract _token
         csrf_token_match = re.search(r"window\._token\s*=\s*'([^']+)'", response.text)
         csrf_token = csrf_token_match.group(1) if csrf_token_match else None
+        if not csrf_token:
+            print("❌ CSRF Token not found.")
+            return None
+        print(f"🔑 CSRF Token: {csrf_token}")
 
-        # csrf_token_match = re.search(r'name="_token" value="([^"]+)"', response.text)
-        # csrf_token = csrf_token_match.group(1) if csrf_token_match else None
-        payload["_token"] = csrf_token
-
-        print(csrf_token)
         print(self.session.cookies.get_dict())
 
+        # Build a new list of tuples for the form-data
+        payload_items = list(payload) if isinstance(payload, list) else list(payload.items())
+
+        # Add the _token
+        payload_items.append(('_token', csrf_token))
+
+        # Get customer and center IDs
         name, family, national_code_id, center_id = self.get_customer_and_center_ids(self.session, national_id,
                                                                                      csrf_token)
-        payload["name"] = name
-        payload["family"] = family
-        payload["national_code_id"] = national_code_id
-        payload["center_id"] = center_id
 
+        payload_items.append(('name', name))
+        payload_items.append(('family', family))
+        payload_items.append(('national_code_id', national_code_id))
+        payload_items.append(('center_id', center_id))
+
+        # Get inst_srv_id
         inst_srv_id = self.get_inst_srv_id(self.session, srv_id, csrf_token)
         if inst_srv_id:
             print(f"Successfully retrieved inst_srv_id: {inst_srv_id}")
         else:
             print("Failed to retrieve inst_srv_id.")
+        payload_items.append(('inst_srv_id', inst_srv_id))
 
-        payload["inst_srv_id"] = inst_srv_id
-
-        print("The payload being submitted is :")
-        print(payload)
-        with open("payload_debug.json", "w") as f:
-            json.dump(payload, f, indent=2)
-        # Submit the request
-        print("Before POST")
-        response = self.session.post(request_url, headers=self.headers, cookies=self.session.cookies.get_dict(),
-                                     data=payload, timeout=15)
-        print(f"After POST. response.status_code: {response.status_code}")
+        # Step 3: POST the final payload
+        print(f"🚀 Sending payload with {len(payload_items)} fields...")
+        print(f"Final payload ready to be sent:\n{payload_items}\n")  # <<< Important: passing list of tuples now
+        response = self.safe_post(request_url, data=payload_items)
+        print(f"✅ Response Code: {response.status_code}")
 
         if response.status_code == 200:
             match = re.search(r"content\s*:\s*'([^']+ثبت شد[^']+)'", response.text)
@@ -222,7 +256,7 @@ class LabsNetClient:
                 return conf_num.group() if conf_num else None
             else:
                 print("Submission may have failed.")
-                print(response.text)
+                # print(response.text)
                 return None
         else:
             print("POST request failed with status code:", response.status_code)
@@ -252,6 +286,11 @@ class LabsNetClient:
 
             # Convert the JSON response to a Python dictionary
             data = response.json()
+
+            if not isinstance(data, dict):
+                print("Expected JSON dict but got something else.")
+                print("Response text:", response.text)
+                return None, None
 
             if "d" not in data:
                 print("'d' key not found in response JSON.")
@@ -312,10 +351,11 @@ class LabsNetClient:
 
             if not inst_srv_id:
                 print("Error: 'id' field not found in the first element of 'd'.")
-                return None
+                return '0-41402-650'
+                # return None
 
             print("inst_srv_id:", inst_srv_id)
-            return inst_srv_id
+            return inst_srv_id if inst_srv_id else '0-41402-650'
 
         except requests.exceptions.RequestException as e:
             print(f"Request Error: {e}")
@@ -327,64 +367,3 @@ class LabsNetClient:
         except KeyError as e:
             print(f"Key Error: {e}")
             return None
-#
-# # Example Usage
-# if __name__ == "__main__":
-#     client = LabsNetClient()
-#
-#     # Login credentials
-#     username = "labsnet343"
-#     password = "Sharif@400"
-#     national_id = "1234567890"
-#     srv_id = "3840"
-#     # Payload for service request
-#     payload = {
-#         "lab": "مجموعه آزمایشگاه ها - دانشگاه صنعتی شریف مرکز خدمات آزمایشگاهی",
-#         "lab_id": "343",
-#         "customer_type": "1",
-#         "type_credit": "1",
-#         "national_code": national_id,
-#         #"national_code_id": "2457678", #!!!
-#         "national_id": "",
-#         "national_id_id": "",
-#         #"name_rabet": "",
-#         #"family_rabet": "",
-#         #"name": "اسداله",
-#         #"family": "کلانتریان",
-#         #"grade": "3",
-#         #"center": "دانشگاه صنعتی شریف",
-#         #"center_id": "105",
-#         "mobile": "0912123467",
-#         #"tell": "",
-#         #"email": "kalantarian@sharif.ir",
-#         #"inst_srv": "میکروسکوپ الکترونی روبشی نشر میدانی - FESEM - مدل دستگاه: MIRA3 - خدمت: تصویربرداری و تعیین ساختار مورفولوژی سطح نمونه با استفاده از آشکارساز Backscattered-Electron (BSE) - شناسه آزمون: 3840",
-#         "checked[]": "280893",
-#         #"rel_pro": "",
-#         #"rel_standard": "",
-#         #"co_lab": "",
-#         #"service_provider": "",
-#         "date": "1403/10/28",
-#         #"offer_date": "",
-#         "type_tarefe": "2",
-#         "count": "1",
-#         "duration": "",
-#         "duration_tarefe": "",
-#         "tarefe": "10000",
-#         "description": "Sample Test 1",
-#         "discount": "",
-#         "sum_pay": "10000",
-#         #"credit_ceil": "10 000",
-#         "credit_use": "10000",
-#         #"extra": "",
-#         #"customer_pay": "0",
-#         #"co_lab_amount": "",
-#         "inst_submit": "",
-#     }
-#
-#     # Initial login after client/session initialization
-#     client.login(username, password)
-#
-#     # Ensure login and submit request: First checks if dashboard access exists, if not it perfomes a login.
-#     if(client.ensure_dashboard_access() or client.login(username, password)):
-#         conf_num = client.submit_with_credit_request(payload, national_id, srv_id)
-#         print(conf_num)
