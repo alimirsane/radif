@@ -223,11 +223,13 @@ class Order(models.Model):
                                                                           amount=int(
                                                                               self.request.total_prepayment_amount),
                                                                           payer=self.buyer)
-            success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
-            if success:
-                pass
-            else:
-                return response
+            if created:
+                success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
+                if success:
+                    pass
+                else:
+                    return response
+
 
     def set_ticket(self):
         if not Ticket.objects.filter(profile_id=self.buyer.id, order=self).exists():
