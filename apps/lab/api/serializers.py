@@ -399,6 +399,7 @@ class ChildRequestDetailSerializer(serializers.ModelSerializer):
     payment_record_objs = OrderPaymentRecordSerializer(many=True, source='get_latest_order_payment_records')
     discount_history_objs = DiscountHistorySerializer(many=True, source='request_discounts')
     appointments_obj = AppointmentSerializer(source='appointments', many=True, read_only=True)
+    appointments_obj_ = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Request
@@ -417,6 +418,9 @@ class ChildRequestDetailSerializer(serializers.ModelSerializer):
         return RequestDetailMainFormResponseSerializer(
             FormResponse.objects.filter(request=obj, is_main=True), many=True
         ).data
+
+    def get_appointments_obj_(self, obj):
+        return AppointmentSerializer(Appointment.objects.filter(request=obj), many=True).data
 
 
 class RequestDetailSerializer(serializers.ModelSerializer):
