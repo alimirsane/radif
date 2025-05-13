@@ -103,7 +103,7 @@ class UserAdmin(UAdmin):
         "groups",
         "user_permissions",
     )
-    actions = [set_default_role]
+    actions = [set_default_role, set_labsnet]
     # readonly_fields = ('research_grant', 'labsnet_grant')
     model = User
 
