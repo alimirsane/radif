@@ -9,6 +9,8 @@ from django.contrib import messages
 import re
 import jdatetime
 
+from ..core.functions import safe_jalali_to_gregorian
+
 
 @admin.action(description='Set role role_key=customer for users without any role')
 def set_default_role(modeladmin, request, queryset):
@@ -42,8 +44,10 @@ def set_labsnet(modeladmin, request, queryset):
 
             for credit in credits:
                 try:
-                    start_date = jdatetime.datetime.strptime(credit["start_date"], "%Y/%m/%d").togregorian()
-                    end_date = jdatetime.datetime.strptime(credit["end_date"], "%Y/%m/%d").togregorian()
+                    # start_date = jdatetime.datetime.strptime(credit["start_date"], "%Y/%m/%d").togregorian()
+                    # end_date = jdatetime.datetime.strptime(credit["end_date"], "%Y/%m/%d").togregorian()
+                    start_date = safe_jalali_to_gregorian(credit["start_date"])
+                    end_date = safe_jalali_to_gregorian(credit["end_date"])
 
                     obj = LabsnetCredit.objects.update_or_create(
                         labsnet_id=credit["id"],

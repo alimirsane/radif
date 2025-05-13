@@ -27,7 +27,7 @@ from apps.account.models import User, EducationalField, EducationalLevel, Access
     GrantRequest, OTPserver, Notification, GrantRecord, Department, LabsnetCredit
 from .filters import UserFilter, GrantRecordFilter, GrantRequestFilter
 from ..permissions import AccessLevelPermission, query_set_filter_key
-from ...core.functions import export_excel, process_excel_and_create_grant_records
+from ...core.functions import export_excel, process_excel_and_create_grant_records, safe_jalali_to_gregorian
 from ...core.paginations import DefaultPagination
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
@@ -517,8 +517,10 @@ class LabsnetListView(RetrieveAPIView):
 
             for credit in credits:
                 try:
-                    start_date = jdatetime.datetime.strptime(credit["start_date"], "%Y/%m/%d").togregorian()
-                    end_date = jdatetime.datetime.strptime(credit["end_date"], "%Y/%m/%d").togregorian()
+                    # start_date = jdatetime.datetime.strptime(credit["start_date"], "%Y/%m/%d").togregorian()
+                    start_date = safe_jalali_to_gregorian(credit["start_date"])
+                    end_date = safe_jalali_to_gregorian(credit["end_date"])
+                    # end_date = jdatetime.datetime.strptime(credit["end_date"], "%Y/%m/%d").togregorian()
 
                     LabsnetCredit.objects.update_or_create(
                         labsnet_id=credit["id"],

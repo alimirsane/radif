@@ -308,3 +308,15 @@ def user_row_list(user):
         # str([access_level.name for access_level in user.get_access_levels()]),
         user.balance,
     ]
+
+
+def safe_jalali_to_gregorian(date_str):
+    year, month, day = map(int, date_str.split('/'))
+    if month == 12 and day == 30:
+        try:
+            return jdatetime.datetime(year, month, day).togregorian()
+        except ValueError:
+            # روز ۳۰ اسفند نامعتبره، تغییر به ۲۹
+            return jdatetime.datetime(year, month, 29).togregorian()
+    else:
+        return jdatetime.datetime(year, month, day).togregorian()
