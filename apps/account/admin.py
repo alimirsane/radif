@@ -45,7 +45,7 @@ def set_labsnet(modeladmin, request, queryset):
                     start_date = jdatetime.datetime.strptime(credit["start_date"], "%Y/%m/%d").togregorian()
                     end_date = jdatetime.datetime.strptime(credit["end_date"], "%Y/%m/%d").togregorian()
 
-                    LabsnetCredit.objects.update_or_create(
+                    obj = LabsnetCredit.objects.update_or_create(
                         labsnet_id=credit["id"],
                         defaults={
                             "user": user,
@@ -57,11 +57,13 @@ def set_labsnet(modeladmin, request, queryset):
                             "title": credit["title"],
                         },
                     )
+                    modeladmin.message_user(request, f"action {obj}")
                 except Exception as e:
+                    modeladmin.message_user(request, f"{credit}  Error: {e}")
                     print(f"Error processing credit: {credit}. Error: {e}")
 
         # return Response({"labsnet_result": labsnet_result})
-        modeladmin.message_user(request, f"{labsnet_result} users updated with role role_key=customer.")
+        modeladmin.message_user(request, f"{labsnet_result}")
     modeladmin.message_user(request, f"Nothing")
 
 class UserAdmin(UAdmin):
