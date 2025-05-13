@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as UAdmin
+from django.core.exceptions import PermissionDenied
 from .models import User, EducationalField, EducationalLevel, AccessLevel, Role, GrantRequest, GrantTransaction, \
     OTPserver, Notification, GrantRecord, Department, LabsnetCredit
 # from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
 import re
+import jdatetime
 
 
 @admin.action(description='Set role role_key=customer for users without any role')
@@ -26,6 +28,41 @@ def set_default_role(modeladmin, request, queryset):
 
     modeladmin.message_user(request, f"{updated_users} users updated with role role_key=customer.")
 
+@admin.action(description='Set Labsnet')
+def set_labsnet(modeladmin, request, queryset):
+    for user in queryset:
+
+        if not user.national_id:
+            raise PermissionDenied("User does not have a valid national ID.")
+
+        labsnet_result = user.labsnet_list()
+
+        if "credits" in labsnet_result:
+            credits = labsnet_result["credits"]
+
+            for credit in credits:
+                try:
+                    start_date = jdatetime.datetime.strptime(credit["start_date"], "%Y/%m/%d").togregorian()
+                    end_date = jdatetime.datetime.strptime(credit["end_date"], "%Y/%m/%d").togregorian()
+
+                    LabsnetCredit.objects.update_or_create(
+                        labsnet_id=credit["id"],
+                        defaults={
+                            "user": user,
+                            "amount": credit["amount"],
+                            "start_date": start_date,
+                            "end_date": end_date,
+                            "remain": credit["remain"],
+                            "percent": credit["percent"],
+                            "title": credit["title"],
+                        },
+                    )
+                except Exception as e:
+                    print(f"Error processing credit: {credit}. Error: {e}")
+
+        # return Response({"labsnet_result": labsnet_result})
+        modeladmin.message_user(request, f"{labsnet_result} users updated with role role_key=customer.")
+    modeladmin.message_user(request, f"Nothing")
 
 class UserAdmin(UAdmin):
     fieldsets = (
