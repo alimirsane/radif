@@ -203,3 +203,4 @@ class NotificationAdmin(admin.ModelAdmin):
 @admin.register(LabsnetCredit)
 class LabsnetCreditAdmin(admin.ModelAdmin):
     list_display = ['user', 'title', 'remain', 'amount', 'end_date', 'labsnet_id', 'percent']
+    search_fields = ['user__national_id', 'user__username', 'title', 'labsnet_id']
