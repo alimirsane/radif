@@ -12,7 +12,8 @@ urlpatterns = [
     path('register/business/', UserBusinessRegistrationAPIView.as_view(), name='register_business'),
     path("current-user/", GetCurrentUserView.as_view(), name='get-current-user'),
     # path("current-user/access-levels", GetCurrentUserAccessLevelView.as_view(), name='get-current-user-acess-levels'),
-    path('current-user/labsnet/', LabsnetListView.as_view(), name='labsnet-list'),
+    path('current-user/labsnet/', LabsnetListView.as_view(), name='current-user-labsnet-list'),
+    path('users/<int:user_id>/labsnet/', LabsnetListView.as_view(), name='user-labsnet-list'),
 
     path('request-otp/', OTPRequestView.as_view(), name='request_otp'),
     path('verify-otp/', OTPVerificationView.as_view(), name='verify_otp'),

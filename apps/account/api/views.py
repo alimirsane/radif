@@ -505,7 +505,10 @@ class LabsnetListView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        user = request.user
+        if "user_id" in kwargs:
+            user = get_object_or_404(User, pk=kwargs['user_id'])
+        else:
+            user = request.user
 
         if not user.national_id:
             raise PermissionDenied("User does not have a valid national ID.")
