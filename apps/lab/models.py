@@ -891,10 +891,21 @@ class Request(models.Model):
 
                 child_request.labsnet_result = f'data={payload} + conf_num={conf_num}'
                 self.labsnet_result += child_request.labsnet_result
-                child_request.labsnet_status = 2 if conf_num else 3
-                if conf_num:
-                    child_request.labsnet_code1 = conf_num
-                child_request.save(update_fields=['labsnet_result', 'labsnet_status', 'labsnet_code1'])
+                if conf_num is not None:
+                    child_request.labsnet_status = 2
+                    child_request.save()
+                    self.labsnet_result += f'&& if1 && data={str(child_request.labsnet_status)}'
+                else:
+                    child_request.labsnet_status = 3
+                    child_request.save()
+                    self.labsnet_result += f'&& if1 && data={str(child_request.labsnet_status)}'
+
+
+                #     # child_request.labsnet_status = 2 if conf_num else 3
+                # child_request.save(update_fields=['labsnet_result', 'labsnet_status', 'labsnet_code1'])
+                # if conf_num:
+                #     child_request.labsnet_code1 = conf_num
+                # child_request.save(update_fields=['labsnet_result', 'labsnet_status', 'labsnet_code1'])
 
             # After children loop
             self.labsnet_status = 2 if all(c.labsnet_status == 2 for c in children) else 3
