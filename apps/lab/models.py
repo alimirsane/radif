@@ -621,14 +621,17 @@ class Request(models.Model):
 
             return Decimal(applied_discount)
 
-        if (self.parent_request):
-            labsnet1_discount = apply_labsnet_credit(self.parent_request.labsnet1)
-            labsnet2_discount = apply_labsnet_credit(self.parent_request.labsnet2)
+        # Gather and sort labsnet credits by labsnet_id
+        if self.parent_request:
+            credits = [ln for ln in [self.parent_request.labsnet1, self.parent_request.labsnet2] if ln]
         else:
-            labsnet1_discount = apply_labsnet_credit(self.labsnet1)
-            labsnet2_discount = apply_labsnet_credit(self.labsnet2)
+            credits = [ln for ln in [self.labsnet1, self.labsnet2] if ln]
 
-        return labsnet1_discount + labsnet2_discount
+        # Sort by labsnet_id (make sure labsnet_id is an integer or string that can be sorted)
+        credits = sorted(credits, key=lambda l: int(l.labsnet_id))
+
+        total_discount = sum(apply_labsnet_credit(ln) for ln in credits)
+        return total_discount
 
     def apply_grant_requests(self):
         start_price = self.price
@@ -740,8 +743,9 @@ class Request(models.Model):
 
             duration, duration_unit_price, unit_price = 0, 0, 0
 
-            gregorian_date = child_request.created_at.date()
-            jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
+            # gregorian_date = child_request.created_at.date()
+            # jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
+            jalali_date = jdatetime.date.today()
             date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
 
             if child_request.experiment.test_unit_type == 'time':
@@ -806,29 +810,34 @@ class Request(models.Model):
 
             national_id = self.owner.national_id
             srv_id = self.experiment.labsnet_experiment_id
+            is_personal = (self.owner.account_type == 'personal')
+            national_code = national_id if is_personal else self.owner.company_national_id
 
-            for child_request in self.child_requests.exclude(request_status__step__name__in=['رد شده']):
+            children = self.child_requests.exclude(request_status__step__name__in=['رد شده'])
+            self.labsnet_result = 'Results: '
 
-                is_personal = (self.owner.account_type == 'personal')
-                national_code = national_id if is_personal else self.owner.company_national_id
+            for child_request in children:
+                child_request.set_price()
+                credit_use = float(child_request.apply_labsnet_credits())
 
                 duration, duration_unit_price, unit_price = 0, 0, 0
-                gregorian_date = child_request.created_at.date()
-                jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
+                test_type = child_request.experiment.test_unit_type
+
+                # gregorian_date = child_request.created_at.date()
+                # jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
+                jalali_date = jdatetime.date.today()
                 date_str = f"{jalali_date.year}/{jalali_date.month:02}/{jalali_date.day:02}"
 
-                if child_request.experiment.test_unit_type == 'time':
+                if test_type == 'time':
                     type_tarefe = 1
                     duration = int(child_request.test_duration) or 1
                     duration_unit_price = int(int(child_request.price) / duration)  # duration
+                    count = 1
                 else:
                     type_tarefe = 2
                     count = child_request.formresponse.filter(is_main=True).aggregate(Sum('response_count'))[
                                 'response_count__sum'] or 1
                     unit_price = int(int(child_request.price) / count)  # count
-
-                child_request.set_price()
-                credit_use = child_request.labsnet_discount or child_request.apply_labsnet_credits()
 
                 # if child_request.experiment.laboratory.operators:
                 # child_request.exp
@@ -851,8 +860,7 @@ class Request(models.Model):
                     ("mobile", self.owner.username.replace('+98', '0')),
                     # ("tell", ""),
                     ("email", self.owner.email),
-                    ("inst_srv",
-                     "خدمت: شناسایی و تعیین میزان عناصر به روش طیف سنجی نشری پلاسما کوپل شده القایی ICP - شناسه آزمون: 41402"),
+                    ("inst_srv", f"خدمت: {child_request.experiment.name}"),
                     ("type_credit", "1"),
                     # ("rel_pro", ""),
                     # ("rel_standard", ""),
@@ -879,39 +887,59 @@ class Request(models.Model):
                 # Append the checked[]
                 payload.extend(('checked[]', str(l.labsnet_id)) for l in [self.labsnet1, self.labsnet2] if l)
 
-                self.labsnet_result += f'data={str(payload)}'
-                self.save(update_fields=['labsnet_result'])
-                self.save()
-
                 conf_num = client.submit_with_credit_request(payload, national_id, srv_id)
-                self.labsnet_result += f' + conf_num={str(conf_num)}'
+
+                child_request.labsnet_result = f'data={payload} + conf_num={conf_num}'
+                self.labsnet_result += child_request.labsnet_result
+                child_request.labsnet_status = 2 if conf_num else 3
                 if conf_num:
-                    print(f"Request {child_request.id} successfully submitted with confirmation number: {conf_num}")
-                    child_request.labsnet_status = 2  # ثبت موفق
-                    child_request.save(update_fields=['labsnet_status'])
-                    child_request.labsnet_code1 = conf_num  # ذخیره شماره تأیید
-                    child_request.save(update_fields=['labsnet_code1'])
-                    # child_request.save()
+                    child_request.labsnet_code1 = conf_num
+                child_request.save(update_fields=['labsnet_result', 'labsnet_status', 'labsnet_code1'])
 
-                else:
-                    print(f"Failed to submit request {child_request.id} to LabsNet.")
-                    child_request.labsnet_status = 3  # ثبت ناموفق
-                    child_request.save(update_fields=['labsnet_status'])
-                    # child_request.save()
+            # After children loop
+            self.labsnet_status = 2 if all(c.labsnet_status == 2 for c in children) else 3
+            self.labsnet_result += f' + final_conf_status'
+            self.save(update_fields=['labsnet_status', 'labsnet_result'])
 
-            # ذخیره وضعیت درخواست مادر
-            self.labsnet_status = 2 if all(c.labsnet_status == 2 for c in self.child_requests.all()) else 3
-            self.save(update_fields=['labsnet_result'])
-            self.save(update_fields=['labsnet_status'])
-            # self.save()
-            return self
         except Exception as e:
             print(f"[LabsNetGrant ERROR] {e}", flush=True)
             self.labsnet_result += f' + exception={e}'
             self.save(update_fields=['labsnet_result'])
+
+            # self.labsnet_result += f'data={str(payload)}'
+            # self.save(update_fields=['labsnet_result'])
             # self.save()
 
-    def labsnet_list(self):
+            # conf_num = client.submit_with_credit_request(payload, national_id, srv_id)
+            # self.labsnet_result += f' + conf_num={str(conf_num)}'
+            # if conf_num:
+            #     print(f"Request {child_request.id} successfully submitted with confirmation number: {conf_num}")
+            #     child_request.labsnet_status = 2  # ثبت موفق
+            #     child_request.save(update_fields=['labsnet_status'])
+            #     child_request.labsnet_code1 = conf_num  # ذخیره شماره تأیید
+            #     child_request.save(update_fields=['labsnet_code1'])
+            #     # child_request.save()
+
+            # else:
+            #     print(f"Failed to submit request {child_request.id} to LabsNet.")
+            #     child_request.labsnet_status = 3  # ثبت ناموفق
+            #     child_request.save(update_fields=['labsnet_status'])
+            #     # child_request.save()
+
+        #     # ذخیره وضعیت درخواست مادر
+        #     self.labsnet_status = 2 if all(c.labsnet_status == 2 for c in self.child_requests.all()) else 3
+        #     self.save(update_fields=['labsnet_result'])
+        #     self.save(update_fields=['labsnet_status'])
+        #     # self.save()
+        #     return self
+        # except Exception as e:
+        #     print(f"[LabsNetGrant ERROR] {e}", flush=True)
+        #     self.labsnet_result += f' + exception={e}'
+        #     self.save(update_fields=['labsnet_result'])
+        #     # self.save()
+
+
+"""     def labsnet_list(self):
         if self.labsnet_status == 2:
             return self
         data = {
@@ -941,7 +969,7 @@ class Request(models.Model):
         except Exception as e:
             self.labsnet_result += f' + exception={e}'
             self.labsnet_status = 3
-            return self
+            return self """
 
 
 class RequestCertificate(models.Model):
