@@ -37,34 +37,15 @@ def set_labsnet(modeladmin, request, queryset):
         if not user.national_id:
             raise PermissionDenied("User does not have a valid national ID.")
 
+        # try:
         labsnet_result = user.labsnet_list()
 
-        if "credits" in labsnet_result:
-            credits = labsnet_result["credits"]
-
-            for credit in credits:
-                try:
-                    # start_date = jdatetime.datetime.strptime(credit["start_date"], "%Y/%m/%d").togregorian()
-                    # end_date = jdatetime.datetime.strptime(credit["end_date"], "%Y/%m/%d").togregorian()
-                    start_date = safe_jalali_to_gregorian(credit["start_date"])
-                    end_date = safe_jalali_to_gregorian(credit["end_date"])
-
-                    obj = LabsnetCredit.objects.update_or_create(
-                        labsnet_id=credit["id"],
-                        defaults={
-                            "user": user,
-                            "amount": credit["amount"],
-                            "start_date": start_date,
-                            "end_date": end_date,
-                            "remain": credit["remain"],
-                            "percent": credit["percent"],
-                            "title": credit["title"],
-                        },
-                    )
-                    modeladmin.message_user(request, f"action {obj}")
-                except Exception as e:
-                    modeladmin.message_user(request, f"{credit}  Error: {e}")
-                    print(f"Error processing credit: {credit}. Error: {e}")
+        user.sync_labsnet_credits(labsnet_result)
+        #
+        #     modeladmin.message_user(request, f"action {obj}")
+        # except Exception as e:
+        #     modeladmin.message_user(request, f"{credit}  Error: {e}")
+        #     print(f"Error processing credit: {credit}. Error: {e}")
 
         # return Response({"labsnet_result": labsnet_result})
         modeladmin.message_user(request, f"{labsnet_result}")
