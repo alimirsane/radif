@@ -9,6 +9,7 @@ from apps.form.models import Form
 import math
 from django.core.exceptions import ValidationError
 import requests
+import json
 
 
 class Laboratory(models.Model):
@@ -489,6 +490,7 @@ class Request(models.Model):
         return [self.owner] + self.experiment.owners()
 
     def set_price(self):
+        old_price = self.price
         if self.parent_request:
             if self.experiment.need_turn:
                 self.total_prepayment_amount = self.experiment.prepayment_amount if self.experiment.prepayment_amount else Decimal(
@@ -579,8 +581,7 @@ class Request(models.Model):
                 self.set_labsnet_credits()
                 # self.price -= int(self.labsnet_discount)
 
-            self.revoke_grant_usage()
-            self.apply_grant_requests()
+            self.sync_grants_if_price_changed(old_price)
 
             if self.is_sample_returned:
                 self.price_sample_returned = Decimal(850000)
@@ -632,6 +633,11 @@ class Request(models.Model):
 
         total_discount = sum(apply_labsnet_credit(ln) for ln in credits)
         return total_discount
+
+    def sync_grants_if_price_changed(self, old_price):
+        if Decimal(old_price) != Decimal(self.price):
+            self.revoke_grant_usage()
+            self.apply_grant_requests()
 
     def apply_grant_requests(self):
         start_price = self.price
