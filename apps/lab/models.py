@@ -584,7 +584,7 @@ class Request(models.Model):
             self.sync_grants_if_price_changed(old_price)
 
             if self.is_sample_returned:
-                self.price_sample_returned = Decimal(850000)
+                self.price_sample_returned = Decimal(1250000)
                 self.price = self.price + self.price_sample_returned
                 # self.price_wod = self.price_wod + self.price_sample_returned
             else:
