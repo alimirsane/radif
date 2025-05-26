@@ -602,17 +602,14 @@ class Request(models.Model):
 
     def apply_labsnet_credits(self):
         """
-        اعمال تخفیف اعتبار لبزنت بر اساس مبلغ باقی‌مانده و سقف درصدی مجاز
+        اعمال تخفیف اعتبار لبزنت بر اساس مبلغ باقی‌مانده و اولویت درصدی
         """
         today = datetime.date.today()
         original_price = Decimal(self.price or 0)
 
         def apply_labsnet_credit(labsnet):
             nonlocal original_price
-            if not labsnet:
-                return Decimal(0)
-
-            if labsnet.end_date < today:
+            if not labsnet or labsnet.end_date < today:
                 return Decimal(0)
 
             max_discount_amount = Decimal(labsnet.remain.replace(',', ''))
@@ -621,10 +618,8 @@ class Request(models.Model):
 
             applied_discount = min(max_allowed_discount, max_discount_amount, original_price)
             original_price -= applied_discount
+            return applied_discount
 
-            return Decimal(applied_discount)
-
-        # Gather and sort labsnet credits by labsnet_id
         if self.parent_request:
             ln1, ln2 = self.parent_request.labsnet1, self.parent_request.labsnet2
         else:
@@ -633,8 +628,14 @@ class Request(models.Model):
         if ln1 and ln2 and ln1 == ln2:
             ln2 = None
 
-        credits = [ln for ln in [ln1, ln2] if ln]
-        credits = sorted(credits, key=lambda l: int(l.labsnet_id))
+        credits = [ln for ln in [ln1, ln2] if ln and ln.end_date >= today]
+        credits = sorted(
+            credits,
+            key=lambda l: (
+                -Decimal(l.percent),
+                -Decimal(l.remain.replace(',', ''))
+            )
+        )
 
         total_discount = sum(apply_labsnet_credit(ln) for ln in credits)
         return total_discount
