@@ -593,6 +593,8 @@ class Request(models.Model):
 
     def set_labsnet_credits(self):
         if self.labsnet:
+            if self.labsnet1 and self.labsnet2 and self.labsnet1 == self.labsnet2:
+                self.labsnet2 = None
             labsnet_discount = self.apply_labsnet_credits()
             self.labsnet_discount = labsnet_discount
             self.price -= labsnet_discount
@@ -624,11 +626,14 @@ class Request(models.Model):
 
         # Gather and sort labsnet credits by labsnet_id
         if self.parent_request:
-            credits = [ln for ln in [self.parent_request.labsnet1, self.parent_request.labsnet2] if ln]
+            ln1, ln2 = self.parent_request.labsnet1, self.parent_request.labsnet2
         else:
-            credits = [ln for ln in [self.labsnet1, self.labsnet2] if ln]
+            ln1, ln2 = self.labsnet1, self.labsnet2
 
-        # Sort by labsnet_id (make sure labsnet_id is an integer or string that can be sorted)
+        if ln1 and ln2 and ln1 == ln2:
+            ln2 = None
+
+        credits = [ln for ln in [ln1, ln2] if ln]
         credits = sorted(credits, key=lambda l: int(l.labsnet_id))
 
         total_discount = sum(apply_labsnet_credit(ln) for ln in credits)
