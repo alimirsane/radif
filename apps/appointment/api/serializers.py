@@ -120,9 +120,11 @@ class AppointmentSerializer(serializers.ModelSerializer):
         return data
 
     def get_request_status(self, obj):
-        last = getattr(obj, 'all_statuses', [])
+        last = obj.all_statuses.all().order_by('-id').first()
+        # last = getattr(obj, 'all_statuses', [])
         if last:
-            return WorkflowStepSerializer(last[-1].step).data
+            return WorkflowStepSerializer(last.step).data
+            # return WorkflowStepSerializer(last[-1].step).data
         return None
 
     def get_end_time(self, obj):
