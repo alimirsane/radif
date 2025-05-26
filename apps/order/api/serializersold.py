@@ -86,7 +86,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     transaction = serializers.SerializerMethodField(read_only=True, required=False)
     # payment_record = serializers.SerializerMethodField(read_only=True, required=False)
-    payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
+    payment_record = OrderPaymentRecordSerializer(many=True, source='order_payment_records', read_only=True, required=False)
 
     def get_transaction(self, obj):
         try:
@@ -136,7 +136,7 @@ class OrderBoughtSerializer(serializers.ModelSerializer):
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
-    payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
+    payment_record = OrderPaymentRecordSerializer(many=True, source='order_payment_records', read_only=True, required=False)
 
     class Meta:
         model = Order

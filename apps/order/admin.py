@@ -95,7 +95,7 @@ def delete_duplicate_orders(modeladmin, request, queryset):
     for duplicate in duplicate_orders:
         request_id = duplicate['request']
         orders = Order.objects.filter(request_id=request_id).order_by('-created_at')
-        deletable_orders = [order for order in orders if not order.payment_records.exists()]
+        deletable_orders = [order for order in orders if not order.order_payment_records.exists()]
 
         if len(deletable_orders) > 1:
             orders_to_delete |= Order.objects.filter(id__in=[o.id for o in deletable_orders[1:]])

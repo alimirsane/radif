@@ -322,7 +322,7 @@ class OrderPaymentRecordSerializer(serializers.ModelSerializer):
 
 
 class RequestOrderDetailSerializer(serializers.ModelSerializer):
-    payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
+    payment_record = OrderPaymentRecordSerializer(many=True, source='order_payment_records', read_only=True, required=False)
     remaining_amount = serializers.SerializerMethodField(read_only=True, method_name="remaining_amount_")
     class Meta:
         model = Order

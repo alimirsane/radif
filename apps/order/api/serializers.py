@@ -92,7 +92,7 @@ class OrderSerializer(serializers.ModelSerializer):
     promo_code = serializers.CharField(required=False)
 
     transaction = TransactionSummmerySerializer(many=True, source='transactions', read_only=True, required=False)
-    payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
+    payment_record = OrderPaymentRecordSerializer(many=True, source='order_payment_records', read_only=True, required=False)
 
     class Meta:
         model = Order
@@ -136,7 +136,7 @@ class OrderBoughtSerializer(serializers.ModelSerializer):
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
-    payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
+    payment_record = OrderPaymentRecordSerializer(many=True, source='order_payment_records', read_only=True, required=False)
 
     class Meta:
         model = Order
@@ -144,7 +144,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 
 class OrderPaymentSerializer(serializers.ModelSerializer):
-    payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
+    payment_record = OrderPaymentRecordSerializer(many=True, source='order_payment_records', read_only=True, required=False)
     class Meta:
         model = Order
         fields = ['order_status', 'payment_record']
@@ -155,7 +155,7 @@ class OrderPaymentSerializer(serializers.ModelSerializer):
 
 
 class OrderPrePaymentSerializer(serializers.ModelSerializer):
-    payment_record = OrderPaymentRecordSerializer(many=True, source='payment_records', read_only=True, required=False)
+    payment_record = OrderPaymentRecordSerializer(many=True, source='order_payment_records', read_only=True, required=False)
 
     class Meta:
         model = Order
