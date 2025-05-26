@@ -505,40 +505,14 @@ class LabsnetListView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        if "user_id" in kwargs:
-            user = get_object_or_404(User, pk=kwargs['user_id'])
-        else:
-            user = request.user
+        user = get_object_or_404(User, pk=kwargs.get('user_id')) if 'user_id' in kwargs else request.user
 
         if not user.national_id:
             raise PermissionDenied("User does not have a valid national ID.")
 
         labsnet_result = user.labsnet_list()
 
-        if "credits" in labsnet_result:
-            credits = labsnet_result["credits"]
-
-            for credit in credits:
-                try:
-                    # start_date = jdatetime.datetime.strptime(credit["start_date"], "%Y/%m/%d").togregorian()
-                    start_date = safe_jalali_to_gregorian(credit["start_date"])
-                    end_date = safe_jalali_to_gregorian(credit["end_date"])
-                    # end_date = jdatetime.datetime.strptime(credit["end_date"], "%Y/%m/%d").togregorian()
-
-                    LabsnetCredit.objects.update_or_create(
-                        labsnet_id=credit["id"],
-                        defaults={
-                            "user": user,
-                            "amount": credit["amount"],
-                            "start_date": start_date,
-                            "end_date": end_date,
-                            "remain": credit["remain"],
-                            "percent": credit["percent"],
-                            "title": credit["title"],
-                        },
-                    )
-                except Exception as e:
-                    print(f"Error processing credit: {credit}. Error: {e}")
+        user.sync_labsnet_credits(labsnet_result)
 
         return Response({"labsnet_result": labsnet_result})
 

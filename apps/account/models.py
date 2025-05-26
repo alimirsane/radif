@@ -183,16 +183,7 @@ class User(AbstractUser):
         response.raise_for_status()
         return response.json() """
 
-    # Retry logic is added for expectional cases of failed API request.
     def labsnet_list(self):
-        """
-        Fetch remaining credits from Labsnet.
-        Retries transient errors, logs unexpected responses,
-        and dynamically includes every child’s test code.
-        """
-        # 1) Build credentials & identity
-        # username = settings.LABSNET_USERNAME
-        # password = settings.LABSNET_PASSWORD
         username = "sharif_uni"
         password = "sharif_uni"
         is_personal = (self.account_type == 'personal')
@@ -212,12 +203,6 @@ class User(AbstractUser):
             'services[0]': "3839"  # Just to pull the credit list
         }
 
-        # 2) Include every active child’s Labsnet experiment ID
-        """ children = self.child_requests.exclude(request_status__step__name__in=['رد شده'])
-        for idx, child in enumerate(children):
-            data[f'services[{idx}]'] = child.experiment.labsnet_experiment_id """
-
-        # 3) Set up a session with retry logic
         session = requests.Session()
         retries = Retry(
             total=3,
@@ -240,14 +225,40 @@ class User(AbstractUser):
             logger.error(f"Failed to call Labsnet credit_list: {e}")
             return {}
 
-        # 4) Check Labsnet
-        # only bail out if there really are no credits key
         if "credits" not in result:
             logger.warning(f"Labsnet returned unexpected payload: {result!r}")
             return {}
 
-        # 5) Return just the credit data dictionary
         return result
+
+    def sync_labsnet_credits(self, labsnet_result: dict):
+        from apps.core.functions import safe_jalali_to_gregorian
+        if "credits" not in labsnet_result:
+            return
+
+        active_ids = set()
+        for credit in labsnet_result["credits"]:
+            try:
+                start_date = safe_jalali_to_gregorian(credit["start_date"])
+                end_date = safe_jalali_to_gregorian(credit["end_date"])
+
+                obj, _ = LabsnetCredit.objects.update_or_create(
+                    labsnet_id=credit["id"],
+                    defaults={
+                        "user": self,
+                        "amount": credit["amount"],
+                        "start_date": start_date,
+                        "end_date": end_date,
+                        "remain": credit["remain"],
+                        "percent": credit["percent"],
+                        "title": credit["title"],
+                    },
+                )
+                active_ids.add(obj.labsnet_id)
+            except Exception as e:
+                logger.warning(f"Error processing Labsnet credit: {credit}. Error: {e}")
+
+        LabsnetCredit.objects.filter(user=self).exclude(labsnet_id__in=active_ids).update(remain=0)
 
 
 class Role(models.Model):
