@@ -298,9 +298,10 @@ class Order(models.Model):
         payment_records = self.get_payment_records().filter(successful=True)
         total_paid = payment_records.aggregate(total_amount=models.Sum('amount'))['total_amount'] or 0
         # return (self.amount - self.paid) - total_paid
-        if self.request.price == total_paid:
+        price = self.request.price or 0
+        if price == total_paid:
             return 0
-        return (self.request.price - self.paid) - total_paid
+        return (price - total_paid)
         # return self.amount - self.paid
 
     # def set_event_ticket(self):
