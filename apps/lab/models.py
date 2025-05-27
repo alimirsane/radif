@@ -648,7 +648,7 @@ class Request(models.Model):
             return
 
         grant_exists = self.grant_request1 or self.grant_request2
-        grant_discount_is_zero = not self.grant_request_discount or self.grant_request_discount == "0"
+        grant_discount_is_zero = not self.grant_request_discount or self.grant_request_discount == "0" or self.grant_request_discount == 0
 
         if old != new or (grant_exists and grant_discount_is_zero):
             self.revoke_grant_usage()
