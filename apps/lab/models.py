@@ -1,5 +1,5 @@
 import datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from django.db import models
 from django.db.models import Sum
 import jdatetime
@@ -641,7 +641,13 @@ class Request(models.Model):
         return total_discount
 
     def sync_grants_if_price_changed(self, old_price):
-        if Decimal(old_price) != Decimal(self.price):
+        try:
+            old = Decimal(old_price or 0)
+            new = Decimal(self.price or 0)
+        except InvalidOperation:
+            return  # یا raise اگر بخوای اخطار بدی
+
+        if old != new:
             self.revoke_grant_usage()
             self.apply_grant_requests()
 
