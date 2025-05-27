@@ -11,14 +11,15 @@ import jdatetime
 
 from ..core.functions import safe_jalali_to_gregorian
 
-from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.models import Token, TokenProxy
+
 
 class TokenAdmin(admin.ModelAdmin):
     search_fields = ['key', 'user__username', 'user__email', 'user__first_name', 'user__last_name']
     list_display = ['key', 'user', 'created']
 
-admin.site.unregister(Token)
-admin.site.register(Token, TokenAdmin)
+admin.site.unregister(TokenProxy)
+admin.site.register(TokenProxy, TokenAdmin)
 
 @admin.action(description='Set role role_key=customer for users without any role')
 def set_default_role(modeladmin, request, queryset):
