@@ -645,9 +645,12 @@ class Request(models.Model):
             old = Decimal(old_price or 0)
             new = Decimal(self.price or 0)
         except InvalidOperation:
-            return  # یا raise اگر بخوای اخطار بدی
+            return
 
-        if old != new:
+        grant_exists = self.grant_request1 or self.grant_request2
+        grant_discount_is_zero = not self.grant_request_discount or self.grant_request_discount == 0
+
+        if old != new or (grant_exists and grant_discount_is_zero):
             self.revoke_grant_usage()
             self.apply_grant_requests()
 
