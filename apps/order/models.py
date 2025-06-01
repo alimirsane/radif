@@ -4,6 +4,7 @@ import datetime
 import os
 import random
 from datetime import timedelta
+from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -218,18 +219,70 @@ class Order(models.Model):
 
     def set_prepayment(self):
         if self.request.has_prepayment and self.order_status == 'pending' and self.request.is_completed:
-            user = (self.buyer if self.buyer.account_type == "personal" else self.request.owner.linked_users.all().first())
-            payment_record, created = PaymentRecord.objects.get_or_create(payment_type='prepayment', order=self,
-                                                                          amount=int(
-                                                                              self.request.total_prepayment_amount),
-                                                                          payer=self.buyer)
+            prepay_amount = Decimal(self.request.total_prepayment_amount or 0)
+            today = datetime.date.today()
+
+            # ✅ محاسبه تخفیف لبزنت
+            labsnet_discount = Decimal(0)
+
+            def apply_labsnet_credit(labsnet, original_price):
+                if not labsnet or labsnet.end_date < today:
+                    return Decimal(0)
+                try:
+                    max_discount_amount = Decimal(labsnet.remain.replace(',', ''))
+                    max_discount_percent = Decimal(labsnet.percent) / Decimal(100)
+                    max_allowed_discount = original_price * max_discount_percent
+                    return min(max_allowed_discount, max_discount_amount, original_price)
+                except:
+                    return Decimal(0)
+
+            # دریافت اعتبارات لبزنت
+            if self.request.parent_request:
+                ln1, ln2 = self.request.parent_request.labsnet1, self.request.parent_request.labsnet2
+            else:
+                ln1, ln2 = self.request.labsnet1, self.request.labsnet2
+
+            if ln1 and ln2 and ln1 == ln2:
+                ln2 = None
+
+            credits = [ln for ln in [ln1, ln2] if ln and ln.end_date >= today]
+            credits = sorted(credits, key=lambda l: (-Decimal(l.percent), -Decimal(l.remain.replace(',', ''))))
+
+            original = prepay_amount
+            for credit in credits:
+                discount = apply_labsnet_credit(credit, original)
+                labsnet_discount += discount
+                original -= discount
+
+            # ✅ محاسبه تخفیف گرنت
+            grant_discount = Decimal(0)
+            remaining = prepay_amount - labsnet_discount
+
+            for grant in [self.request.grant_request1, self.request.grant_request2]:
+                if grant and remaining > 0:
+                    used = min(grant.remaining_amount, remaining)
+                    grant_discount += used
+                    remaining -= used
+
+            # ✅ مبلغ نهایی پرداختی
+            final_amount = max(prepay_amount - labsnet_discount - grant_discount, 0)
+
+            user = (
+                self.buyer
+                if self.buyer.account_type == "personal"
+                else self.request.owner.linked_users.all().first()
+            )
+
+            payment_record, created = PaymentRecord.objects.get_or_create(
+                payment_type='prepayment',
+                order=self,
+                amount=int(final_amount),
+                payer=self.buyer
+            )
             if created:
                 success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
-                if success:
-                    pass
-                else:
+                if not success:
                     return response
-
 
     def set_ticket(self):
         if not Ticket.objects.filter(profile_id=self.buyer.id, order=self).exists():
