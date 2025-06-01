@@ -221,74 +221,86 @@ class Order(models.Model):
                 else:
                     return response
 
+    def calculate_raw_prepayment_amount(self):
+        return Decimal(self.request.total_prepayment_amount or 0)
+
+    def calculate_labsnet_discount(self, base_amount):
+        today = datetime.date.today()
+        original = Decimal(base_amount)
+
+        def apply_credit(labsnet):
+            if not labsnet or labsnet.end_date < today:
+                return Decimal(0)
+            try:
+                max_discount = Decimal(labsnet.remain.replace(',', ''))
+                percent = Decimal(labsnet.percent) / Decimal(100)
+                return min(original * percent, max_discount, original)
+            except:
+                return Decimal(0)
+
+        if self.request.parent_request:
+            ln1, ln2 = self.request.parent_request.labsnet1, self.request.parent_request.labsnet2
+        else:
+            ln1, ln2 = self.request.labsnet1, self.request.labsnet2
+
+        if ln1 and ln2 and ln1 == ln2:
+            ln2 = None
+
+        credits = [ln for ln in [ln1, ln2] if ln and ln.end_date >= today]
+        credits = sorted(credits, key=lambda l: (-Decimal(l.percent), -Decimal(l.remain.replace(',', ''))))
+
+        used = Decimal(0)
+        for c in credits:
+            d = apply_credit(c)
+            used += d
+            original -= d
+        return used
+
+    def calculate_grant_discount(self, remaining):
+        remaining = Decimal(remaining)
+        used = Decimal(0)
+
+        for grant in [self.request.grant_request1, self.request.grant_request2]:
+            if grant and remaining > 0:
+                amt = min(grant.remaining_amount, remaining)
+                used += amt
+                remaining -= amt
+        return used
+
+    def process_prepayment_payment(self, final_amount):
+        user = (
+            self.buyer
+            if self.buyer.account_type == "personal"
+            else self.request.owner.linked_users.all().first()
+        )
+        payment_record, created = PaymentRecord.objects.get_or_create(
+            payment_type='prepayment',
+            order=self,
+            amount=int(final_amount),
+            payer=self.buyer
+        )
+        if created:
+            success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
+            if not success:
+                return response
 
     def set_prepayment(self):
-        if self.request.has_prepayment and self.order_status == 'pending' and self.request.is_completed:
-            prepay_amount = Decimal(self.request.total_prepayment_amount or 0)
-            today = datetime.date.today()
+        if not (self.request.has_prepayment and self.order_status == 'pending' and self.request.is_completed):
+            return
 
-            labsnet_discount = Decimal(0)
+        raw = self.calculate_raw_prepayment_amount()
+        labsnet = self.calculate_labsnet_discount(raw)
+        grant = self.calculate_grant_discount(raw - labsnet)
+        final = max(raw - labsnet - grant, 0)
 
-            def apply_labsnet_credit(labsnet, original_price):
-                if not labsnet or labsnet.end_date < today:
-                    return Decimal(0)
-                try:
-                    max_discount_amount = Decimal(labsnet.remain.replace(',', ''))
-                    max_discount_percent = Decimal(labsnet.percent) / Decimal(100)
-                    max_allowed_discount = original_price * max_discount_percent
-                    return min(max_allowed_discount, max_discount_amount, original_price)
-                except:
-                    return Decimal(0)
+        self.final_prepayment_amount = final
+        self.labsnet_discount_amount = labsnet
+        self.grant_discount_amount = grant
+        self.save()
 
-            if self.request.parent_request:
-                ln1, ln2 = self.request.parent_request.labsnet1, self.request.parent_request.labsnet2
-            else:
-                ln1, ln2 = self.request.labsnet1, self.request.labsnet2
+        self.process_prepayment_payment(final)
 
-            if ln1 and ln2 and ln1 == ln2:
-                ln2 = None
 
-            credits = [ln for ln in [ln1, ln2] if ln and ln.end_date >= today]
-            credits = sorted(credits, key=lambda l: (-Decimal(l.percent), -Decimal(l.remain.replace(',', ''))))
-
-            original = prepay_amount
-            for credit in credits:
-                discount = apply_labsnet_credit(credit, original)
-                labsnet_discount += discount
-                original -= discount
-
-            grant_discount = Decimal(0)
-            remaining = prepay_amount - labsnet_discount
-
-            for grant in [self.request.grant_request1, self.request.grant_request2]:
-                if grant and remaining > 0:
-                    used = min(grant.remaining_amount, remaining)
-                    grant_discount += used
-                    remaining -= used
-
-            final_amount = max(prepay_amount - labsnet_discount - grant_discount, 0)
-
-            self.final_prepayment_amount = final_amount
-            self.grant_discount_amount = grant_discount
-            self.labsnet_discount_amount = labsnet_discount
-            self.save()
-
-            user = (
-                self.buyer
-                if self.buyer.account_type == "personal"
-                else self.request.owner.linked_users.all().first()
-            )
-
-            payment_record, created = PaymentRecord.objects.get_or_create(
-                payment_type='prepayment',
-                order=self,
-                amount=int(final_amount),
-                payer=self.buyer
-            )
-            if created:
-                success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
-                if not success:
-                    return response
 
     def set_ticket(self):
         if not Ticket.objects.filter(profile_id=self.buyer.id, order=self).exists():
