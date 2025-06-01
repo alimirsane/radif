@@ -269,6 +269,7 @@ class Order(models.Model):
 
     def process_prepayment_payment(self, final_amount):
         if final_amount <= 0:
+            self.request.prepayment_payed()
             return
         user = (
             self.buyer

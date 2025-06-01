@@ -329,9 +329,9 @@ class RequestOrderDetailSerializer(serializers.ModelSerializer):
     remaining_amount = serializers.SerializerMethodField(read_only=True, method_name="remaining_amount_")
 
     prepayment_raw = serializers.SerializerMethodField()
-    labsnet_discount_test = serializers.SerializerMethodField()
-    grant_discount_test = serializers.SerializerMethodField()
-    prepayment_final_test = serializers.SerializerMethodField()
+    labsnet_discount_prepayment = serializers.SerializerMethodField()
+    grant_discount_prepayment = serializers.SerializerMethodField()
+    prepayment_final = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -343,7 +343,7 @@ class RequestOrderDetailSerializer(serializers.ModelSerializer):
     def get_prepayment_raw(self, obj):
         return int(obj.request.total_prepayment_amount or 0)
 
-    def get_labsnet_discount_test(self, obj):
+    def get_labsnet_discount_prepayment(self, obj):
         today = datetime.date.today()
         request = obj.request
         base_amount = Decimal(request.total_prepayment_amount or 0)
@@ -376,7 +376,7 @@ class RequestOrderDetailSerializer(serializers.ModelSerializer):
             base_amount -= d
         return int(used)
 
-    def get_grant_discount_test(self, obj):
+    def get_grant_discount_prepayment(self, obj):
         from decimal import Decimal
         request = obj.request
         base_amount = Decimal(request.total_prepayment_amount or 0)
@@ -391,7 +391,7 @@ class RequestOrderDetailSerializer(serializers.ModelSerializer):
                 remaining -= used
         return int(grant_discount)
 
-    def get_prepayment_final_test(self, obj):
+    def get_prepayment_final(self, obj):
         raw = Decimal(self.get_prepayment_raw(obj))
         labsnet = Decimal(self.get_labsnet_discount_test(obj))
         grant = Decimal(self.get_grant_discount_test(obj))
