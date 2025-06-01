@@ -226,7 +226,6 @@ class Order(models.Model):
             prepay_amount = Decimal(self.request.total_prepayment_amount or 0)
             today = datetime.date.today()
 
-            # ✅ محاسبه تخفیف لبزنت
             labsnet_discount = Decimal(0)
 
             def apply_labsnet_credit(labsnet, original_price):
@@ -240,7 +239,6 @@ class Order(models.Model):
                 except:
                     return Decimal(0)
 
-            # دریافت اعتبارات لبزنت
             if self.request.parent_request:
                 ln1, ln2 = self.request.parent_request.labsnet1, self.request.parent_request.labsnet2
             else:
@@ -258,7 +256,6 @@ class Order(models.Model):
                 labsnet_discount += discount
                 original -= discount
 
-            # ✅ محاسبه تخفیف گرنت
             grant_discount = Decimal(0)
             remaining = prepay_amount - labsnet_discount
 
@@ -268,7 +265,6 @@ class Order(models.Model):
                     grant_discount += used
                     remaining -= used
 
-            # ✅ مبلغ نهایی پرداختی
             final_amount = max(prepay_amount - labsnet_discount - grant_discount, 0)
 
             self.final_prepayment_amount = final_amount
