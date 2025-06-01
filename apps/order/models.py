@@ -104,6 +104,10 @@ class Order(models.Model):
 
     is_returned = models.BooleanField(default=False, verbose_name='مبلغ عودت شده')
 
+    final_prepayment_amount = models.DecimalField(max_digits=12, decimal_places=0, default=0, verbose_name="مبلغ نهایی پیش‌پرداخت پس از تخفیف")
+    grant_discount_prepayment_amount = models.DecimalField(max_digits=12, decimal_places=0, default=0, verbose_name="مبلغ کسر شده از گرنت")
+    labsnet_discount_prepayment_amount = models.DecimalField(max_digits=12, decimal_places=0, default=0, verbose_name="مبلغ کسر شده از لبزنت")
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated at")
 
@@ -266,6 +270,11 @@ class Order(models.Model):
 
             # ✅ مبلغ نهایی پرداختی
             final_amount = max(prepay_amount - labsnet_discount - grant_discount, 0)
+
+            self.final_prepayment_amount = final_amount
+            self.grant_discount_amount = grant_discount
+            self.labsnet_discount_amount = labsnet_discount
+            self.save()
 
             user = (
                 self.buyer
