@@ -200,15 +200,16 @@ class Order(models.Model):
             self.request.change_status('next', 'Successfully paid', self.request.owner)
         else:
             if self.request.has_prepayment:
-                user = (self.buyer if self.buyer.account_type == "personal" else self.request.owner.linked_users.all().first())
-                payment_record, created = PaymentRecord.objects.get_or_create(payment_type='prepayment', order=self, amount=int(self.request.total_prepayment_amount),
-                                                              payer=self.buyer)
-                if created:
-                    success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
-                    if success:
-                        pass
-                    else:
-                        return response
+                self.set_prepayment()
+                # user = (self.buyer if self.buyer.account_type == "personal" else self.request.owner.linked_users.all().first())
+                # payment_record, created = PaymentRecord.objects.get_or_create(payment_type='prepayment', order=self, amount=int(self.request.total_prepayment_amount),
+                #                                               payer=self.buyer)
+                # if created:
+                #     success, response = SharifPayment().pay_request(user=user, payment_record=payment_record)
+                #     if success:
+                #         pass
+                #     else:
+                #         return response
             if pay:
                 # payment_record = self.get_payment_records()
                 # if not payment_record.exists():

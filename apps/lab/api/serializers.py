@@ -1,3 +1,6 @@
+import datetime
+from decimal import Decimal
+
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 import ast
@@ -324,12 +327,75 @@ class OrderPaymentRecordSerializer(serializers.ModelSerializer):
 class RequestOrderDetailSerializer(serializers.ModelSerializer):
     payment_record = OrderPaymentRecordSerializer(many=True, source='order_payment_records', read_only=True, required=False)
     remaining_amount = serializers.SerializerMethodField(read_only=True, method_name="remaining_amount_")
+
+    prepayment_raw = serializers.SerializerMethodField()
+    labsnet_discount_test = serializers.SerializerMethodField()
+    grant_discount_test = serializers.SerializerMethodField()
+    prepayment_final_test = serializers.SerializerMethodField()
+
     class Meta:
         model = Order
         exclude = ['order_key']
 
     def remaining_amount_(self, obj):
         return obj.remaining_amount()
+
+    def get_prepayment_raw(self, obj):
+        return int(obj.request.total_prepayment_amount or 0)
+
+    def get_labsnet_discount_test(self, obj):
+        today = datetime.date.today()
+        request = obj.request
+        base_amount = Decimal(request.total_prepayment_amount or 0)
+
+        def apply_credit(credit):
+            if not credit or credit.end_date < today:
+                return Decimal(0)
+            try:
+                remain = Decimal(credit.remain.replace(',', ''))
+                percent = Decimal(credit.percent) / Decimal(100)
+                return min(base_amount * percent, remain, base_amount)
+            except:
+                return Decimal(0)
+
+        if request.parent_request:
+            ln1, ln2 = request.parent_request.labsnet1, request.parent_request.labsnet2
+        else:
+            ln1, ln2 = request.labsnet1, request.labsnet2
+
+        if ln1 and ln2 and ln1 == ln2:
+            ln2 = None
+
+        credits = [ln for ln in [ln1, ln2] if ln and ln.end_date >= today]
+        credits = sorted(credits, key=lambda l: (-Decimal(l.percent), -Decimal(l.remain.replace(',', ''))))
+
+        used = Decimal(0)
+        for c in credits:
+            d = apply_credit(c)
+            used += d
+            base_amount -= d
+        return int(used)
+
+    def get_grant_discount_test(self, obj):
+        from decimal import Decimal
+        request = obj.request
+        base_amount = Decimal(request.total_prepayment_amount or 0)
+        labsnet_used = Decimal(self.get_labsnet_discount_test(obj))
+        remaining = base_amount - labsnet_used
+
+        grant_discount = Decimal(0)
+        for grant in [request.grant_request1, request.grant_request2]:
+            if grant and remaining > 0:
+                used = min(grant.remaining_amount, remaining)
+                grant_discount += used
+                remaining -= used
+        return int(grant_discount)
+
+    def get_prepayment_final_test(self, obj):
+        raw = Decimal(self.get_prepayment_raw(obj))
+        labsnet = Decimal(self.get_labsnet_discount_test(obj))
+        grant = Decimal(self.get_grant_discount_test(obj))
+        return int(max(raw - labsnet - grant, 0))
 
 
 class RequestListSerializer(serializers.ModelSerializer):
