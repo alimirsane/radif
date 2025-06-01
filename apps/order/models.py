@@ -268,6 +268,8 @@ class Order(models.Model):
         return used
 
     def process_prepayment_payment(self, final_amount):
+        if final_amount <= 0:
+            return
         user = (
             self.buyer
             if self.buyer.account_type == "personal"
@@ -293,13 +295,12 @@ class Order(models.Model):
         grant = self.calculate_grant_discount(raw - labsnet)
         final = max(raw - labsnet - grant, 0)
 
-        self.final_prepayment_amount = final
-        self.labsnet_discount_amount = labsnet
-        self.grant_discount_amount = grant
+        self.final_prepayment_amount = Decimal(final)
+        self.labsnet_discount_amount = Decimal(labsnet)
+        self.grant_discount_amount = Decimal(grant)
         self.save()
 
         self.process_prepayment_payment(final)
-
 
 
     def set_ticket(self):
