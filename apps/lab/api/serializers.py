@@ -380,7 +380,7 @@ class RequestOrderDetailSerializer(serializers.ModelSerializer):
         from decimal import Decimal
         request = obj.request
         base_amount = Decimal(request.total_prepayment_amount or 0)
-        labsnet_used = Decimal(self.get_labsnet_discount_test(obj))
+        labsnet_used = Decimal(self.get_labsnet_discount_prepayment(obj))
         remaining = base_amount - labsnet_used
 
         grant_discount = Decimal(0)
@@ -393,8 +393,8 @@ class RequestOrderDetailSerializer(serializers.ModelSerializer):
 
     def get_prepayment_final(self, obj):
         raw = Decimal(self.get_prepayment_raw(obj))
-        labsnet = Decimal(self.get_labsnet_discount_test(obj))
-        grant = Decimal(self.get_grant_discount_test(obj))
+        labsnet = Decimal(self.get_labsnet_discount_prepayment(obj))
+        grant = Decimal(self.get_grant_discount_prepayment(obj))
         return int(max(raw - labsnet - grant, 0))
 
 
