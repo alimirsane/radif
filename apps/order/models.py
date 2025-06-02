@@ -169,7 +169,8 @@ class Order(models.Model):
     def process(self, use_balance=False, pay=False):
         self.calculate_price()
         if self.amount == 0:
-            self.order_status = 'completed'
+            if not self.request.has_prepayment:
+                self.order_status = 'completed'
         # elif self.order_type == 'expert':
         #     self.order_status = 'completed'
         #     self.paid = self.amount
