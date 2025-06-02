@@ -290,7 +290,7 @@ class Order(models.Model):
     def set_prepayment(self):
         self.description = f"set_prepayment: has_prepayment:{self.request.has_prepayment} order_status:{self.order_status} is_completed:{self.request.is_completed}"
         self.save()
-        if not (self.request.has_prepayment and (self.order_status == 'pending' or self.order_status == 'new') and self.request.is_completed):
+        if not (self.request.has_prepayment and self.request.is_completed):
             return
 
         raw = self.calculate_raw_prepayment_amount()
@@ -301,7 +301,7 @@ class Order(models.Model):
         self.final_prepayment_amount = Decimal(final)
         self.labsnet_discount_amount = Decimal(labsnet)
         self.grant_discount_amount = Decimal(grant)
-        self.description = f"raw:{raw} - labsnet:{labsnet} - grant:{grant} - final:{final}"
+        self.description += f"raw:{raw} - labsnet:{labsnet} - grant:{grant} - final:{final}"
         self.save()
 
         self.process_prepayment_payment(final)
