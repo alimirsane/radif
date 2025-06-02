@@ -295,10 +295,7 @@ class Order(models.Model):
         labsnet = self.calculate_labsnet_discount(raw)
         grant = self.calculate_grant_discount(raw - labsnet)
         final = max(raw - labsnet - grant, 0)
-
-        self.final_prepayment_amount = Decimal(final)
-        self.labsnet_discount_amount = Decimal(labsnet)
-        self.grant_discount_amount = Decimal(grant)
+        self.description += f"raw:{raw} - labsnet:{labsnet} - grant:{grant} - final:{final}"
         self.save()
 
         self.process_prepayment_payment(final)
