@@ -288,7 +288,7 @@ class Order(models.Model):
                 return response
 
     def set_prepayment(self):
-        self.description = f"set_prepayment"
+        self.description = f"set_prepayment: has_prepayment:{self.request.has_prepayment} order_status:{self.order_status} is_completed:{self.request.is_completed}"
         self.save()
         if not (self.request.has_prepayment and (self.order_status == 'pending' or self.order_status == 'new') and self.request.is_completed):
             return
