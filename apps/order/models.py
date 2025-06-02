@@ -301,7 +301,6 @@ class Order(models.Model):
         self.final_prepayment_amount = Decimal(final)
         self.labsnet_discount_amount = Decimal(labsnet)
         self.grant_discount_amount = Decimal(grant)
-        self.save()
         self.description = f"raw:{raw} - labsnet:{labsnet} - grant:{grant} - final:{final}"
         self.save()
 
