@@ -288,6 +288,8 @@ class Order(models.Model):
                 return response
 
     def set_prepayment(self):
+        self.description = f"set_prepayment"
+        self.save()
         if not (self.request.has_prepayment and self.order_status == 'pending' and self.request.is_completed):
             return
 
@@ -295,7 +297,7 @@ class Order(models.Model):
         labsnet = self.calculate_labsnet_discount(raw)
         grant = self.calculate_grant_discount(raw - labsnet)
         final = max(raw - labsnet - grant, 0)
-        self.description += f"raw:{raw} - labsnet:{labsnet} - grant:{grant} - final:{final}"
+        self.description = f"raw:{raw} - labsnet:{labsnet} - grant:{grant} - final:{final}"
         self.save()
 
         self.process_prepayment_payment(final)
