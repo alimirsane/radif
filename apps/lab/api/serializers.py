@@ -28,6 +28,12 @@ class UserSummerySerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'first_name', 'last_name']
 
+class LaboratorySummarySerializer(serializers.ModelSerializer):
+    technical_manager_obj = UserSummerySerializer(read_only=True, source='technical_manager')
+
+    class Meta:
+        model = Laboratory
+        exclude = ['device']
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -61,10 +67,10 @@ class ExperimentSerializer(serializers.ModelSerializer):
     device_obj = DeviceSerializer(read_only=True, source='device')
     lab_name = serializers.SerializerMethodField(read_only=True)
     form_obj = FormSummerySerializer(read_only=True, source='form')
+    laboratory_obj = LaboratorySummarySerializer(read_only=True, source='laboratory')
 
     def get_lab_name(self, obj):
         return obj.get_lab_name()
-
 
     class Meta:
         model = Experiment
@@ -74,6 +80,7 @@ class ExperimentSerializer(serializers.ModelSerializer):
 class ExperimentDetailSerializer(serializers.ModelSerializer):
     device_obj = DeviceSerializer(read_only=True, source='device')
     form_obj = FormSerializer(read_only=True, source='form')
+    laboratory_obj = LaboratorySummarySerializer(read_only=True, source='laboratory')
 
     class Meta:
         model = Experiment
