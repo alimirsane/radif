@@ -76,7 +76,8 @@ class LaboratoryExcelReportAPIView(APIView):
         for lab in labs:
             requests = Request.objects.filter(
                 experiment__laboratory=lab,
-                is_completed=True
+                is_completed=True,
+                request_status__step__id__exact=8
             )
             if start_date:
                 requests = requests.filter(created_at__gte=start_date)
