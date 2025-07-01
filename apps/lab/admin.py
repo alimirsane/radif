@@ -61,7 +61,7 @@ def set_price(modeladmin, request, queryset):
 class RequestAdmin(admin.ModelAdmin):
     list_display = ('id', 'request_number', 'is_completed', 'price', 'labsnet', 'owner', 'is_cancelled', 'experiment', 'created_at', 'updated_at')
     search_fields = ('id', 'request_number')
-    list_filter = ('is_completed', 'labsnet', 'created_at', 'updated_at', 'laboratory')
+    list_filter = ('is_completed', 'labsnet', 'created_at', 'updated_at', 'experiment__laboratory')
     actions = [pending_appointment, set_labsnet_create, set_price]
 
 
