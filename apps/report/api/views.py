@@ -95,7 +95,6 @@ class LaboratoryExcelReportAPIView(APIView):
                 total_grant_request_discount = requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
                 total_labsnet_discount = requests.aggregate(total=Sum('labsnet_discount'))['total'] or 0
                 total_request = requests.filter(parent_request__isnull=True).count()
-                # total_samples = requests.annotate(total_samples=Sum('get_child_form_responses_count')).aggregate(total=Sum('total_samples'))['total'] or 0
                 total_samples = sum(req.get_child_form_responses_count() for req in requests)
                 operators = ', '.join([operator.get_full_name() for operator in lab.operators.all()])
 
@@ -182,28 +181,23 @@ class LaboratoryOperatorExcelReportAPIView(APIView):
                 if end_date:
                     requests = requests.filter(created_at__lt=end_date)
 
-                # parent_requests = requests.filter(parent_request__isnull=True)
                 for operator in lab.operators.all():
-                    requests = requests.filter(
+                    op_requests = requests.filter(
                         request_status__step__id=6,
                         request_status__action_by=operator
                     ).distinct()
-                    total_income = requests.aggregate(total=Sum('price'))['total'] or 0
-                    total_income_wod = requests.aggregate(total=Sum('price_wod'))['total'] or 0
-                    total_grant_request_discount = requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
-                    total_labsnet_discount = requests.aggregate(total=Sum('labsnet_discount'))['total'] or 0
-                    total_request = requests.count()
-                    # total_samples = requests.annotate(
-                    #     total_samples=Sum('get_child_form_responses_count')
-                    # ).aggregate(total=Sum('total_samples'))['total'] or 0
-                    total_samples2 = sum(req.get_child_form_responses_count() for req in requests)
+                    total_income = op_requests.aggregate(total=Sum('price'))['total'] or 0
+                    total_income_wod = op_requests.aggregate(total=Sum('price_wod'))['total'] or 0
+                    total_grant_request_discount = op_requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
+                    total_labsnet_discount = op_requests.aggregate(total=Sum('labsnet_discount'))['total'] or 0
+                    total_request = op_requests.count()
+                    total_samples = sum(req.get_child_form_responses_count() for req in op_requests)
 
                     data.append({
                         'نام آزمایشگاه': lab.name,
                         'اپراتور': operator.get_full_name(),
                         'تعداد درخواست': total_request,
-                        # 'تعداد نمونه': total_samples,
-                        'تعداد نمونه': total_samples2,
+                        'تعداد نمونه': total_samples,
                         'درآمد ناخالص': total_income_wod,
                         'درآمد': total_income,
                         'لبزنت': total_labsnet_discount,
