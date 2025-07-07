@@ -103,8 +103,8 @@ class LaboratoryExcelReportAPIView(APIView):
                     'تعداد نمونه': total_samples,
                     'درآمد ناخالص': total_income_wod,
                     'درآمد': total_income,
-                    'تخفیف لبزنت': total_labsnet_discount,
-                    'تخفیف پژوهشی': total_grant_request_discount,
+                    'لبزنت': total_labsnet_discount,
+                    'پژوهشی': total_grant_request_discount,
                 })
 
             df = pd.DataFrame(data)
