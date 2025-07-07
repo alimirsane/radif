@@ -89,7 +89,6 @@ class LaboratoryExcelReportAPIView(APIView):
                 if end_date:
                     requests = requests.filter(created_at__lt=end_date)
 
-                parent_requests = requests.filter(parent_request__isnull=True)
                 total_income = requests.aggregate(total=Sum('price'))['total'] or 0
                 total_income_wod = requests.aggregate(total=Sum('price_wod'))['total'] or 0
                 total_grant_request_discount = requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
@@ -169,7 +168,7 @@ class LaboratoryOperatorExcelReportAPIView(APIView):
 
             data = []
             for lab in labs:
-                requests = Request.objects.filter(
+                b_requests = Request.objects.filter(
                     experiment__laboratory=lab,
                     is_completed=True,
                     parent_request__isnull=True,
@@ -177,12 +176,12 @@ class LaboratoryOperatorExcelReportAPIView(APIView):
                 ).distinct()
 
                 if start_date:
-                    requests = requests.filter(created_at__gte=start_date)
+                    b_requests = b_requests.filter(created_at__gte=start_date)
                 if end_date:
-                    requests = requests.filter(created_at__lt=end_date)
+                    b_requests = b_requests.filter(created_at__lt=end_date)
 
                 for operator in lab.operators.all():
-                    op_requests = requests.filter(
+                    op_requests = b_requests.filter(
                         request_status__step__id=6,
                         request_status__action_by=operator
                     ).distinct()
