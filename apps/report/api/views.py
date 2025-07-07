@@ -80,6 +80,7 @@ class LaboratoryExcelReportAPIView(APIView):
                 requests = Request.objects.filter(
                     experiment__laboratory=lab,
                     is_completed=True,
+                    parent_request__isnull=True,
                     request_status__step__id__exact=8
                 )
                 if start_date:
