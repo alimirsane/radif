@@ -80,7 +80,6 @@ class LaboratoryExcelReportAPIView(APIView):
                 requests = Request.objects.filter(
                     experiment__laboratory=lab,
                     is_completed=True,
-                    parent_request__isnull=True,
                     request_status__step__id__exact=8
                 )
                 if start_date:
@@ -92,7 +91,7 @@ class LaboratoryExcelReportAPIView(APIView):
                 total_income_wod = requests.aggregate(total=Sum('price_wod'))['total'] or 0
                 total_grant_request_discount = requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
                 total_labsnet_discount = requests.aggregate(total=Sum('labsnet_discount'))['total'] or 0
-                total_request = requests.count()
+                total_request = requests.filter(parent_request__isnull=True).count()
                 total_samples = requests.annotate(total_samples=Sum('formresponse__response_count')).aggregate(total=Sum('total_samples'))['total'] or 0
                 operators = ', '.join([operator.get_full_name() for operator in lab.operators.all()])
 
