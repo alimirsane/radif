@@ -87,11 +87,12 @@ class LaboratoryExcelReportAPIView(APIView):
                 if end_date:
                     requests = requests.filter(created_at__lt=end_date)
 
-                total_income = requests.aggregate(total=Sum('price'))['total'] or 0
-                total_income_wod = requests.aggregate(total=Sum('price_wod'))['total'] or 0
-                total_grant_request_discount = requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
-                total_labsnet_discount = requests.aggregate(total=Sum('labsnet_discount'))['total'] or 0
-                total_request = requests.filter(parent_request__isnull=True).count()
+                parent_requests = requests.filter(parent_request__isnull=True)
+                total_income = parent_requests.aggregate(total=Sum('price'))['total'] or 0
+                total_income_wod = parent_requests.aggregate(total=Sum('price_wod'))['total'] or 0
+                total_grant_request_discount = parent_requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
+                total_labsnet_discount = parent_requests.aggregate(total=Sum('labsnet_discount'))['total'] or 0
+                total_request = parent_requests.filter(parent_request__isnull=True).count()
                 total_samples = requests.annotate(total_samples=Sum('formresponse__response_count')).aggregate(total=Sum('total_samples'))['total'] or 0
                 operators = ', '.join([operator.get_full_name() for operator in lab.operators.all()])
 
