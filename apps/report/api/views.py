@@ -80,20 +80,23 @@ class LaboratoryExcelReportAPIView(APIView):
                 requests = Request.objects.filter(
                     experiment__laboratory=lab,
                     is_completed=True,
+                    parent_request__isnull=True,
                     request_status__step__id__exact=8
-                )
+                ).distinct()
+
                 if start_date:
                     requests = requests.filter(created_at__gte=start_date)
                 if end_date:
                     requests = requests.filter(created_at__lt=end_date)
 
                 parent_requests = requests.filter(parent_request__isnull=True)
-                total_income = parent_requests.aggregate(total=Sum('price'))['total'] or 0
-                total_income_wod = parent_requests.aggregate(total=Sum('price_wod'))['total'] or 0
-                total_grant_request_discount = parent_requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
-                total_labsnet_discount = parent_requests.aggregate(total=Sum('labsnet_discount'))['total'] or 0
-                total_request = parent_requests.filter(parent_request__isnull=True).count()
-                total_samples = requests.annotate(total_samples=Sum('formresponse__response_count')).aggregate(total=Sum('total_samples'))['total'] or 0
+                total_income = requests.aggregate(total=Sum('price'))['total'] or 0
+                total_income_wod = requests.aggregate(total=Sum('price_wod'))['total'] or 0
+                total_grant_request_discount = requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
+                total_labsnet_discount = requests.aggregate(total=Sum('labsnet_discount'))['total'] or 0
+                total_request = requests.filter(parent_request__isnull=True).count()
+                # total_samples = requests.annotate(total_samples=Sum('get_child_form_responses_count')).aggregate(total=Sum('total_samples'))['total'] or 0
+                total_samples = sum(req.get_child_form_responses_count() for req in requests)
                 operators = ', '.join([operator.get_full_name() for operator in lab.operators.all()])
 
                 data.append({
@@ -167,37 +170,40 @@ class LaboratoryOperatorExcelReportAPIView(APIView):
 
             data = []
             for lab in labs:
-                base_requests = Request.objects.filter(
+                requests = Request.objects.filter(
                     experiment__laboratory=lab,
                     is_completed=True,
+                    parent_request__isnull=True,
                     request_status__step__id__exact=8
                 ).distinct()
 
                 if start_date:
-                    base_requests = base_requests.filter(created_at__gte=start_date)
+                    requests = requests.filter(created_at__gte=start_date)
                 if end_date:
-                    base_requests = base_requests.filter(created_at__lt=end_date)
+                    requests = requests.filter(created_at__lt=end_date)
 
+                # parent_requests = requests.filter(parent_request__isnull=True)
                 for operator in lab.operators.all():
-                    requests = base_requests.filter(
+                    requests = requests.filter(
                         request_status__step__id=6,
                         request_status__action_by=operator
                     ).distinct()
-                    parent_requests = requests.filter(parent_request__isnull=True)
-                    total_income = parent_requests.aggregate(total=Sum('price'))['total'] or 0
-                    total_income_wod = parent_requests.aggregate(total=Sum('price_wod'))['total'] or 0
-                    total_grant_request_discount = parent_requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
-                    total_labsnet_discount = parent_requests.aggregate(total=Sum('labsnet_discount'))['total'] or 0
-                    total_request = parent_requests.count()
-                    total_samples = requests.annotate(
-                        total_samples=Sum('formresponse__response_count')
-                    ).aggregate(total=Sum('total_samples'))['total'] or 0
+                    total_income = requests.aggregate(total=Sum('price'))['total'] or 0
+                    total_income_wod = requests.aggregate(total=Sum('price_wod'))['total'] or 0
+                    total_grant_request_discount = requests.aggregate(total=Sum('grant_request_discount'))['total'] or 0
+                    total_labsnet_discount = requests.aggregate(total=Sum('labsnet_discount'))['total'] or 0
+                    total_request = requests.count()
+                    # total_samples = requests.annotate(
+                    #     total_samples=Sum('get_child_form_responses_count')
+                    # ).aggregate(total=Sum('total_samples'))['total'] or 0
+                    total_samples2 = sum(req.get_child_form_responses_count() for req in requests)
 
                     data.append({
                         'نام آزمایشگاه': lab.name,
                         'اپراتور': operator.get_full_name(),
                         'تعداد درخواست': total_request,
-                        'تعداد نمونه': total_samples,
+                        # 'تعداد نمونه': total_samples,
+                        'تعداد نمونه': total_samples2,
                         'درآمد ناخالص': total_income_wod,
                         'درآمد': total_income,
                         'لبزنت': total_labsnet_discount,

@@ -970,6 +970,14 @@ class Request(models.Model):
         #     self.save(update_fields=['labsnet_result'])
         #     # self.save()
 
+    def get_child_form_responses(self):
+        children = self.get_all_child_requests()
+        return FormResponse.objects.filter(request__in=children)
+
+    def get_child_form_responses_count(self):
+        form_responses = self.get_child_form_responses()
+        total_response_count = form_responses.aggregate(total=Sum('response_count'))['total'] or 0
+        return total_response_count
 
 """     def labsnet_list(self):
         if self.labsnet_status == 2:
