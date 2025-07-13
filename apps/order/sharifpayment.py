@@ -44,6 +44,15 @@ class SharifPayment():
 
         return True, response
 
+    def status_check(self, payment_record):
+        data = self.init_data
+        data.update({
+            'FN': 'Status2',
+            'OrderID': payment_record.payment_order_id,
+            'OrderGUID': payment_record.payment_order_guid,
+        })
+        response = requests.post(self.url, data={"INPUT": json.dumps(data)})
+        return json.loads(response.text)
 
     def pay_confirm(self, payment_record, Result):
         if Result == 0:
