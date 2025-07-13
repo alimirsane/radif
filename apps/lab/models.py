@@ -648,12 +648,12 @@ class Request(models.Model):
         # except InvalidOperation:
         #     return
 
-        grant_exists = self.grant_request1 or self.grant_request2
-        grant_discount_is_zero = not self.grant_request_discount or self.grant_request_discount == "0" or self.grant_request_discount == 0
-
-        if grant_exists and grant_discount_is_zero:
-            self.revoke_grant_usage()
-            self.apply_grant_requests()
+        # grant_exists = self.grant_request1 or self.grant_request2
+        # grant_discount_is_zero = not self.grant_request_discount or self.grant_request_discount == "0" or self.grant_request_discount == 0
+        #
+        # if grant_exists and grant_discount_is_zero:
+        self.revoke_grant_usage()
+        self.apply_grant_requests()
 
     def apply_grant_requests(self):
         start_price = self.price
