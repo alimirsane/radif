@@ -577,18 +577,19 @@ class Request(models.Model):
             # except Exception as e:
             #     print(f"An error occurred: {e}")
 
-            if self.labsnet:
-                self.set_labsnet_credits()
-                # self.price -= int(self.labsnet_discount)
-
-            self.sync_grants_if_price_changed(old_price)
-
             if self.is_sample_returned:
                 self.price_sample_returned = Decimal(1250000)
                 self.price = self.price + self.price_sample_returned
                 # self.price_wod = self.price_wod + self.price_sample_returned
             else:
                 self.price_sample_returned = Decimal(0)
+
+            if self.labsnet:
+                self.set_labsnet_credits()
+                # self.price -= int(self.labsnet_discount)
+
+            self.sync_grants_if_price_changed(old_price)
+
             self.save()
 
     def set_labsnet_credits(self):
@@ -641,16 +642,16 @@ class Request(models.Model):
         return total_discount
 
     def sync_grants_if_price_changed(self, old_price):
-        try:
-            old = Decimal(old_price or 0)
-            new = Decimal(self.price or 0)
-        except InvalidOperation:
-            return
+        # try:
+        #     old = Decimal(old_price or 0)
+        #     new = Decimal(self.price or 0)
+        # except InvalidOperation:
+        #     return
 
         grant_exists = self.grant_request1 or self.grant_request2
         grant_discount_is_zero = not self.grant_request_discount or self.grant_request_discount == "0" or self.grant_request_discount == 0
 
-        if old != new or (grant_exists and grant_discount_is_zero):
+        if grant_exists and grant_discount_is_zero:
             self.revoke_grant_usage()
             self.apply_grant_requests()
 
