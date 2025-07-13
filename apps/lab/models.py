@@ -381,6 +381,12 @@ class Request(models.Model):
             if self.parent_request.lastest_status().step != lastest_status.step and lastest_status.step.name != 'در انتظار پرداخت':
                 raise ValidationError('وضعیت درخواست نمیتواند بیش از یک وضعیت با فاکتور اختلاف داشته باشد.')
 
+        if not self.parent_request:
+            for child in self.child_requests.exclude(request_status__step__name__in=['رد شده']):
+                step = child.lastest_status().step
+                if step.id != self.lastest_status().step.next_step.id:
+                    raise ValidationError('وضعیت فاکتور نمیتواند پیشتر از وضعیت درخواست ها باشد.')
+
         if action == 'next':
             lastest_status.accept = True
             Status.objects.create(request=lastest_status.request, step=lastest_status.step.next_step)
